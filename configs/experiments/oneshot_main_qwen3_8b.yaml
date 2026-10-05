@@ -1,0 +1,28 @@
+experiment_name: oneshot_main_qwen3_8b
+seed: 13
+
+input:
+  subset_path: data/eval_subsets/main_1000.parquet
+
+output:
+  run_root: runs
+
+model:
+  alias: qwen3_8b
+  provider: hf_transformers
+  model_name: Qwen/Qwen3-8B
+  hf_home: /rit-as-pvc/pablo/hf
+  device_map: auto
+  torch_dtype: bfloat16
+  enable_thinking: false
+  temperature: 0.0
+  max_tokens: 32
+
+prompt:
+  template_path: configs/prompts/oneshot_hex.txt
+
+execution:
+  limit: null
+  batch_size: 1
+  sleep_s: 0.0
+  resume: true

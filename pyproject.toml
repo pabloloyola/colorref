@@ -1,0 +1,32 @@
+[project]
+name = "llm-compositional-code"
+version = "0.1.0"
+description = "Benchmark and analysis for continuous color reference from language (Lab/RGB, regimes A–D)."
+requires-python = ">=3.10"
+dependencies = [
+    "numpy>=2.2.6",
+    "pandas>=2.3.3",
+    "pyarrow>=23.0.1",
+    "tqdm>=4.67.3",
+    "transformers>=5.5.0",
+    "torch>=2.0.0",
+    "scikit-learn>=1.5.0",
+    "matplotlib>=3.9.0",
+    "scipy>=1.13.0",
+    "pyyaml>=6.0.0",
+    "umap-learn>=0.5.12",
+    "accelerate>=1.13.0",
+]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.15.10",
+    "pytest>=8.0.0",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+
+# Analysis scripts use terse matplotlib patterns; keep `src/` strict.
+[tool.ruff.lint]
+per-file-ignores = { "scripts/*.py" = ["E702", "E741"] }

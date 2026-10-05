@@ -1,0 +1,10 @@
+You are playing a color guessing game.
+
+Here are examples of color descriptions and their intended hex colors:
+
+{icl_examples}
+
+Now guess the intended color for this description:
+"{raw_name}"
+
+Answer only with a valid hex code in the form #RRGGBB.

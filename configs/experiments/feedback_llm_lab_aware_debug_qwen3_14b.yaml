@@ -1,0 +1,47 @@
+experiment_name: feedback_llm_lab_aware_debug
+seed: 13
+
+input:
+  subset_path: data/eval_subsets/debug_400.parquet
+
+output:
+  run_root: runs
+
+model:
+  alias: qwen3_14b
+  provider: hf_transformers
+  model_name: Qwen/Qwen3-14B
+  hf_home: /rit-as-pvc/pablo/hf
+  device_map: auto
+  torch_dtype: bfloat16
+  enable_thinking: false
+  temperature: 0.0
+  max_tokens: 64
+
+teacher:
+  type: llm_teacher_lab_aware
+  max_feedback_constraints: 1
+  template_path: configs/prompts/llm_teacher_lab_aware.txt
+  model:
+    alias: qwen3_14b_teacher
+    provider: hf_transformers
+    model_name: Qwen/Qwen3-14B
+    hf_home: /rit-as-pvc/pablo/hf
+    device_map: auto
+    torch_dtype: bfloat16
+    enable_thinking: false
+    temperature: 0.0
+    max_tokens: 80
+
+prompt:
+  initial_template_path: configs/prompts/feedback_initial.txt
+  revision_template_path: configs/prompts/feedback_revision.txt
+
+execution:
+  max_turns: 3
+  convergence_delta_e: 5.0
+  stop_on_parse_failure: false
+  limit: null
+  batch_size: 1
+  sleep_s: 0.0
+  resume: true

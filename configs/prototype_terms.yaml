@@ -1,0 +1,136 @@
+# Prototype / object / material terms that can function as color heads.
+# These are NOT basic color names but carry strong color associations.
+# Parser v2 treats these as valid heads when no explicit color head is present.
+
+prototype_terms:
+  # nature
+  - sky
+  - grass
+  - water
+  - moss
+  - clouds
+  - cloud
+  - rain
+  - sand
+  - leaf
+  - leaves
+  - tree
+  - bark
+  - stone
+  - mud
+  - clay
+  - ash
+  - smoke
+  - fire
+  - ice
+  - snow
+  - sun
+  - earth
+  - dirt
+  - wood
+  - cedar
+  - mahogany
+  - walnut
+  - pine
+  - straw
+  - wheat
+  - hay
+  - clay
+  - slate
+  - rust
+  - sand
+
+  # food / organic
+  - mustard
+  - blueberry
+  - lipstick
+  - cherry
+  - lemon
+  - lime
+  - grape
+  - olive
+  - coffee
+  - cocoa
+  - chocolate
+  - caramel
+  - honey
+  - butter
+  - cream
+  - milk
+  - vanilla
+  - cinnamon
+  - paprika
+  - saffron
+  - tangerine
+  - mango
+  - avocado
+  - basil
+  - sage
+  - thyme
+  - rosemary
+  - mint
+  - clove
+  - pepper
+
+  # body / cosmetic
+  - flesh
+  - skin
+  - blood
+  - lips
+  - blush
+  - nude
+  - bone
+  - ivory
+  - rouge
+  - nail
+
+  # fabric / material
+  - denim
+  - linen
+  - silk
+  - wool
+  - cotton
+  - velvet
+  - leather
+  - canvas
+  - burlap
+  - lace
+
+  # environment / place
+  - ocean
+  - sea
+  - lake
+  - river
+  - desert
+  - forest
+  - jungle
+  - meadow
+  - field
+  - beach
+  - coast
+  - horizon
+  - night
+  - dawn
+  - dusk
+  - twilight
+  - sunset
+  - sunrise
+
+  # abstract / affective anchors
+  - dream
+  - tears
+  - shadow
+  - light
+  - storm
+  - thunder
+  - mist
+  - fog
+  - haze
+  - dust
+  - smoke
+  - ember
+  - flame
+  - glow
+  - spark
+  - void
+  - abyss

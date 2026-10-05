@@ -1,0 +1,158 @@
+# Lexicons for color-name compositional parsing.
+# Extend these lists as needed — the parser reads them at runtime.
+
+# Perceptual / intensity modifiers: words that shift a base color
+# but are not themselves color names.
+modifiers:
+  # lightness
+  - dark
+  - light
+  - pale
+  - bright
+  - deep
+  - vivid
+  - soft
+  - muted
+  - dusty
+  - faded
+  - washed
+  - dim
+  - bold
+  - bleached
+  - pastel
+  - smoky
+  - dull
+  - intense
+  - rich
+  - saturated
+  # temperature
+  - warm
+  - cool
+  - hot
+  - cold
+  - icy
+  # chroma / neon
+  - neon
+  - electric
+  - fluorescent
+  # texture / finish
+  - metallic
+  - shiny
+  - matte
+  - glossy
+  - iridescent
+  - pearlescent
+  # freshness / age
+  - fresh
+  - old
+  - aged
+  - vintage
+  - dirty
+  - muddy
+  - murky
+  - burnt
+  - rusty
+  - earthy
+  # degree adverbs
+  - very
+  - slightly
+  - almost
+  - barely
+  - extra
+  - ultra
+  - super
+  - semi
+  - nearly
+  - not
+  - pretty
+  # common color adjectives that act as modifiers
+  - royal
+  - baby
+  - midnight
+  - sky          # when not the last word
+  - forest
+  - ocean
+  - sea
+  - blood
+  - lime         # when not last word
+  - rose         # when not last word
+  - grape
+  - neon
+  - spring
+  - summer
+  - winter
+  - autumn
+  - sunny
+  - stormy
+
+# Canonical color head terms — words that name the hue family.
+# When the last word of a name is in this list, it is treated as the head.
+heads:
+  # basic 11
+  - red
+  - orange
+  - yellow
+  - green
+  - blue
+  - purple
+  - violet
+  - pink
+  - brown
+  - gray
+  - grey
+  - black
+  - white
+  # extended chromatic
+  - teal
+  - turquoise
+  - cyan
+  - aqua
+  - magenta
+  - fuchsia
+  - lavender
+  - lilac
+  - orchid
+  - mauve
+  - periwinkle
+  - indigo
+  - navy
+  - cobalt
+  - cerulean
+  - sapphire
+  - olive
+  - lime
+  - chartreuse
+  - jade
+  - emerald
+  - mint
+  - maroon
+  - burgundy
+  - crimson
+  - scarlet
+  - vermillion
+  - coral
+  - salmon
+  - peach
+  - amber
+  - gold
+  - ochre
+  - sienna
+  - umber
+  - tan
+  - khaki
+  - beige
+  - cream
+  - ivory
+  - rose
+  - blush
+  - plum
+  - grape
+  - wine
+  - ruby
+  - garnet
+  - bronze
+  - copper
+  - silver
+  - charcoal
+  - slate
+  - taupe

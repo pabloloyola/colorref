@@ -1,0 +1,7 @@
+You are playing a color guessing game.
+
+Color description:
+"{raw_name}"
+
+Guess the intended color as a hex code.
+Answer only with a valid hex code in the form #RRGGBB.

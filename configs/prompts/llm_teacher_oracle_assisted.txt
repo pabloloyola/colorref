@@ -1,0 +1,28 @@
+You are the teacher in a color reference game.
+
+Target color description:
+"{raw_name}"
+
+True target color: {target_hex}
+Current guess: {guess_hex}
+
+The correct perceptual corrections for this step are (paraphrase only, do not list as JSON):
+{oracle_constraints_json}
+
+Turn these into one natural short sentence of comparative feedback for the guesser.
+
+Use only these feedback types:
+- lighter or darker
+- more red or more green
+- more yellow or more blue
+- more saturated or more muted
+- warmer or cooler
+- closer to gray or less gray
+
+Use at most {max_clauses} feedback clause(s).
+
+Do not reveal the target hex code.
+Do not mention exact RGB or LAB values.
+Do not mention a new object example.
+Do not say the exact answer.
+Answer with one short sentence only.

@@ -1,0 +1,39 @@
+# Suffix normalization rules for parser v2.
+# Applied before head/modifier lookup to expand coverage.
+
+# Irregular -ish forms: explicit word → canonical head mapping
+ish_exceptions:
+  reddish: red
+  bluish: blue
+  blueish: blue
+  greyish: grey
+  grayish: gray
+  brownish: brown
+  orangish: orange
+  orangeish: orange
+  yellowish: yellow
+  greenish: green
+  pinkish: pink
+  purplish: purple
+  blackish: black
+  whitish: white
+  lavenderish: lavender
+  violetish: violet
+  goldish: gold
+  silverish: silver
+  tealish: teal
+
+# Algorithmic -ish stripping rules (applied in order, first match wins)
+# "strip_n" means remove last N chars to get candidate stem
+ish_strip_rules:
+  - strip_n: 3    # greenish -> green  (strip "ish")
+  - strip_n: 3    # then try stem+"e"  (bluish -> blue)  [handled in code]
+  - strip_n: 4    # reddish -> re  [too short, handled by exception map above]
+
+# Strip trailing "s" for plural normalization
+# Only applied when len(word) > 4 to avoid stripping meaningful endings
+plural_strip: true
+plural_min_len: 4
+
+# Hyphen / apostrophe normalization (already in v1 normalize, kept for reference)
+strip_punctuation: true
