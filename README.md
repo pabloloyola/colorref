@@ -43,7 +43,7 @@ repository
 Authenticate once:
 
 ```bash
-hf auth login
+uv run hf auth login
 ```
 
 For tests and the GPU smoke run, download only the evaluation subset:
