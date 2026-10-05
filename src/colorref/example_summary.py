@@ -85,7 +85,7 @@ def compute_turn_accounting(
 ) -> dict[str, Any]:
     """v2 turn-count fields with documented invariants."""
     traj_sub = traj_sub.sort_values("turn")
-    valid = traj_sub[traj_sub["parse_ok"] == True]
+    valid = traj_sub[traj_sub["parse_ok"]]
 
     num_feedback_rounds_issued = len(fb_sub)
     num_revision_attempts = int((traj_sub["turn"] > 0).sum())
@@ -148,7 +148,7 @@ def summarize_example_from_tables(
 ) -> dict[str, Any]:
     """Recompute full per-example summary from trajectory + feedback tables."""
     traj_sub = traj_sub.sort_values("turn")
-    valid = traj_sub[traj_sub["parse_ok"] == True].copy()
+    valid = traj_sub[traj_sub["parse_ok"]].copy()
 
     errors = [
         float(r["error_lab"])
@@ -259,7 +259,13 @@ def summarize_example_from_tables(
         "raw_name": first.get("raw_name"),
         "true_hex": first.get("true_hex"),
         "model_alias": first.get("model_alias"),
+        "guesser_model_name": first.get("guesser_model_name"),
+        "guesser_provider": first.get("guesser_provider"),
         "teacher_type": first.get("teacher_type"),
+        "teacher_model_name": first.get("teacher_model_name"),
+        "teacher_provider": first.get("teacher_provider"),
+        "output_space": first.get("output_space", "hex"),
+        "evaluation_space": first.get("evaluation_space", "lab"),
         "max_turns": max_turns_configured,
         "num_valid_turns": len(valid),
         "num_feedback_messages": len(fb_sub),
