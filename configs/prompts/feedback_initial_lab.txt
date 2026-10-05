@@ -1,0 +1,11 @@
+You are playing a color guessing game.
+
+Color description:
+"{raw_name}"
+
+Guess the intended color directly in CIELAB coordinates (D65).
+Use L in [0, 100], where 0 is black and 100 is white.
+Use a in [-128, 127], where negative is green and positive is red.
+Use b in [-128, 127], where negative is blue and positive is yellow.
+
+Answer only in the form LAB(L, a, b), using numeric values.
