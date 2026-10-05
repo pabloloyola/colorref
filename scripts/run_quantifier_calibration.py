@@ -26,8 +26,6 @@ import yaml
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from colorref.games import _parse_and_convert, format_lab_triplet
-from colorref.llm_clients import build_client
 from colorref.prompts import load_template, render_quantifier_calibration
 from colorref.quantifiers import (
     DIRECTION_SPECS,
@@ -36,7 +34,6 @@ from colorref.quantifiers import (
     measure_update,
     pairwise_monotonicity,
 )
-from colorref.run_metadata import interface_identity, model_identity
 
 logging.basicConfig(
     level=logging.INFO,
@@ -51,7 +48,9 @@ def parse_args() -> argparse.Namespace:
         description="Calibrate quantifier-to-LAB movement semantics.",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
-    parser.add_argument("--config", required=True, help="YAML calibration config")
+    source = parser.add_mutually_exclusive_group(required=True)
+    source.add_argument("--config", help="YAML calibration config")
+    source.add_argument("--report-only", type=Path, help="Reanalyze a saved run without loading the model")
     parser.add_argument("--limit", type=int, default=None, help="Run at most N conditions")
     return parser.parse_args()
 
@@ -123,11 +122,72 @@ def write_summary(
         "## Quantifier monotonicity",
         "",
         f"- Ordered pairs: {monotonicity['monotonicity_ordered_pairs']} / {monotonicity['monotonicity_comparisons']}",
-        f"- Monotonicity rate: {_format_number(monotonicity['monotonicity_rate'])}",
+        f"- Nondecreasing rate (includes ties): {_format_number(monotonicity['monotonicity_rate'])}",
+        f"- Strictly increasing pairs: {monotonicity['monotonicity_strict_pairs']} / {monotonicity['monotonicity_comparisons']}",
+        f"- Strictly increasing rate: {_format_number(monotonicity['strict_monotonicity_rate'])}",
+        f"- Tied pairs: {monotonicity['monotonicity_tied_pairs']}",
         "",
-        "The monotonicity score asks whether a higher-ranked quantifier produces a",
-        "greater signed movement than a lower-ranked quantifier for the same",
-        "base color and requested direction.",
+        "Only a_little < somewhat < much enter the ordinal comparison.",
+        "The unmodified baseline is a separate comparison condition with no rank.",
+        "Nondecreasing pairs include equal movements; strict pairs require an increase.",
+        "Neither score alone guarantees movement in the requested direction.",
+        "",
+    ]
+
+    lines += [
+        "## Steps by starting color and direction",
+        "",
+        "| Base | Direction | " + " | ".join(quantifier_names) + " |",
+        "|---|---|" + "---:|" * len(quantifier_names),
+    ]
+    for (base_id, direction), subset in parsed.groupby(["base_id", "direction"], sort=False):
+        steps = [
+            _format_number(subset.loc[subset["quantifier"] == name, "requested_signed_step"].mean())
+            for name in quantifier_names
+        ]
+        lines.append(f"| {base_id} | {direction} | " + " | ".join(steps) + " |")
+    lines += [
+        "",
+        "Values are signed requested-axis steps; positive follows the instruction.",
+        "",
+        "## Movement by direction",
+        "",
+        "| Direction | Quantifier | N | Mean signed step | Zero-step N | Wrong-direction N | Mean off-axis drift |",
+        "|---|---|---:|---:|---:|---:|---:|",
+    ]
+    for (direction, name), subset in parsed.groupby(["direction", "quantifier"], sort=False):
+        steps = subset["requested_signed_step"]
+        lines.append(
+            f"| {direction} | {name} | {len(subset)} | {_format_number(steps.mean())}"
+            f" | {int((steps == 0).sum())} | {int((steps < 0).sum())}"
+            f" | {_format_number(subset['off_axis_drift'].mean())} |"
+        )
+    failed = parsed.loc[parsed["requested_signed_step"] <= 0]
+    lines += [
+        "",
+        "## Nonpositive requested-axis updates",
+        "",
+        "| Base | Direction | Quantifier | Signed step | Off-axis drift | Raw response |",
+        "|---|---|---|---:|---:|---|",
+    ]
+    for row in failed.to_dict("records"):
+        response = str(row.get("raw_response", "")).replace("|", r"\|").replace("\n", " ")
+        lines.append(
+            f"| {row['base_id']} | {row['direction']} | {row['quantifier']}"
+            f" | {_format_number(row['requested_signed_step'])}"
+            f" | {_format_number(row['off_axis_drift'])} | {response} |"
+        )
+    if failed.empty:
+        lines.append("| None | | | | | |")
+    lines += [
+        "",
+        "## LAB-to-sRGB projection diagnostic",
+        "",
+    ]
+    projection = pd.to_numeric(parsed.get("lab_projection_delta_e", pd.Series(dtype=float)), errors="coerce").dropna()
+    lines += [
+        f"- Mean projection ΔE: {_format_number(projection.mean())}",
+        f"- States with projection ΔE > 1: {int((projection > 1).sum())} / {len(projection)}",
         "",
     ]
 
@@ -140,6 +200,23 @@ def write_summary(
 
 def main() -> None:
     args = parse_args()
+    if args.report_only is not None:
+        if args.limit is not None:
+            raise ValueError("--limit applies only to inference runs")
+        run_dir = args.report_only
+        cfg = yaml.safe_load((run_dir / "config.yaml").read_text(encoding="utf-8"))
+        with (run_dir / "raw_outputs" / "responses.jsonl").open(encoding="utf-8") as stream:
+            rows = [json.loads(line) for line in stream if line.strip()]
+        if not rows:
+            raise ValueError("Saved run has no trial responses")
+        write_summary(rows, cfg, rows[0]["run_id"], run_dir / "reports")
+        return
+
+    # Import the inference stack only when generating new responses.
+    from colorref.games import _parse_and_convert, format_lab_triplet
+    from colorref.llm_clients import build_client
+    from colorref.run_metadata import interface_identity, model_identity
+
     cfg_path = Path(args.config)
     cfg = yaml.safe_load(cfg_path.read_text(encoding="utf-8"))
     calibration_cfg = cfg["calibration"]
