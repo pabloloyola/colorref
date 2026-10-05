@@ -1,0 +1,25 @@
+name: CPU tests
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - "refactor/**"
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - name: Sync environment
+        run: uv sync --frozen --group dev
+      - name: Run unit tests
+        run: uv run --frozen pytest -q
