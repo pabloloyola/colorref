@@ -9,17 +9,17 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
-from typing import Any
-
 from colorref.colors import (
+    color_distance_lab,
     hex_to_rgb,
+    lab_to_rgb,
+    rgb_to_hex,
     rgb_to_lab,
     rgb_to_hsv,
-    color_distance_lab,
 )
 from colorref.metrics import is_converged
-from colorref.parsing import extract_hex
-from colorref.prompts import render_oneshot, render_revision
+from colorref.parsing import extract_hex, extract_lab
+from colorref.prompts import render_oneshot, render_revision, render_revision_lab
 from colorref.teachers import Feedback, Teacher
 
 logger = logging.getLogger(__name__)
@@ -29,20 +29,64 @@ logger = logging.getLogger(__name__)
 # Internal helpers
 # ---------------------------------------------------------------------------
 
-def _parse_and_convert(text: str) -> dict:
+SUPPORTED_OUTPUT_SPACES = frozenset({"hex", "lab"})
+
+
+def _parse_failure(reason: str) -> dict:
+    return {
+        "parse_ok": False,
+        "parse_reason": reason,
+        "hex": None,
+        "rgb": None,
+        "lab": None,
+        "hsv": None,
+        "lab_projection_delta_e": None,
+    }
+
+
+def _parse_and_convert(text: str, output_space: str = "hex") -> dict:
     """Parse a model output string into a color dict.
 
+    ``hex`` predictions are converted to LAB as before. ``lab`` predictions
+    retain the model's native LAB triplet for evaluation; their RGB/hex fields
+    are clipped sRGB projections used only for display and HSV diagnostics.
+
     Returns a dict with keys:
-        parse_ok, parse_reason, hex, rgb, lab, hsv
+        parse_ok, parse_reason, hex, rgb, lab, hsv,
+        lab_projection_delta_e
     (color fields are None if parsing fails)
     """
+    output_space = output_space.lower()
+    if output_space not in SUPPORTED_OUTPUT_SPACES:
+        raise ValueError(
+            f"Unsupported output space {output_space!r}; "
+            f"expected one of {sorted(SUPPORTED_OUTPUT_SPACES)}"
+        )
+
+    if output_space == "lab":
+        guess_lab, meta = extract_lab(text)
+        if guess_lab is None:
+            return _parse_failure(meta.get("reason", "no_lab"))
+        try:
+            rgb = lab_to_rgb(*guess_lab)
+            projected_lab = rgb_to_lab(*rgb)
+            return {
+                "parse_ok": True,
+                "parse_reason": None,
+                "hex": rgb_to_hex(*rgb),
+                "rgb": rgb,
+                "lab": guess_lab,
+                "hsv": rgb_to_hsv(*rgb),
+                "lab_projection_delta_e": color_distance_lab(
+                    guess_lab, projected_lab
+                ),
+            }
+        except Exception as exc:
+            return _parse_failure(f"conversion_error: {exc}")
+
     guess_hex, meta = extract_hex(text)
     if not guess_hex:
-        return {
-            "parse_ok": False,
-            "parse_reason": meta.get("reason", "no_hex"),
-            "hex": None, "rgb": None, "lab": None, "hsv": None,
-        }
+        return _parse_failure(meta.get("reason", "no_hex"))
     try:
         rgb = hex_to_rgb(guess_hex)
         lab = rgb_to_lab(*rgb)
@@ -54,13 +98,15 @@ def _parse_and_convert(text: str) -> dict:
             "rgb": rgb,
             "lab": lab,
             "hsv": hsv,
+            "lab_projection_delta_e": 0.0,
         }
     except Exception as exc:
-        return {
-            "parse_ok": False,
-            "parse_reason": f"conversion_error: {exc}",
-            "hex": None, "rgb": None, "lab": None, "hsv": None,
-        }
+        return _parse_failure(f"conversion_error: {exc}")
+
+
+def format_lab_triplet(lab: tuple[float, float, float]) -> str:
+    """Format a LAB state for insertion into a revision prompt."""
+    return f"LAB({lab[0]:.2f}, {lab[1]:.2f}, {lab[2]:.2f})"
 
 
 def _color_dict_from_row(row: dict) -> dict:
@@ -89,6 +135,11 @@ def _turn_record(
     model_alias: str,
     teacher_type: str,
     prompt_version: str,
+    output_space: str = "hex",
+    guesser_model_name: str | None = None,
+    guesser_provider: str | None = None,
+    teacher_model_name: str | None = None,
+    teacher_provider: str | None = None,
 ) -> dict:
     fb = feedback_prev
     return {
@@ -103,7 +154,13 @@ def _turn_record(
         "true_hsv_s": target["hsv"][1],
         "true_hsv_v": target["hsv"][2],
         "model_alias": model_alias,
+        "guesser_model_name": guesser_model_name,
+        "guesser_provider": guesser_provider,
         "teacher_type": teacher_type,
+        "teacher_model_name": teacher_model_name,
+        "teacher_provider": teacher_provider,
+        "output_space": output_space,
+        "evaluation_space": "lab",
         "prompt_version": prompt_version,
         "turn": turn,
         "phase": phase,
@@ -118,6 +175,7 @@ def _turn_record(
         "guess_hsv_h": guess["hsv"][0] if guess["hsv"] else None,
         "guess_hsv_s": guess["hsv"][1] if guess["hsv"] else None,
         "guess_hsv_v": guess["hsv"][2] if guess["hsv"] else None,
+        "lab_projection_delta_e": guess.get("lab_projection_delta_e"),
         "error_lab": error_lab,
         "feedback_prev_text": fb.text if fb else None,
         "feedback_prev_axis": fb.constraint_axis if fb else None,
@@ -269,6 +327,11 @@ def run_game_for_example(
     temperature: float = 0.0,
     stop_on_parse_failure: bool = False,
     accumulate_feedback: bool = False,
+    output_space: str = "hex",
+    guesser_model_name: str | None = None,
+    guesser_provider: str | None = None,
+    teacher_model_name: str | None = None,
+    teacher_provider: str | None = None,
 ) -> GameResult:
     """Run the complete feedback game for a single example.
 
@@ -278,13 +341,20 @@ def run_game_for_example(
         When True, each revision prompt includes all prior teacher utterances
         (numbered), not only the feedback for the immediately previous guess.
     """
+    output_space = output_space.lower()
+    if output_space not in SUPPORTED_OUTPUT_SPACES:
+        raise ValueError(
+            f"Unsupported output space {output_space!r}; "
+            f"expected one of {sorted(SUPPORTED_OUTPUT_SPACES)}"
+        )
+
     result = GameResult()
     target = _color_dict_from_row(example)
 
     # --- Turn 0: initial guess ---
     prompt0 = render_oneshot(initial_template, raw_name=example["raw_name"])
     resp0 = guesser.generate(prompt0, max_tokens=max_tokens, temperature=temperature)
-    guess = _parse_and_convert(resp0.text)
+    guess = _parse_and_convert(resp0.text, output_space=output_space)
 
     error0 = (
         color_distance_lab(target["lab"], guess["lab"])
@@ -297,6 +367,11 @@ def run_game_for_example(
         error_lab=error0, feedback_prev=None,
         model_alias=model_alias, teacher_type=teacher_type,
         prompt_version=prompt_version,
+        output_space=output_space,
+        guesser_model_name=guesser_model_name,
+        guesser_provider=guesser_provider,
+        teacher_model_name=teacher_model_name,
+        teacher_provider=teacher_provider,
     ))
 
     if not guess["parse_ok"]:
@@ -328,14 +403,22 @@ def run_game_for_example(
         )
 
         # guesser revises
-        revision_prompt = render_revision(
-            revision_template,
-            raw_name=example["raw_name"],
-            previous_guess_hex=current_guess["hex"] or "#000000",
-            feedback=feedback_for_prompt,
-        )
+        if output_space == "lab":
+            revision_prompt = render_revision_lab(
+                revision_template,
+                raw_name=example["raw_name"],
+                previous_guess_lab=format_lab_triplet(current_guess["lab"]),
+                feedback=feedback_for_prompt,
+            )
+        else:
+            revision_prompt = render_revision(
+                revision_template,
+                raw_name=example["raw_name"],
+                previous_guess_hex=current_guess["hex"] or "#000000",
+                feedback=feedback_for_prompt,
+            )
         resp = guesser.generate(revision_prompt, max_tokens=max_tokens, temperature=temperature)
-        next_guess = _parse_and_convert(resp.text)
+        next_guess = _parse_and_convert(resp.text, output_space=output_space)
 
         next_error = (
             color_distance_lab(target["lab"], next_guess["lab"])
@@ -348,6 +431,11 @@ def run_game_for_example(
             error_lab=next_error, feedback_prev=feedback,
             model_alias=model_alias, teacher_type=teacher_type,
             prompt_version=prompt_version,
+            output_space=output_space,
+            guesser_model_name=guesser_model_name,
+            guesser_provider=guesser_provider,
+            teacher_model_name=teacher_model_name,
+            teacher_provider=teacher_provider,
         ))
 
         if not next_guess["parse_ok"]:

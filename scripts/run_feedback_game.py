@@ -29,9 +29,15 @@ import yaml
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from colorref.games import run_game_for_example
+from colorref.games import format_lab_triplet, run_game_for_example
 from colorref.llm_clients import build_client
 from colorref.prompts import load_template
+from colorref.run_metadata import (
+    interface_identity,
+    model_identity,
+    output_space_from_config,
+    teacher_identity,
+)
 from colorref.teachers import build_teacher
 
 logging.basicConfig(
@@ -140,6 +146,7 @@ def write_summary(
     reports_dir: Path,
 ) -> None:
     df = pd.DataFrame(summaries)
+    trajectory_df = pd.DataFrame(turn_records)
     n = len(df)
     n_conv = df["converged"].sum()
     mean_ie = df["initial_error_lab"].mean()
@@ -148,13 +155,21 @@ def write_summary(
     mean_sat = df["mean_constraint_satisfaction"].dropna().mean()
     mean_align = df["mean_directional_alignment"].dropna().mean()
     parse_failures = df["parse_failure_count"].sum()
+    teacher_meta = teacher_identity(cfg["teacher"], cfg["model"])
+    teacher_model_text = (
+        f"`{teacher_meta['model_name']}` via `{teacher_meta['provider']}`"
+        if teacher_meta["kind"] == "llm"
+        else "deterministic (no model)"
+    )
 
     lines = [
         f"# Run summary: {run_id}", "",
         "## Metadata",
         f"- Experiment: `{cfg['experiment_name']}`",
-        f"- Model: `{cfg['model']['alias']}` (`{cfg['model']['model_name']}`)",
-        f"- Teacher: `{cfg['teacher']['type']}`",
+        f"- Guesser: `{cfg['model']['alias']}` (`{cfg['model']['model_name']}` via `{cfg['model']['provider']}`)",
+        f"- Teacher: `{cfg['teacher']['type']}` — {teacher_model_text}",
+        f"- Output interface: `{output_space_from_config(cfg)}`",
+        "- Evaluation space: `lab`",
         f"- Max turns: {cfg['execution']['max_turns']}",
         f"- Subset: `{cfg['input']['subset_path']}`",
         f"- Total examples: {n}", "",
@@ -168,6 +183,25 @@ def write_summary(
         f"- Mean directional alignment: {mean_align:.3f}" if not pd.isna(mean_align) else "- Mean directional alignment: n/a",
         "",
     ]
+
+    if output_space_from_config(cfg) == "lab" and "lab_projection_delta_e" in trajectory_df:
+        projection_errors = trajectory_df["lab_projection_delta_e"].dropna()
+        lines += [
+            "## LAB-to-sRGB projection diagnostic",
+            "",
+            (
+                f"- Mean projection ΔE: {projection_errors.mean():.3f}"
+                if len(projection_errors)
+                else "- Mean projection ΔE: n/a"
+            ),
+            (
+                f"- States with projection ΔE > 1: "
+                f"{int((projection_errors > 1.0).sum())} / {len(projection_errors)}"
+                if len(projection_errors)
+                else "- States with projection ΔE > 1: n/a"
+            ),
+            "",
+        ]
 
     if "regime_label" in df.columns:
         lines += ["## Metrics by regime", ""]
@@ -213,10 +247,11 @@ def _write_prompt_audit(
     initial_template: str,
     revision_template: str,
     reports_dir: Path,
+    output_space: str = "hex",
     n: int = 20,
 ) -> None:
     """Save up to n rendered example prompts for manual inspection (spec §23.2)."""
-    from colorref.prompts import render_oneshot, render_revision
+    from colorref.prompts import render_oneshot, render_revision, render_revision_lab
     lines = ["# Prompt audit (first 20 examples)\n"]
     for i, (_, row) in enumerate(df.head(n).iterrows()):
         raw_name = str(row["raw_name"])
@@ -226,9 +261,20 @@ def _write_prompt_audit(
         lines.append(render_oneshot(initial_template, raw_name=raw_name))
         lines.append("```\n")
         lines.append("**Revision prompt (placeholder feedback):**\n```")
-        lines.append(render_revision(revision_template, raw_name=raw_name,
-                                     previous_guess_hex="#aabbcc",
-                                     feedback="Make it darker."))
+        if output_space == "lab":
+            lines.append(render_revision_lab(
+                revision_template,
+                raw_name=raw_name,
+                previous_guess_lab=format_lab_triplet((50.0, 10.0, -20.0)),
+                feedback="Make it darker.",
+            ))
+        else:
+            lines.append(render_revision(
+                revision_template,
+                raw_name=raw_name,
+                previous_guess_hex="#aabbcc",
+                feedback="Make it darker.",
+            ))
         lines.append("```\n")
     (reports_dir / "prompt_audit.txt").write_text("\n".join(lines), encoding="utf-8")
     logger.info("Prompt audit written to %s/prompt_audit.txt", reports_dir)
@@ -255,6 +301,12 @@ def main() -> None:
     dirs = setup_run_dir(run_root, run_id)
     logger.info("Run ID: %s", run_id)
 
+    output_space = output_space_from_config(cfg)
+    guesser_identity = model_identity(cfg["model"])
+    teacher_model_identity = teacher_identity(cfg["teacher"], cfg["model"])
+    interface = interface_identity(cfg)
+    logger.info("Output interface: %s (evaluation: LAB)", output_space)
+
     # save config + metadata
     (dirs["base"] / "config.yaml").write_text(yaml.dump(cfg), encoding="utf-8")
     metadata = {
@@ -266,6 +318,9 @@ def main() -> None:
         "model": cfg["model"],
         "teacher": cfg["teacher"],
         "execution": cfg["execution"],
+        "guesser_identity": guesser_identity,
+        "teacher_identity": teacher_model_identity,
+        "interface": interface,
     }
     (dirs["base"] / "metadata.json").write_text(json.dumps(metadata, indent=2), encoding="utf-8")
 
@@ -296,14 +351,20 @@ def main() -> None:
     revision_template = load_template(cfg["prompt"]["revision_template_path"])
 
     # --- prompt audit: save 20 rendered prompts ---
-    _write_prompt_audit(df, initial_template, revision_template, dirs["reports"])
+    _write_prompt_audit(
+        df,
+        initial_template,
+        revision_template,
+        dirs["reports"],
+        output_space=output_space,
+    )
 
     # client and teacher
     logger.info("Building LLM client…")
     guesser = build_client(cfg["model"])
     teacher_cfg = cfg["teacher"]
     teacher_type = teacher_cfg.get("type", "minimal_oracle")
-    if teacher_type == "llm_teacher":
+    if teacher_type.startswith("llm_teacher"):
         # Reuse the guesser if the teacher model matches; avoids loading two copies
         t_model_cfg = teacher_cfg.get("model", {})
         same_model = (
@@ -351,6 +412,11 @@ def main() -> None:
                 temperature=cfg["model"]["temperature"],
                 stop_on_parse_failure=stop_on_parse_failure,
                 accumulate_feedback=accumulate_feedback,
+                output_space=output_space,
+                guesser_model_name=guesser_identity["model_name"],
+                guesser_provider=guesser_identity["provider"],
+                teacher_model_name=teacher_model_identity["model_name"],
+                teacher_provider=teacher_model_identity["provider"],
             )
 
             # write all turn records to JSONL (crash-safe)
@@ -436,7 +502,13 @@ def main() -> None:
                     "raw_name":            last.get("raw_name"),
                     "true_hex":            last.get("true_hex"),
                     "model_alias":         last.get("model_alias"),
+                    "guesser_model_name":  last.get("guesser_model_name"),
+                    "guesser_provider":    last.get("guesser_provider"),
                     "teacher_type":        last.get("teacher_type"),
+                    "teacher_model_name":  last.get("teacher_model_name"),
+                    "teacher_provider":    last.get("teacher_provider"),
+                    "output_space":        last.get("output_space", "hex"),
+                    "evaluation_space":    last.get("evaluation_space", "lab"),
                     "num_valid_turns":     len(grp_sorted),
                     "initial_error_lab":   ie,
                     "final_error_lab":     fe,

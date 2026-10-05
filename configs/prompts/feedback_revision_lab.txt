@@ -1,0 +1,10 @@
+You are playing a color guessing game.
+
+Color description:
+"{raw_name}"
+
+Your previous guess was: {previous_guess_lab}
+Feedback: {feedback}
+
+Revise the CIELAB coordinates while keeping L in [0, 100] and a and b in
+[-128, 127]. Answer only in the form LAB(L, a, b), using numeric values.

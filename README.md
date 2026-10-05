@@ -89,6 +89,23 @@ directory.
 Do not begin a full experiment sweep until the CPU suite and this smoke test
 both pass.
 
+## Direct CIELAB control
+
+The direct-LAB condition tests whether results depend on asking the model to
+encode colors as hexadecimal strings. It uses the same game and teacher logic,
+but the guesser emits `LAB(L, a, b)` coordinates:
+
+```bash
+uv run python scripts/run_feedback_game.py \
+  --config configs/experiments/smoke_a100_40gb_qwen3_14b_lab.yaml
+```
+
+For this condition, ΔE is computed from the model's native LAB coordinates.
+The trajectory also stores a clipped sRGB/hex projection for visualization and
+HSV-derived diagnostics, plus `lab_projection_delta_e` so out-of-gamut outputs
+are not silently hidden. Legacy configurations without an `interface` section
+continue to use hexadecimal output.
+
 ## Data and output policy
 
 - GitHub contains source, tests, prompts, and experiment configurations.
