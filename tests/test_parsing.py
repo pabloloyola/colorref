@@ -2,7 +2,7 @@
 
 import pytest
 
-from colorref.parsing import extract_hex
+from colorref.parsing import extract_hex, extract_lab
 
 
 class TestExtractHex:
@@ -86,3 +86,49 @@ class TestExtractHex:
     def test_success_reason_is_none(self):
         _, meta = extract_hex("#ff0000")
         assert meta["reason"] is None
+
+
+class TestExtractLab:
+    def test_canonical_triplet(self):
+        result, meta = extract_lab("LAB(50, 12.5, -30)")
+        assert result == (50.0, 12.5, -30.0)
+        assert meta["parse_ok"] is True
+
+    def test_case_and_square_brackets(self):
+        result, meta = extract_lab("lab[75.2, -8, 20]")
+        assert result == (75.2, -8.0, 20.0)
+        assert meta["parse_ok"] is True
+
+    def test_sentence_with_lab(self):
+        result, _ = extract_lab("My answer is LAB(40, 0, 0).")
+        assert result == (40.0, 0.0, 0.0)
+
+    def test_multiple_candidates_takes_first(self):
+        result, meta = extract_lab("LAB(10, 0, 0) or LAB(20, 1, 2)")
+        assert result == (10.0, 0.0, 0.0)
+        assert meta["num_candidates"] == 2
+
+    @pytest.mark.parametrize(
+        "text",
+        [
+            "LAB(-1, 0, 0)",
+            "LAB(101, 0, 0)",
+            "LAB(50, -129, 0)",
+            "LAB(50, 0, 128)",
+        ],
+    )
+    def test_out_of_bounds_is_rejected(self, text):
+        result, meta = extract_lab(text)
+        assert result is None
+        assert meta["parse_ok"] is False
+        assert "outside" in meta["reason"]
+
+    def test_unmarked_bare_triple_is_rejected(self):
+        result, meta = extract_lab("50, 10, -20")
+        assert result is None
+        assert meta["parse_ok"] is False
+
+    def test_non_string_input(self):
+        result, meta = extract_lab(None)  # type: ignore[arg-type]
+        assert result is None
+        assert "not a string" in meta["reason"]
