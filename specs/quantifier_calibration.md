@@ -33,3 +33,30 @@ Archived baseline rank 0 is ignored when scoring quantifier monotonicity.
 The report also shows signed steps by starting color and direction, zero versus
 wrong-direction counts, off-axis drift, raw nonpositive responses, and projection
 diagnostics. These are pilot measurements, not established calibration constants.
+
+## Matched axis-convention diagnostic
+
+    uv run python scripts/run_quantifier_calibration.py --config configs/experiments/quantifier_calibration_a100_40gb_axis_legend.yaml
+
+This second 48-call pilot adds only a LAB axis-convention legend to the original
+prompt. Starting colors, directions, wording conditions, model settings, output
+format, and metrics match the original pilot. The legend specifies the signs of
+L, a, and b but gives no numerical step sizes or examples. There is no additional
+instruction to preserve the other coordinates.
+
+Compare direction following, nonpositive responses, strict quantifier ordering,
+off-axis drift, and projection error against the original run. Improved axis
+following with retained magnitude ordering would support the hypothesis that
+some original failures arose from coordinate interpretation. Persistent errors
+would warrant explicit numeric-axis instruction controls before treating the
+magnitudes as a reliable control interface. This intervention diagnoses prompting
+dependence; it does not establish unaided perceptual understanding.
+
+The initial two-anchor pilot produced 33/36 nondecreasing magnitude pairs, with
+27 strict increases and 6 ties. Its reported nonpositive responses show that all
+green instructions changed b rather than a, and the warm anchor's quantified
+blue instructions increased b rather than decreased it. These observations
+motivate the axis legend. They should not be generalized beyond this pilot.
+Nine of 48 outputs had LAB-to-sRGB projection error above 1, so the native LAB
+results also require gamut diagnostics before claiming practical color editing
+performance.
