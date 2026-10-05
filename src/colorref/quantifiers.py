@@ -90,6 +90,30 @@ def measure_update(
     }
 
 
+def numerical_headroom(
+    base_lab: tuple[float, float, float],
+    predicted_lab: tuple[float, float, float],
+    direction: str,
+) -> dict[str, float]:
+    """Diagnose movement toward the prompt's numeric bounds, not sRGB gamut.
+
+    The fraction is signed requested-axis movement divided by the available
+    numeric headroom. Zero headroom is undefined, even for a zero update.
+    """
+    d = get_direction(direction)
+    lower, upper = (0.0, 100.0) if d.index == 0 else (-128.0, 127.0)
+    bound = upper if d.sign > 0 else lower
+    headroom = d.sign * (bound - base_lab[d.index])
+    step = d.sign * (predicted_lab[d.index] - base_lab[d.index])
+    return {
+        "numeric_headroom": headroom,
+        "numeric_headroom_fraction": step / headroom if headroom > 0 else float("nan"),
+        "at_requested_numeric_bound": float(
+            math.isclose(predicted_lab[d.index], bound, rel_tol=0.0, abs_tol=1e-6)
+        ),
+    }
+
+
 def pairwise_monotonicity(rows: list[dict]) -> dict[str, float | int]:
     """Compare a_little < somewhat < much within each base/direction.
 
