@@ -60,3 +60,20 @@ motivate the axis legend. They should not be generalized beyond this pilot.
 Nine of 48 outputs had LAB-to-sRGB projection error above 1, so the native LAB
 results also require gamut diagnostics before claiming practical color editing
 performance.
+
+## Numerical endpoints versus displayable colors
+
+Offline reports additionally show projection error by wording condition,
+requested-coordinate bound hits, signed movement as a fraction of the remaining
+numeric headroom, and raw responses for trials at numeric bounds or with
+projection error above 1. These diagnostics use the prompt's declared coordinate
+bounds; they do not measure the sRGB gamut boundary. A fraction of 1 reaches the
+requested numeric bound. Zero available headroom has an undefined fraction.
+
+The matched two-anchor legend pilot's direction table shows positive requested
+movement for all 48 conditions and zero off-axis drift. Large chromatic movements
+remain: for example, warm-yellow "much" moves b from 20 to 127, reaching the
+declared upper bound. Warm-blue "much" moves b from 20 to -108, which is a large
+step but does not reach the declared lower bound (-128). Overall mean projection
+error is 9.105, with 10/48 states above 1. Projection errors must be attributed to
+individual conditions before using these numerical steps as editing controls.
