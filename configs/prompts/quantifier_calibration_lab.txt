@@ -1,0 +1,8 @@
+You are applying a controlled color adjustment.
+
+Current color in CIELAB (D65): {base_lab}
+Instruction: {instruction}
+
+Return the resulting color after applying the instruction.
+Answer only in the form LAB(L, a, b), using numeric values.
+Keep L in [0, 100] and a and b in [-128, 127].
