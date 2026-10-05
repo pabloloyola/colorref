@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# Environments and local tooling
+.venv/
+venv/
+.env
+.env.*
+!.env.example
+.ipynb_checkpoints/
+.DS_Store
+
+# ColorRef data and generated artifacts
+data/
+runs/
+reports/
+logs/
+models/
+checkpoints/
+wandb/
+
+# Model and dataset caches
+.cache/
+huggingface/
