@@ -29,11 +29,11 @@ DIRECTION_SPECS: dict[str, DirectionSpec] = {
 class QuantifierSpec:
     name: str
     modifier: str
-    rank: int
+    rank: int | None
 
 
 QUANTIFIER_SPECS: dict[str, QuantifierSpec] = {
-    "baseline": QuantifierSpec("baseline", "", 0),
+    "baseline": QuantifierSpec("baseline", "", None),
     "a_little": QuantifierSpec("a_little", "a little", 1),
     "somewhat": QuantifierSpec("somewhat", "somewhat", 2),
     "much": QuantifierSpec("much", "much", 3),
@@ -91,33 +91,40 @@ def measure_update(
 
 
 def pairwise_monotonicity(rows: list[dict]) -> dict[str, float | int]:
-    """Score whether larger quantifiers induce larger signed steps.
+    """Compare a_little < somewhat < much within each base/direction.
 
-    The score is computed within each base-color/direction trajectory. Missing
-    or unparsable quantifiers are omitted, and every observed ordered pair is
-    counted once.
+    The unmodified baseline has no magnitude rank. Resolve ranks by name so
+    archived trials with baseline rank 0 are also scored correctly. Equality
+    counts as nondecreasing, but is reported separately from strict increases.
     """
     grouped: dict[tuple[str, str], dict[int, float]] = {}
     for row in rows:
         if not row.get("parse_ok"):
             continue
+        rank = get_quantifier(row["quantifier"]).rank
+        if rank is None:
+            continue
         key = (str(row["base_id"]), str(row["direction"]))
-        grouped.setdefault(key, {})[int(row["quantifier_rank"])] = float(
-            row["requested_signed_step"]
-        )
+        values = grouped.setdefault(key, {})
+        if rank in values:
+            raise ValueError(f"Duplicate quantifier rank {rank} for {key}")
+        values[rank] = float(row["requested_signed_step"])
 
-    comparisons = 0
-    ordered = 0
+    comparisons = ordered = strict = ties = 0
     for values in grouped.values():
         ranks = sorted(values)
         for lower_i, lower_rank in enumerate(ranks):
             for higher_rank in ranks[lower_i + 1:]:
                 comparisons += 1
-                ordered += int(values[higher_rank] >= values[lower_rank])
+                lower, higher = values[lower_rank], values[higher_rank]
+                ordered += int(higher >= lower)
+                strict += int(higher > lower)
+                ties += int(higher == lower)
     return {
         "monotonicity_comparisons": comparisons,
         "monotonicity_ordered_pairs": ordered,
-        "monotonicity_rate": (
-            ordered / comparisons if comparisons else float("nan")
-        ),
+        "monotonicity_strict_pairs": strict,
+        "monotonicity_tied_pairs": ties,
+        "monotonicity_rate": ordered / comparisons if comparisons else float("nan"),
+        "strict_monotonicity_rate": strict / comparisons if comparisons else float("nan"),
     }
