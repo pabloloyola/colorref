@@ -32,6 +32,7 @@ from colorref.quantifiers import (
     QUANTIFIER_SPECS,
     make_instruction,
     measure_update,
+    numerical_headroom,
     pairwise_monotonicity,
 )
 
@@ -87,8 +88,26 @@ def write_summary(
     reports_dir: Path,
 ) -> None:
     frame = pd.DataFrame(rows)
-    parsed = frame[frame["parse_ok"].astype(bool)]
+    parsed = frame[frame["parse_ok"].astype(bool)].copy()
     monotonicity = pairwise_monotonicity(rows)
+    diagnostic_rows = []
+    coordinates = ("l", "a", "b")
+    for row in parsed.to_dict("records"):
+        keys = [f"{prefix}_lab_{axis}" for prefix in ("base", "guess") for axis in coordinates]
+        if all(row.get(key) is not None for key in keys):
+            diagnostic_rows.append(numerical_headroom(
+                tuple(float(row[f"base_lab_{axis}"]) for axis in coordinates),
+                tuple(float(row[f"guess_lab_{axis}"]) for axis in coordinates),
+                row["direction"],
+            ))
+        else:
+            diagnostic_rows.append({})
+    for column in ("numeric_headroom", "numeric_headroom_fraction", "at_requested_numeric_bound"):
+        parsed[column] = [record.get(column, float("nan")) for record in diagnostic_rows]
+    parsed["lab_projection_delta_e"] = pd.to_numeric(
+        parsed.get("lab_projection_delta_e", pd.Series(index=parsed.index, dtype=float)),
+        errors="coerce",
+    )
 
     lines = [
         f"# Quantifier calibration: {run_id}",
@@ -190,6 +209,55 @@ def write_summary(
         f"- States with projection ΔE > 1: {int((projection > 1).sum())} / {len(projection)}",
         "",
     ]
+
+    lines += [
+        "## Numerical headroom and projection by quantifier",
+        "",
+        "| Quantifier | N | Projection N | Mean projection ΔE | Max projection ΔE | Projection > 1 N | At requested bound N | Mean headroom fraction |",
+        "|---|---:|---:|---:|---:|---:|---:|---:|",
+    ]
+    for name in quantifier_names:
+        subset = parsed[parsed["quantifier"] == name]
+        projection_values = subset["lab_projection_delta_e"].dropna()
+        bounds = subset["at_requested_numeric_bound"].dropna()
+        bound_count = str(int(bounds.sum())) if len(bounds) else "n/a"
+        lines.append(
+            f"| {name} | {len(subset)} | {len(projection_values)}"
+            f" | {_format_number(projection_values.mean())}"
+            f" | {_format_number(projection_values.max())}"
+            f" | {int((projection_values > 1).sum())} | {bound_count}"
+            f" | {_format_number(subset['numeric_headroom_fraction'].mean())} |"
+        )
+    lines += [
+        "",
+        "Headroom uses the prompt bounds L ∈ [0, 100], a/b ∈ [-128, 127].",
+        "A fraction of 1 reaches the requested numeric bound; negative moves away.",
+        "These bounds are not the sRGB gamut boundary or perceptual step calibration.",
+        "Zero available headroom is undefined. Missing diagnostics are shown as n/a.",
+        "",
+        "## Trials at numeric bounds or with projection ΔE > 1",
+        "",
+        "| Base | Direction | Quantifier | Native LAB | Signed step | Headroom fraction | At requested bound | Projection ΔE | Raw response |",
+        "|---|---|---|---|---:|---:|---|---:|---|",
+    ]
+    flagged = parsed.loc[
+        (parsed["at_requested_numeric_bound"] == 1) |
+        (parsed["lab_projection_delta_e"] > 1)
+    ]
+    for row in flagged.to_dict("records"):
+        native = ", ".join(_format_number(row.get(f"guess_lab_{axis}")) for axis in coordinates)
+        bound_flag = row["at_requested_numeric_bound"]
+        at_bound = "n/a" if pd.isna(bound_flag) else ("yes" if bound_flag else "no")
+        response = str(row.get("raw_response", "")).replace("|", r"\|").replace("\n", " ")
+        lines.append(
+            f"| {row['base_id']} | {row['direction']} | {row['quantifier']} | ({native})"
+            f" | {_format_number(row['requested_signed_step'])}"
+            f" | {_format_number(row['numeric_headroom_fraction'])} | {at_bound}"
+            f" | {_format_number(row['lab_projection_delta_e'])} | {response} |"
+        )
+    if flagged.empty:
+        lines.append("| None | | | | | | | | |")
+    lines.append("")
 
     (reports_dir / "quantifier_summary.md").write_text(
         "\n".join(lines),
