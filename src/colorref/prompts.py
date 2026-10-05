@@ -40,6 +40,21 @@ def render_revision(
     )
 
 
+def render_revision_lab(
+    template: str,
+    raw_name: str,
+    previous_guess_lab: str,
+    feedback: str,
+) -> str:
+    """Render a revision prompt for the direct CIELAB output interface."""
+    return render(
+        template,
+        raw_name=raw_name,
+        previous_guess_lab=previous_guess_lab,
+        feedback=feedback,
+    )
+
+
 def render_llm_teacher(
     template: str,
     raw_name: str,
