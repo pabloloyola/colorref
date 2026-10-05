@@ -55,6 +55,19 @@ def render_revision_lab(
     )
 
 
+def render_quantifier_calibration(
+    template: str,
+    base_lab: str,
+    instruction: str,
+) -> str:
+    """Render an isolated LAB adjustment prompt."""
+    return render(
+        template,
+        base_lab=base_lab,
+        instruction=instruction,
+    )
+
+
 def render_llm_teacher(
     template: str,
     raw_name: str,
