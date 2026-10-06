@@ -77,3 +77,10 @@ declared upper bound. Warm-blue "much" moves b from 20 to -108, which is a large
 step but does not reach the declared lower bound (-128). Overall mean projection
 error is 9.105, with 10/48 states above 1. Projection errors must be attributed to
 individual conditions before using these numerical steps as editing controls.
+
+## Follow-up matched study
+
+The frozen 888-call study adds 12 anchors, exact numeric controls, and no-change
+controls under both prompts. See [quantifier_study.md](quantifier_study.md) for
+its protocol, resume behavior, and analysis commands. The pilot runner and
+configuration files retain their original behavior.

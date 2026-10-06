@@ -1,0 +1,47 @@
+experiment_name: quantifier_study_a100_40gb
+seed: 13
+
+output:
+  run_root: runs
+
+model:
+  alias: qwen3_14b_a100_quantifier_study
+  provider: hf_transformers
+  model_name: Qwen/Qwen3-14B
+  hf_home: null
+  device_map: auto
+  torch_dtype: bfloat16
+  enable_thinking: false
+  temperature: 0.0
+  max_tokens: 64
+
+interface:
+  output_space: lab
+
+study:
+  # 12 anchors × [6 directions × (4 wordings + 2 numeric controls) + 1 no-change]
+  # × 2 prompts = 888 calls, with 444 matched pairs.
+  expected_conditions: 888
+  max_control_projection_delta_e: 1.0
+  prompt_variants:
+    - id: plain
+      template_path: configs/prompts/quantifier_calibration_lab.txt
+    - id: axis_legend
+      template_path: configs/prompts/quantifier_calibration_lab_axis_legend.txt
+  base_colors:
+    - {id: neutral_low, lab: [35.0, 0.0, 0.0]}
+    - {id: warm_low, lab: [35.0, 18.0, 12.0]}
+    - {id: green_low, lab: [35.0, -18.0, 12.0]}
+    - {id: blue_low, lab: [35.0, 8.0, -18.0]}
+    - {id: neutral_mid, lab: [50.0, 0.0, 0.0]}
+    - {id: warm_mid, lab: [50.0, 18.0, 12.0]}
+    - {id: green_mid, lab: [50.0, -18.0, 12.0]}
+    - {id: blue_mid, lab: [50.0, 8.0, -18.0]}
+    - {id: neutral_high, lab: [65.0, 0.0, 0.0]}
+    - {id: warm_high, lab: [65.0, 18.0, 12.0]}
+    - {id: green_high, lab: [65.0, -18.0, 12.0]}
+    - {id: blue_high, lab: [65.0, 8.0, -18.0]}
+  directions: [lighter, darker, more_red, more_green, more_yellow, more_blue]
+  quantifiers: [baseline, a_little, somewhat, much]
+  numeric_steps: [5, 10]
+  include_no_change: true
