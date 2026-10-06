@@ -79,3 +79,18 @@ This prints each control with native error greater than 0.01 ΔE (or a parse fai
 ## Interpretation
 
 Lower projected error with LAB would support an output-interface effect in this setting. Improvement from the legend would support a prompting effect on axis interpretation. Neither contrast alone establishes internal perceptual representations, general creative-editing performance, or resolution of ambiguous descriptions. Fixed rounds, projection at every state transition, and the shared displayed-state oracle are intentional protocol choices that must be stated alongside any results. Follow-up calibrated-quantifier feedback should use held-out colors/examples and matched budgets rather than fit and evaluate on the same anchors.
+
+## CPU trajectory and uncertainty analysis
+
+Analyze an existing run without inference, dataset access, or changes to its configuration:
+
+```bash
+uv run python scripts/analyze_interface_study.py --run "$I_RUN"
+cat "$I_RUN/reports/interface_analysis.md"
+```
+
+This creates `reports/interface_analysis.md` and `metrics/interface_analysis.json`, preserving the original checkpoints and summary. It reports constant-cohort error curves; paired initial/final/gain differences; control diagnostics for stationary revisions and initially converged guesses subsequently lost; the largest final–best gaps; and the saved parse failures. No failed response is repaired or imputed.
+
+The default uncertainty calculation uses 5,000 paired, regime-stratified percentile bootstrap resamples, seed 13. Whole examples are sampled with replacement within each available regime, preserving its observed cohort size, all interfaces, and all turns. Primary contrasts use the common fully parsed triplets. An available-pairs sensitivity table also includes fully parsed pairs whose third interface failed. Point estimates use the same pooled weighting as the original summary. These are conditional empirical intervals across examples, not estimates of model-generation randomness or guarantees of population generalization; exploratory intervals are not adjusted for multiple comparisons. Zero-example cohorts return missing estimates; one-example cohorts receive point estimates without intervals.
+
+Observed arithmetic text followed by an incomplete triplet is compatible with generation truncation, but finish reasons and generated token counts were not saved by the original runner. The analysis therefore does not assert that a parse failure hit the token limit. Any later prompt/token-budget intervention needs a new run and explicit protocol labeling.
