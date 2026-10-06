@@ -1,0 +1,44 @@
+experiment_name: interface_study_a100_40gb
+seed: 13
+input:
+  subset_path: data/eval_subsets/debug_400.parquet
+output:
+  run_root: runs
+model:
+  alias: qwen3_14b_a100_interface_study
+  provider: hf_transformers
+  model_name: Qwen/Qwen3-14B
+  hf_home: null
+  device_map: auto
+  torch_dtype: bfloat16
+  enable_thinking: false
+  temperature: 0.0
+  max_tokens: 64
+teacher:
+  type: axis_oracle
+  max_feedback_constraints: 3
+  min_delta:
+    lab_l: 2.0
+    lab_a: 3.0
+    lab_b: 3.0
+    hsv_s: 0.05
+execution:
+  # Fixed rounds, including initially close guesses. Only parse failures stop a game.
+  max_turns: 3
+  convergence_delta_e: 5.0
+study:
+  # 4 regimes x 16 examples x 3 interfaces x (initial + 3 revisions) = up to 768 calls.
+  examples_per_regime: 16
+  variants:
+    - id: hex
+      output_space: hex
+      initial_template_path: configs/prompts/interface_study_hex_initial.txt
+      revision_template_path: configs/prompts/interface_study_hex_revision.txt
+    - id: lab_plain
+      output_space: lab
+      initial_template_path: configs/prompts/interface_study_lab_plain_initial.txt
+      revision_template_path: configs/prompts/interface_study_lab_plain_revision.txt
+    - id: lab_axis_legend
+      output_space: lab
+      initial_template_path: configs/prompts/interface_study_lab_axis_legend_initial.txt
+      revision_template_path: configs/prompts/interface_study_lab_axis_legend_revision.txt

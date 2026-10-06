@@ -1,0 +1,15 @@
+You are playing a color guessing game.
+
+Color description:
+"{raw_name}"
+
+Your previous guess was: {previous_guess}
+The previous guess is the displayable sRGB color used by the teacher.
+Feedback: {feedback}
+
+Revise your guess.
+
+CIELAB axis directions: increasing L makes the color lighter and decreasing L makes it darker; increasing a makes it more red and decreasing a makes it more green; increasing b makes it more yellow and decreasing b makes it more blue.
+
+Use CIELAB coordinates (D65): L in [0, 100], a and b in [-128, 127].
+Answer only in the form LAB(L, a, b), using numeric values.
