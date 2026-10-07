@@ -212,10 +212,16 @@ def endpoint(game, records, cfg, plan, budget=None):
     """A budget prefix remains available even if a later revision fails."""
     selected = records if budget is None else records[:budget]
     reason, _ = next_revision(game, selected, cfg, plan)
-    if reason is None:
-        reason = (
-            "prefix" if budget is not None and len(selected) == budget else "pending"
-        )
+    if (
+        budget is not None
+        and len(selected) == budget
+        and selected[-1]["parse_ok"]
+        and reason in (None, "unavailable_calibration")
+    ):
+        # Future policy availability cannot invalidate a completed budget prefix.
+        reason = "prefix"
+    elif reason is None:
+        reason = "pending"
     valid = reason in VALID_TERMINALS or reason == "prefix"
     state = (
         selected[-1]["displayed_state"]

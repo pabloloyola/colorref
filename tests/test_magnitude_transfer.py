@@ -210,6 +210,8 @@ def test_unavailable_reverse_mapping_is_explicit(prepared):
     previous["displayed_state"]["lab"][0] += 12
     assert next_revision(game, [previous], cfg, plan)[0] == "unavailable_calibration"
     assert not endpoint(game, [previous], cfg, plan)["valid"]
+    assert endpoint(game, [previous], cfg, plan, 1)["valid"]
+    assert not endpoint(game, [previous], cfg, plan, 3)["valid"]
 
 
 def test_cap_and_no_extra_revisions_after_terminal(prepared):
