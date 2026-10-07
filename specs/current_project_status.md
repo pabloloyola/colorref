@@ -244,3 +244,22 @@ pending errors and parse failures, integrity/revision guards, matched cohorts,
 and production-shape dry-run without model loading. No production receiving
 responses exist yet. Commands and limits are in `specs/teacher_receiver_study.md`;
 next user step is dry-run followed by a ten-response smoke.
+
+## 2026-10-08 receiving-guesser study complete; stop new GPU experiments
+
+The author reports all 600 receiving revisions parsed, 120 common quintets on
+60 examples, no pending/failures or literal target-HEX mentions. Final errors
+for natural_0/natural_4/restricted_0/restricted_4/oracle are
+36.893/34.403/31.943/33.680/33.784. Restricted zero-shot has the lowest mean,
+although its teacher messages added unsupplied directions in sixteen cases.
+Faithful restatement and useful receiving feedback are distinct outcomes;
+the extra-information hypothesis remains untested by the aggregate report.
+See `specs/results/teacher_receiver_20261008.md` for paired intervals and limits.
+
+The planned GPU package is complete. `scripts/inspect_teacher_receiver.py`
+adds a CPU-only saved-message audit of literal equivalence, paired error
+contributions and lexical additions versus all threshold-qualified oracle
+candidates. It validates snapshots/checkpoints and writes separate reports only.
+It neither repairs messages nor filters/refits the primary study. Run that
+audit, then consolidate evidence/tables/figures and revise the manuscript.
+Independent target ambiguity and unaided teacher geometry remain scope limits.
