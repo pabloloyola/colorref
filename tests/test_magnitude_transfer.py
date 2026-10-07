@@ -26,6 +26,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 import run_magnitude_control as parent_runner  # noqa: E402
 import run_magnitude_transfer as runner  # noqa: E402
+import inspect_magnitude_transfer as inspector  # noqa: E402
 
 
 def answer(prompt):
@@ -470,3 +471,133 @@ def test_snapshot_allows_resume_when_parent_is_moved(prepared, monkeypatch):
     runner.main()
     result = json.loads((directory / "metrics/transfer_analysis.json").read_text())
     assert result["generated"] == 2
+
+
+def test_inspection_retains_caps_numeric_recovery_and_pending(prepared):
+    _, cfg, plan, _ = prepared
+    capped = next(g for g in plan["games"] if g["arm"] == "calibrated")
+    unchanged = "LAB({:.6f}, {:.6f}, {:.6f})".format(*capped["start"]["lab"])
+    rows = []
+    for _ in range(5):
+        rows.append(row(capped, rows, cfg, plan, unchanged))
+    numeric = next(g for g in plan["games"] if g["arm"] == "numeric")
+    missed = row(
+        numeric,
+        [],
+        cfg,
+        plan,
+        "LAB({:.6f}, {:.6f}, {:.6f})".format(*numeric["start"]["lab"]),
+    )
+    assert missed["metrics"]["numeric_native_execution_error"] > 1
+    recovered = row(numeric, [missed], cfg, plan)
+    assert endpoint(numeric, [missed, recovered], cfg, plan)["converged"]
+    result = inspector.inspect(
+        cfg,
+        plan,
+        {
+            capped["condition_id"]: rows,
+            numeric["condition_id"]: [missed, recovered],
+        },
+        {
+            "run_id": "fixture",
+            "config_sha256": "a",
+            "plan_sha256": "b",
+            "parent_snapshot_sha256": "c",
+        },
+    )
+    assert len(result["calibrated_nonconverged"]) == 1
+    end = result["calibrated_nonconverged"][0]
+    assert end["status"] == "budget_exhausted" and len(end["revisions"]) == 5
+    assert end["matched_endpoints"]["bare"]["status"] == "pending"
+    miss = result["numeric_misses"][0]
+    assert miss["game"]["converged"] and miss["game"]["calls"] == 2
+    assert miss["revision"]["prompt"] == missed["prompt"]
+    assert miss["revisions"] == [missed, recovered]
+    assert miss["coordinate_residual"] == [
+        a - e for a, e in zip(missed["native_lab"], missed["expected_numeric_lab"])
+    ]
+    assert result["generated"] == 7 and result["parsed"] == 7
+    assert "budget_exhausted" in inspector.report(result)
+    json.dumps(result, allow_nan=False)
+
+
+def test_inspection_failed_endpoint_has_no_imputed_error(prepared):
+    _, cfg, plan, _ = prepared
+    game = next(g for g in plan["games"] if g["arm"] == "calibrated")
+    failed = row(game, [], cfg, plan, "invalid")
+    result = inspector.inspect(
+        cfg,
+        plan,
+        {game["condition_id"]: [failed]},
+        {
+            "run_id": "fixture",
+            "config_sha256": "a",
+            "plan_sha256": "b",
+            "parent_snapshot_sha256": "c",
+        },
+    )
+    end = result["calibrated_nonconverged"][0]
+    assert end["status"] == "parse_failure" and end["error"] is None
+    assert "final displayed error: n/a" in inspector.report(result)
+    assert "parse failure" in inspector.report(result)
+
+
+def test_inspection_cli_cpu_only_preserves_primary_and_checks_integrity(
+    prepared, monkeypatch, capsys
+):
+    _, cfg, plan, snapshot = prepared
+    directory = runner.create_run(cfg, plan, snapshot)
+    runner.execute(directory, limit=7)
+    original = {p: p.read_bytes() for p in directory.rglob("*") if p.is_file()}
+    monkeypatch.setattr(
+        "colorref.llm_clients.build_client",
+        lambda _: pytest.fail("inspector must never load a model"),
+    )
+    monkeypatch.setattr(
+        sys, "argv", ["inspect_magnitude_transfer.py", "--run", str(directory)]
+    )
+    inspector.main()
+    assert "Exported" in capsys.readouterr().out
+    assert all(p.read_bytes() == data for p, data in original.items())
+    added = {
+        p.relative_to(directory).as_posix()
+        for p in directory.rglob("*")
+        if p.is_file() and p not in original
+    }
+    assert added == {
+        "metrics/transfer_inspection.json",
+        "reports/transfer_inspection.md",
+    }
+    result = json.loads((directory / "metrics/transfer_inspection.json").read_text())
+    assert result["generated"] == 7
+    assert result["plan_sha256"] == runner.load_plan(directory)[2]["plan_sha256"]
+    checkpoint = runner.checkpoint_path(directory, plan["games"][0])
+    corrupted = json.loads(checkpoint.read_text())
+    corrupted["records"][0]["raw_response"] = "LAB(50, 0, 0)"
+    runner.write_json(checkpoint, corrupted)
+    saved = (directory / "metrics/transfer_inspection.json").read_bytes()
+    with pytest.raises(ValueError, match="frozen task/score"):
+        inspector.execute(directory)
+    assert (directory / "metrics/transfer_inspection.json").read_bytes() == saved
+
+
+def test_empty_inspection_does_not_label_pending_as_failures(prepared):
+    _, cfg, plan, _ = prepared
+    result = inspector.inspect(
+        cfg,
+        plan,
+        {},
+        {
+            "run_id": "fixture",
+            "config_sha256": "a",
+            "plan_sha256": "b",
+            "parent_snapshot_sha256": "c",
+        },
+    )
+    assert result["calibrated_nonconverged"] == [] and result["numeric_misses"] == []
+    assert result["generated"] == result["parsed"] == 0
+    assert all(
+        counts == {"pending": len(plan["evaluation_cases"])}
+        for counts in result["completion"].values()
+    )
+    assert "Check pending counts" in inspector.report(result)

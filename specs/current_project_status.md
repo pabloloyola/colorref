@@ -114,3 +114,15 @@ See `specs/results/magnitude_transfer_20261007.md` for evidence, budget/subgroup
 ## Working from the web
 
 Repository changes, CPU tests, and paper planning can proceed without the user's laptop. A new coding task should inspect this file and `specs/interface_study.md`, then work from the active branch. The private HF data, A100 access, and production run outputs require separate access; a GitHub connection does not grant access to them. Do not launch new GPU studies merely to recreate missing outputs when CPU reanalysis of the existing run is sufficient.
+
+## Next CPU command: sequential trajectory inspection
+
+`scripts/inspect_magnitude_transfer.py --run <transfer-run>` validates frozen
+inputs and saved checkpoints, without querying a model or fitting calibration.
+It writes `reports/transfer_inspection.md` and `metrics/transfer_inspection.json`
+with calibrated nonconverged trajectories, matched endpoints, and native numeric
+execution misses above 0.01 including any subsequent oracle-assisted recovery.
+Pending games remain separate; invalid endpoints retain unknown final error.
+Primary reports and raw inputs are preserved. Read this export before attributing
+the eight capped calibrated endings or numeric tails to a mechanism. Then address
+Machel's matched zero-/few-shot teacher and restricted-restatement controls.

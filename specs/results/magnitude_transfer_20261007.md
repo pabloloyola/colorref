@@ -153,63 +153,28 @@ individual errors with particular second-call recoveries.
 
 ## Next action: inspect the eight calibrated endings and numeric tails
 
-No new GPU generation or controller fitting is needed. The original completed
-summary and checkpoints must remain unchanged. The following read-only CPU
-command validates the frozen transfer run and prints calibrated nonconverged
-endings plus native numeric misses >0.01. It reads the raw checkpoints rather
-than inferring causes from summary means. Run from the repository root:
+No new GPU generation or controller fitting is needed. The CPU inspector
+validates the frozen transfer plan and every saved checkpoint, then exports
+calibrated nonconverged endings and parsed native numeric misses >0.01.
+It writes separate inspection files; original summaries, raw responses and
+calibration inputs remain unchanged. Run from the repository root:
 
 ```bash
 TRANSFER_RUN=runs/20261007_072214_768541_magnitude_transfer_a100_40gb
-uv run python - "$TRANSFER_RUN" <<'PY'
-import json
-import sys
-from pathlib import Path
-
-sys.path.insert(0, "scripts")
-from run_magnitude_transfer import load_plan, load_checkpoints, run_lock
-from colorref.magnitude_transfer import endpoint
-
-run = Path(sys.argv[1])
-with run_lock(run):
-    cfg, plan, metadata = load_plan(run)
-    checkpoints = load_checkpoints(run, cfg, plan, metadata)
-    endings, misses = [], []
-    for game in plan["games"]:
-        rows = checkpoints.get(game["condition_id"], [])
-        end = endpoint(game, rows, cfg, plan)
-        if game["arm"] == "calibrated" and end["status"] != "pending" and not end["converged"]:
-            endings.append({
-                **end,
-                "start": game["start"]["lab"],
-                "target": game["target"]["lab"],
-                "initial_error": game["starting_error_delta_e"],
-                "revisions": [{
-                    "turn": r["turn"],
-                    "direction": r["direction"],
-                    "wording": r["selected_wording"],
-                    "median_step": r["calibrated_median"],
-                    "metrics": r["metrics"],
-                    "projection_error": r.get("projection_delta_e"),
-                    "response": r["raw_response"],
-                    "generation": r.get("generation"),
-                } for r in rows],
-            })
-        if game["arm"] == "numeric":
-            for r in rows:
-                if not r["parse_ok"] or r["metrics"]["numeric_native_execution_error"] <= 0.01:
-                    continue
-                misses.append({
-                    "game": game["condition_id"], "turn": r["turn"],
-                    "expected": r["expected_numeric_lab"], "actual": r["native_lab"],
-                    "error": r["metrics"]["numeric_native_execution_error"],
-                    "prompt": r["prompt"], "response": r["raw_response"],
-                    "generation": r.get("generation"),
-                    "final_status": end["status"], "final_error": end["error"],
-                })
-    print(json.dumps({"calibrated_nonconverged": endings, "numeric_misses": misses}, indent=2))
-PY
+uv run python scripts/inspect_magnitude_transfer.py --run "$TRANSFER_RUN"
+cat "$TRANSFER_RUN/reports/transfer_inspection.md"
 ```
+
+The report shows error traces, selected phrases and calibration medians,
+native/displayed movement, off-axis drift, projection error, and matched
+bare/numeric endpoints for each calibrated ending. Numeric misses retain
+expected/actual coordinates, prompts/responses, generation diagnostics and
+final game outcomes. Full revision records and input digests are exported to
+`metrics/transfer_inspection.json`. Pending games are counted separately;
+failed/unavailable endpoints never receive imputed final errors. For the
+completed production run, expect eight calibrated endings and six numeric
+revisions above 0.01 (five above 1); the inspector derives counts from the
+saved data rather than assuming them.
 
 After that audit, prioritize Machel's matched zero-/few-shot teacher controls
 and literal restricted-axis restatement versus the original paraphrase prompt.
