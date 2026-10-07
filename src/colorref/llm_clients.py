@@ -12,7 +12,7 @@ from __future__ import annotations
 import logging
 import os
 import time
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any
 
 logger = logging.getLogger(__name__)
@@ -30,6 +30,23 @@ class LLMResponse:
     provider: str
     latency_s: float | None
     error: str | None = None
+
+
+def _hf_generation_diagnostics(new_ids, eos_token_id, max_tokens):
+    """Describe observed tokens without claiming a backend-reported finish reason."""
+    count = len(new_ids)
+    eos_ids = [] if eos_token_id is None else (
+        list(eos_token_id) if isinstance(eos_token_id, (list, tuple)) else [eos_token_id]
+    )
+    eos_reached = bool(count and int(new_ids[-1]) in eos_ids)
+    limit_reached = count >= max_tokens
+    return {
+        "generated_tokens": count,
+        "eos_reached": eos_reached,
+        "token_limit_reached": limit_reached,
+        "finish_reason": "eos" if eos_reached else "length" if limit_reached else None,
+        "finish_reason_source": "observed_output_tokens",
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -150,10 +167,14 @@ class HFTransformersClient(LLMClient):
             # Strip the input tokens; decode only the new tokens
             new_ids = output_ids[0][inputs.input_ids.shape[1]:]
             response_text = tokenizer.decode(new_ids, skip_special_tokens=True)
+            # Includes any generated special/EOS token, unlike decoded text length.
+            diagnostics = _hf_generation_diagnostics(
+                new_ids, model.generation_config.eos_token_id, max_tokens
+            )
 
             return LLMResponse(
                 text=response_text.strip(),
-                raw=None,
+                raw=diagnostics,
                 model_name=self.model_name,
                 provider="hf_transformers",
                 latency_s=latency,

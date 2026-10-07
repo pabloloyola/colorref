@@ -1,6 +1,58 @@
-# Shared-start output-interface comparison — proposed protocol
+# Shared-start output-interface comparison
 
-This specification is ready for implementation after reviewing the existing CPU trajectory diagnostics. No runner/config or production result for this protocol exists yet. Its purpose is to separate feedback following from the different initial color predictions in the completed interface study.
+Implemented in `scripts/run_shared_start_study.py`. This study has not yet been run on the A100; CPU tests use simulated responses. Its purpose is to separate feedback following from the different initial color predictions in the completed interface study. The existing CPU trajectory analysis remains useful alongside this new control.
+
+## Running on the A100
+
+Stay on `refactor/quantifier-calibration` and pull the published changes. First validate the actual saved parent run without loading a model:
+
+```bash
+git pull --ff-only origin refactor/quantifier-calibration
+
+uv run python scripts/run_shared_start_study.py \
+  --parent-run runs/20261006_143711_709402_interface_study_a100_40gb \
+  --dry-run
+```
+
+The production parent should produce 64 examples, 192 games, and at most 576 new generations. Model identity/settings, oracle thresholds, three fixed rounds, and prompt texts are inherited from the frozen parent, not read from current live templates or a new YAML. No dataset download is needed.
+
+To run an eight-response checkpoint smoke test:
+
+```bash
+uv run python scripts/run_shared_start_study.py \
+  --parent-run runs/20261006_143711_709402_interface_study_a100_40gb \
+  --limit 8
+```
+
+The log prints the new run directory. Resume **that same directory** to finish; invoking `--parent-run` again starts a separate experiment:
+
+```bash
+SHARED_RUN=$(find runs -maxdepth 1 -type d \
+  -name '*shared_start_interface_study_a100_40gb' | sort | tail -1)
+
+uv run python scripts/run_shared_start_study.py --resume "$SHARED_RUN"
+cat "$SHARED_RUN/reports/shared_start_summary.md"
+```
+
+The summary is written after the smoke test and every invocation, including a backend error. A partial report is not a completed scientific result. Alternatively, omit `--limit` in the initial command to run the entire plan in one model load. `--output-root` and `--experiment-name` can be supplied at creation; `--limit` caps new generations during creation or resume.
+
+Rebuild reports without inference:
+
+```bash
+uv run python scripts/run_shared_start_study.py --report-only "$SHARED_RUN"
+```
+
+Default bootstrap settings are 5,000 resamples and seed 13; `--resamples` (at least 100) and `--bootstrap-seed` change analysis only. Reports include common-triplet and available-pair comparisons for the first and final revisions separately. Detailed per-game statistics and failure prompts/responses are in `metrics/shared_start_analysis.json`.
+
+## Saved-state implementation
+
+The parent loader validates frozen hashes, tasks, and every saved checkpoint under the existing run lock. Creation freezes the parent run/plan/config hashes and each selected HEX initial record's digest. The child's examples store the assigned starting HEX and recomputed LAB/HSV; prompts and task order are frozen too. Parent config/checkpoints/reports are not rewritten. The child can resume or reanalyze after the parent folder or live dataset becomes unavailable.
+
+Checkpoints contain generated revision records only, with turns 1–3 and `record_kind: generated_revision`. Supplied turn zero has `record_kind: supplied_start`, no raw response, and is reconstructed from the frozen plan. It is never counted as a generation or included in generated-state projection diagnostics.
+
+New HF responses expose generated-token counts and observed EOS/budget flags in their `raw` diagnostics; the shared-start checkpoints save these under `generation`. Counts include generated special/EOS tokens. HF finish labels (`eos`, `length`, or unknown) are inferred from observed output tokens and explicitly labeled `observed_output_tokens`, rather than claiming a server-reported reason. EOS on the last allowed token can set both EOS and budget flags. Compatible APIs retain their backend-reported finish reason and completion-token count when supplied. Existing saved outputs cannot acquire these diagnostics retrospectively. Generation settings, output parsing, and existing study protocols are unchanged.
+
+CPU acceptance tests cover a simulated 576-call plan, eight-call start plus 568-call resume, one model load per invocation, no model import for dry-run/report-only or completed resume, identical starts/first feedback, parent preservation, missing/tampered parent rejection, backend vs parse failures, separate first/final cohorts, no-constraint drift, empty cohorts, paired error/gain interval identities, and HF diagnostic extraction without real weights. Simulated outcomes do not constitute model performance.
 
 ## Question and estimand
 
