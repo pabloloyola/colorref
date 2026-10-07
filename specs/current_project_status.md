@@ -109,20 +109,40 @@ Within this same fresh cohort, calibrated error changes from 6.434 at budget one
 
 All numeric games converge, with five using a second call, but execution still has five errors >1 (max 44), plus one other error >0.01. Subsequent corrections come from the target-known oracle; successful endpoints do not prove autonomous self-correction or erase the intermediate misses. Inspect saved trajectories before explaining the mechanism.
 
-See `specs/results/magnitude_transfer_20261007.md` for evidence, budget/subgroup qualifications, manuscript wording and a read-only CPU command that validates checkpoints and exports the eight calibrated nonconverged endings plus numeric tails. `specs/magnitude_transfer_followup.md` remains the implemented protocol/command reference. Do not rerun completed GPU inference. The next work is that targeted CPU inspection, followed by Machel's zero-/few-shot and restricted-restatement teacher controls. The original teacher capability claim remains unresolved by the magnitude studies.
+See `specs/results/magnitude_transfer_20261007.md` for evidence, budget/subgroup qualifications, manuscript wording and a read-only CPU command that validates checkpoints and exports the eight calibrated nonconverged endings plus numeric tails. `specs/magnitude_transfer_followup.md` remains the implemented protocol/command reference. Do not rerun completed GPU inference. The targeted CPU inspection is now complete; its evidence is recorded below. The next experiment priority is Machel's zero-/few-shot and restricted-restatement teacher controls. The original teacher capability claim remains unresolved by the magnitude studies.
 
 ## Working from the web
 
 Repository changes, CPU tests, and paper planning can proceed without the user's laptop. A new coding task should inspect this file and `specs/interface_study.md`, then work from the active branch. The private HF data, A100 access, and production run outputs require separate access; a GitHub connection does not grant access to them. Do not launch new GPU studies merely to recreate missing outputs when CPU reanalysis of the existing run is sufficient.
 
-## Next CPU command: sequential trajectory inspection
+## Completed CPU inspection: sequential trajectories and numeric recovery
 
-`scripts/inspect_magnitude_transfer.py --run <transfer-run>` validates frozen
-inputs and saved checkpoints, without querying a model or fitting calibration.
-It writes `reports/transfer_inspection.md` and `metrics/transfer_inspection.json`
-with calibrated nonconverged trajectories, matched endpoints, and native numeric
-execution misses above 0.01 including any subsequent oracle-assisted recovery.
-Pending games remain separate; invalid endpoints retain unknown final error.
-Primary reports and raw inputs are preserved. Read this export before attributing
-the eight capped calibrated endings or numeric tails to a mechanism. Then address
-Machel's matched zero-/few-shot teacher and restricted-restatement controls.
+The author supplied the complete export from `scripts/inspect_magnitude_transfer.py`
+for run `20261007_072214_768541_magnitude_transfer_a100_40gb`.
+See `specs/results/magnitude_transfer_inspection_20261007.md` for exact cases,
+reconstructed final residuals, limitations and manuscript wording. This workspace
+has read the inspection report, not the raw production JSON directory.
+
+All eight calibrated endings are 24-unit targets: four lighter and four greener,
+on six starting colors. All start with `much`. Their first native updates follow
+the requested axis and preserve other coordinates to rounding precision, but
+seven introduce >5 units of displayed off-axis drift immediately; the eighth
+develops it on turn three. Every final off-axis residual norm exceeds five;
+seven final requested-axis residuals are below five. The frozen original-axis
+policy does not deliberately repair those other coordinates. This supports a
+specific display-projection limitation, not a perceptual-nonuniformity or internal
+reasoning explanation. Preserve the completed primary experiment and mapping.
+
+All six numeric misses occur on revision one, preserve other coordinates, and
+finish at EOS below the token cap. The five errors >1 (44, 15, approximately 10,
+10, 10) reach threshold after an oracle-supplied second correction. The remaining
+one-unit miss ends within the displayed stopping threshold after one call.
+Execution failures remain in estimates; eventual success is not autonomous
+self-correction. No additional GPU generation is required for this completed audit.
+
+The CPU inspector implementation passed all 303 repository tests at `1e9be5b`.
+This new evidence update changes documentation only. Next implement Machel's
+matched natural/restricted × zero-/few-shot oracle-assisted teacher fidelity
+control, with separate demonstrations and evaluation states, adequate clause
+budgets and explicit model/prompt provenance. Magnitude and display controls do
+not resolve the original teacher capability claim or dataset target ambiguity.

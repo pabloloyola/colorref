@@ -151,7 +151,7 @@ individual errors with particular second-call recoveries.
 > controlled coordinate task; human quantifier judgments and creative editing
 > remain untested.
 
-## Next action: inspect the eight calibrated endings and numeric tails
+## Completed targeted inspection and reproduction command
 
 No new GPU generation or controller fitting is needed. The CPU inspector
 validates the frozen transfer plan and every saved checkpoint, then exports
@@ -181,3 +181,10 @@ and literal restricted-axis restatement versus the original paraphrase prompt.
 These receiving-model magnitude results do not resolve the original teacher
 capability criticism. Avoid broadening the quantifier ladder on evaluated
 colors or launching another broad sweep before addressing the teacher evidence.
+
+The author has now supplied the completed inspection export. All eight failures
+are 24-unit lighter/greener corrections with final off-axis residual above the
+threshold; the five large numeric execution misses occur on revision one and
+converge after a target-known second correction. See
+`magnitude_transfer_inspection_20261007.md` for the trajectories, reconstructed
+residual decomposition, scope limits and next teacher-control priority.

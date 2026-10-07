@@ -122,3 +122,25 @@ Suggested metric clarification:
 ## Central framing for the revision
 
 ColorRef measures natural-language control of color predictions. Its decomposition should distinguish initial target prediction, output representation, direction following, magnitude interpretation, and feedback generation. Current evidence supports substantial protocol sensitivity and benefits from valid feedback; teacher-side generalizations need additional controls, and creative-application claims need held-out target-localization evidence.
+
+## Completed sequential magnitude audit
+
+The frozen magnitude policy has now been evaluated on twelve fresh starts and
+200 feasible targets with target-known stopping and a five-revision cap. All
+600 games complete with 1,059 parsed revisions. Final errors are 6.461/2.979/0.095
+for bare/calibrated/numeric, with 148/192/200 threshold successes and 516/338/205
+calls. The post-calibration call reduction excludes the 288 calibration calls.
+See `results/magnitude_transfer_20261007.md` for paired starting-color cluster
+intervals and subgroup limitations.
+
+The completed trajectory inspection identifies eight calibrated cap endings
+(four lighter/24, four greener/24): large native updates project into shifted
+unrequested coordinates, and final off-axis disagreement alone exceeds five
+in all eight. The fixed original-axis correction policy does not explicitly
+restore those coordinates. Numeric mistakes terminate normally, preserve other
+coordinates, and the five large misses converge after oracle-supplied second
+corrections. See `results/magnitude_transfer_inspection_20261007.md` for exact
+traces and recomputed residuals. These are controlled coordinate localization
+results and pipeline diagnostics, not human quantifier calibration, autonomous
+self-correction or downstream creative-editing evidence. Teacher few-shot and
+restricted-restatement controls remain the next experimental priority.
