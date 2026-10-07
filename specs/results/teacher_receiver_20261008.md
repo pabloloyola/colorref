@@ -97,3 +97,46 @@ reports, frozen messages and response checkpoints remain intact. Then
 consolidate tables/figures and revise the paper before scheduling further GPU
 experiments. Crowdsourced-target ambiguity and unaided teacher capabilities
 remain explicit scope limits, not resolved by this supplied-start study.
+
+## Completed saved-message audit
+
+The author supplied the completed CPU audit for all 120 paired cases per arm.
+Every identical feedback message ties the canonical oracle, and no identical
+actual prompt produces a different parsed color in these saved observations.
+This is observed consistency, not proof of backend determinism.
+
+Restricted zero-shot has 11 wins, 104 ties and 5 losses against the oracle;
+its median paired error difference is zero. The net mean advantage of 1.841
+Delta E is concentrated in changed messages. The following groups partition
+its 120 cases; differences are teacher minus oracle:
+
+| Message group | Cases | Sum error difference | Mean difference | Wins / ties / losses |
+|---|---:|---:|---:|---|
+| Literal feedback identical | 98 | 0.000 | 0.000 | 0 / 98 / 0 |
+| Different text, same lexical direction set | 6 | -126.040 | -21.007 | 3 / 1 / 2 |
+| Lexical direction additions | 16 | -94.853 | -5.928 | 8 / 5 / 3 |
+
+Same-set surface differences account arithmetically for 57.1% of the net
+advantage and additions for 42.9%. The six-case row is obtained by subtracting
+the identical-feedback group from the 104-case lexical-set-equal group. The
+audit does not display those six messages, so ordering versus other surface
+changes cannot be attributed from this summary. Neither contribution is a
+randomized causal effect, and the result is not uniform per-example superiority.
+
+Eight of the sixteen addition cases contain only threshold-qualified added
+directions (sum -90.754); eight do not (sum -4.099). Threshold qualification
+does not imply useful magnitude, while lack of qualification does not by itself
+establish an opposite sign. Even some contradictory primitive messages improve
+target error. Supplied-set fidelity, bandwidth compliance and receiving accuracy
+must therefore remain separate outcomes.
+
+Natural four-shot preserves the lexical set on all 120 cases but has 18 wins,
+80 ties and 22 losses against oracle feedback. Restricted four-shot has 1 win,
+118 ties and 1 loss, with mean difference -0.104; observed closeness is not an
+equivalence result. Natural zero-shot lexical additions remain scope-sensitive
+keyword diagnostics, not a count of semantic bandwidth violations.
+
+The planned experiment package and final CPU audit are complete. Consolidate
+evidence and revise the manuscript next; no additional GPU run is required by
+this audit. Preserve the original reports and frozen inputs. Subgroup summaries
+are exploratory, share examples and provide no population or causal intervals.

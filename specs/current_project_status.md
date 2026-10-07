@@ -263,3 +263,26 @@ candidates. It validates snapshots/checkpoints and writes separate reports only.
 It neither repairs messages nor filters/refits the primary study. Run that
 audit, then consolidate evidence/tables/figures and revise the manuscript.
 Independent target ambiguity and unaided teacher geometry remain scope limits.
+
+## 2026-10-08 saved-message audit complete; experiment package closed
+
+The author supplied all paired audit groups. Restricted zero-shot has 11 wins,
+104 ties and 5 losses versus the oracle, median difference zero. Its 98 literal
+identical messages all tie. Six changed messages with the same lexical direction
+set contribute -126.040 summed error difference (57.1% of the net advantage);
+sixteen addition messages contribute -94.853 (42.9%). These arithmetic
+contributions are not causal effects; the six raw same-set messages must be
+inspected before naming a particular surface mechanism. The advantage is
+concentrated rather than broadly shared across cases.
+
+Natural four-shot has 18 wins / 80 ties / 22 losses despite lexical set
+preservation; restricted four-shot has 1 / 118 / 1. No identical actual prompt
+produces a different parsed color in the audit, without proving backend
+determinism. Lexical additions in natural comparisons are not semantic labels.
+See specs/results/teacher_receiver_20261008.md for the disjoint decomposition.
+
+The planned GPU studies and CPU audits are complete. Proceed to evidence-table
+consolidation and manuscript revision; schedule new inference only for a concrete
+remaining central claim. Crowdsourced-target ambiguity and unaided teacher
+geometry remain unresolved scope limits. This update changes documentation only;
+the preceding implementation passed all 339 repository CI tests.
