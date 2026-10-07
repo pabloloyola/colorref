@@ -1,0 +1,57 @@
+% ColorRef sample colors — include in paper preamble:
+%   \usepackage[table]{xcolor}
+%   \usepackage{array}
+%   \usepackage{booktabs}
+% Usage: \input{reports/paper_color_swatch_table.tex}
+
+\begin{table}[t]
+
+\centering
+
+\caption{Sample color descriptions from the ColorRef corpus, grouped by semantic regime. Hex codes are crowd-aggregated ground-truth sRGB targets.}
+
+\label{tab:colorref-swatch-examples}
+
+\small
+
+\setlength{\tabcolsep}{4pt}
+
+\begin{tabular}{@{}llc>{\centering\arraybackslash}m{1.1cm}@{}}
+
+\toprule
+
+Regime & Description & Swatch \\
+
+\midrule
+
+Explicit & faded old rose        & \cellcolor[HTML]{D2917A}~ \\
+         & black as coal         & \cellcolor[HTML]{1F2829}~ \\
+         & rich purple paint     & \cellcolor[HTML]{706CC9}~ \\
+         & yellow dandelions     & \cellcolor[HTML]{F0BA06}~ \\
+
+\midrule
+
+Prototype & the green of limes    & \cellcolor[HTML]{65C204}~ \\
+          & sweet orange sunset   & \cellcolor[HTML]{F0991A}~ \\
+          & montmorency cherry    & \cellcolor[HTML]{E13D2B}~ \\
+          & crystal ocean shores  & \cellcolor[HTML]{26A5C0}~ \\
+
+\midrule
+
+Compound & gravel grey            & \cellcolor[HTML]{8F887C}~ \\
+         & cryogenic electric blue & \cellcolor[HTML]{1926FF}~ \\
+         & fresh kiss red         & \cellcolor[HTML]{D33750}~ \\
+         & corporate blues        & \cellcolor[HTML]{0068E3}~ \\
+
+\midrule
+
+Abstract & woman of the dunes     & \cellcolor[HTML]{66615E}~ \\
+         & ketchup and mayo mix   & \cellcolor[HTML]{F3AC88}~ \\
+         & daddy\textquotesingle s boy blue & \cellcolor[HTML]{160385}~ \\
+         & under the seafoam blue & \cellcolor[HTML]{47A8AB}~ \\
+
+\bottomrule
+
+\end{tabular}
+
+\end{table}
