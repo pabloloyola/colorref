@@ -121,3 +121,18 @@ Because starting errors are identical, paired first-revision error differences a
 ## Paper role
 
 Use this as the feedback-following control next to the existing name-to-color interface diagnostic. The latter measures an entire prediction-and-revision pipeline; this protocol tests revisions from shared states. Do not replace the old experiment or silently rewrite its results as if initial states had been matched.
+
+## Replay target-based stopping without new generations
+
+The completed study intentionally used fixed rounds. Analyze a separate first-threshold stopping diagnostic on its saved states:
+
+```bash
+uv run python scripts/replay_shared_start_stopping.py \\
+  --run runs/20261007_043619_593902_shared_start_interface_study_a100_40gb
+
+cat runs/20261007_043619_593902_shared_start_interface_study_a100_40gb/reports/stopping_replay_summary.md
+```
+
+The default cutoff is the frozen convergence threshold (5 for this run); `--threshold` explicitly labels an analysis override. `--resamples` defaults to 5,000 (minimum 100), seed 13. The primary table compares policies on common fully parsed fixed-round examples. Separate all-planned outcome counts preserve a threshold hit before a later failure/pending revision without mixing accuracy denominators. Reports include within-interface error/call/convergence effects, cross-interface error effects under each policy, stop-turn counts and cases where fixed rounds lose reached convergence. It never selects a future best state, repairs parsing, imputes continuation or loads a model. Existing frozen inputs, checkpoints and original summaries are preserved; new files are `metrics/stopping_replay.json` and `reports/stopping_replay_summary.md`.
+
+This target-known stopping rule is a benchmark oracle, not a demonstrated model-only stopping policy. Earlier stopping can retain a larger error than a later still-converged endpoint. Keep fixed-round and replay results distinct. The next magnitude pilot is specified in `specs/magnitude_control_pilot.md`, pending implementation and calibration outputs.

@@ -75,6 +75,14 @@ The next CPU analysis is implemented in `scripts/analyze_interface_study.py`: er
 
 Machel's remaining concerns include crowdsourced-target ambiguity, few-shot teacher capabilities, and oracle-assisted paraphrase/vocabulary confounds. The output-interface study addresses the representation concern but does not resolve those other issues. Magnitude-calibrated feedback should eventually be tested on held-out examples with matched feedback budgets.
 
+## Next runnable CPU analysis: stopping replay
+
+`scripts/replay_shared_start_stopping.py` compares three fixed rounds with stopping at the first saved displayed state at ΔE ≤ 5, including the assigned start. It uses the frozen run threshold by default, validates saved plans/checkpoints, and writes `reports/stopping_replay_summary.md` plus `metrics/stopping_replay.json`. Paired statistics use the same common fully parsed fixed-round cohort; all-planned completion counts separately distinguish early threshold stops, exhaustion, parsing failure and pending cases. It uses no inference, repairs, future best-state selection or endpoint imputation, and preserves original outputs.
+
+The uploaded 140096 case verifies the prefix logic: all three interfaces retain starting error 2.380 with zero new calls rather than the forced-round final errors. This is a one-case check; full-cohort stopping results require running on the GPU-local saved folder. Local verification has 59 passing targeted CPU tests and focused lint, separate from production model performance.
+
+`specs/magnitude_control_pilot.md` specifies the follow-up calibration/evaluation split, single-axis LAB control, quantifier-aware versus bare versus exact-numeric comparison, shared stopping, cluster analysis, and separate HSV saturation calibration. It is a protocol draft, not an implemented/executed GPU study. Do not silently apply medians from the old quantifier prompt to the reference-game prompt.
+
 ## Working from the web
 
 Repository changes, CPU tests, and paper planning can proceed without the user's laptop. A new coding task should inspect this file and `specs/interface_study.md`, then work from the active branch. The private HF data, A100 access, and production run outputs require separate access; a GitHub connection does not grant access to them. Do not launch new GPU studies merely to recreate missing outputs when CPU reanalysis of the existing run is sufficient.
