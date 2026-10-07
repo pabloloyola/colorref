@@ -80,7 +80,11 @@ lost convergence, with first movement 31.959/51.304/37.402 ΔE and first gain
 -27.646/-47.017/-33.298 for HEX/plain LAB/legend. There are no first messages
 without constraints in this run. The close case therefore received a nonempty
 oracle correction; its exact direction/count and raw responses are needed
-before identifying a cause. It is one diagnostic case, not an estimate of a
+before identifying a cause. The user subsequently supplied that case: `dull toy red` (140096),
+starting ΔE 2.380. The valid directions are followed with excessively large
+updates; all outputs end normally with small projection displacements.
+See `specs/results/close_state_140096.md` for the verified geometry and
+magnitude/stopping implications. It is one diagnostic case, not an estimate of a
 general near-target failure rate.
 
 ## Next CPU-only check
