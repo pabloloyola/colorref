@@ -11,6 +11,7 @@ manuscript baseline before incorporating the completed revision experiments.
 - File checksums and archive provenance: `baseline/import_manifest.json`
 - Revision entry points: `../specs/manuscript_baseline_20261008.md`
 - First-revision changes and remaining checks: `../specs/manuscript_revision_20261008.md`
+- Content hierarchy and expert-feedback checklist: `../specs/manuscript_content_review_20261008.md`
 - Experimental evidence: `../specs/results/`
 
 ## Compile locally

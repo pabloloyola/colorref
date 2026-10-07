@@ -304,3 +304,21 @@ is unavailable. No final revised PDF is claimed. Author review of historical
 diagnostic denominators and exact-font layout remains necessary.
 See `specs/manuscript_revision_20261008.md` for changes, run provenance, and
 remaining checks. No code or GPU protocol changes accompany this rewrite.
+
+## 2026-10-08 content-first expert review
+
+The author has deferred formatting to focus on the scientific content.
+`specs/revision_evidence_map.md` is now a current concern-to-evidence checklist,
+replacing stale pending-work guidance. Direct-LAB, teacher few-shot/restricted
+wording, new model disclosure, and clause-budget controls are complete.
+Target ambiguity is addressed by reframing, not resolved empirically;
+historical teacher-score provenance remains open.
+
+`specs/manuscript_content_review_20261008.md` records the argument hierarchy:
+direction and magnitude are central, held-out frozen-policy transfer is the
+constructive finding, and interfaces/teacher reception are supporting controls.
+It identifies required archival denominator checks, a source-data availability
+audit for target multiplicity, and raw trace review before a second prose pass.
+These audits are not claimed completed. No new GPU study or formatting change
+is requested; broad capability, human-calibration, and creative-editing claims
+remain outside the tested scope. The title and first revised main are unchanged.
