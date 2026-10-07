@@ -185,3 +185,21 @@ cases, including twelve new teacher tests, with focused lint passing. The next
 user action is the dry-run followed by the limited smoke, not a new magnitude
 sweep or a rerun of archived completed experiments. Downstream receiving-guesser
 effects and unaided teacher generation still need separate evidence.
+
+## 2026-10-07 completed teacher pilot and supplementary meaning audit
+
+The production teacher run completes all 480 responses on 60 held-out examples.
+The supplied diagnostic export exposes two lexical-score limitations: descriptions
+of the guess relative to the target need direction inversion, and the harmless
+`Feedback:` label flags faithful explicit corrections. The exploratory finite
+grammar resolves natural zero-shot as 81 matches, 17 mismatches and 22 unresolved
+cases. Both four-shot conditions match all 120 supplied sets; restricted zero-shot
+matches 104/120 and adds unsupplied directions in sixteen. Omitted canonical
+passes are aggregate-only in the uploaded export, not reconstructed raw records.
+See `specs/results/teacher_fidelity_20261007.md` for evidence and limits.
+
+Next run `scripts/inspect_teacher_semantics.py --run "$TEACHER_RUN"` (CPU only)
+to validate all checkpoints and produce separate supplementary reports. It never
+changes primary scores, responses or prompts. Review unresolved wording before
+claiming semantic failures, then evaluate matched receiving-guesser revisions.
+The original historical teacher table is not reproduced by this new study.

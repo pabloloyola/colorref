@@ -158,3 +158,17 @@ requiring manual review. A lexical-certification gap alone is not evidence
 that broader teacher wording is geometrically wrong. No production findings
 exist yet; the original teacher claim remains narrowed pending this evidence
 and a subsequent matched receiving-guesser evaluation.
+
+### Completed teacher-restatement evidence, 2026-10-07
+
+The 480-response pilot is complete. Scope-aware supplementary auditing of the
+supplied selected diagnostics finds natural zero-shot 81 exact-set matches,
+17 mismatches and 22 unresolved cases; both four-shot conditions preserve all
+120 sets each, and restricted zero-shot adds unsupplied directions in sixteen
+outputs. Canonical passes omitted from the export reconcile only in aggregate.
+Guess/target comparisons and harmless Feedback labels show why lexical precision
+and conservative certification cannot alone establish semantic teacher failure.
+The post-inspection finite grammar is exploratory and preserves primary reports.
+Full-checkpoint CPU audit, manual review and downstream receiving-guesser control
+remain next. These new results do not establish that the historical table was
+entirely an artifact. See `specs/results/teacher_fidelity_20261007.md`.
