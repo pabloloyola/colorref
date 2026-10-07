@@ -1,7 +1,7 @@
 # Held-out magnitude-control pilot — implemented protocol
 
-The resumable runner is implemented and CPU tested; GPU model performance is
-not yet available. The completed CPU stopping replay modestly improves error
+The resumable runner is implemented and the GPU pilot is complete. Results
+from the user-provided report are in `specs/results/magnitude_control_20261007.md`. The completed CPU stopping replay modestly improves error
 and preserves successful states while leaving interface differences largely
 intact (see `specs/results/stopping_replay_20261007.md`). Preserve the existing
 forced-round results.
@@ -222,3 +222,25 @@ response remains a failure and is not regenerated on resume. Each invocation
 loads at most one model. Completed runs and report-only mode load no model.
 The runner needs no private dataset download because these stimuli are
 constructed, not color-name records.
+
+## Exploratory CPU audit after completed evaluation
+
+The primary experiment and controller remain frozen. To inspect subgroup
+heterogeneity and numeric tails without another GPU run:
+
+```bash
+uv run python scripts/analyze_magnitude_control.py --run "$MAG_RUN"
+cat "$MAG_RUN/reports/magnitude_breakdown.md"
+```
+
+This writes separate breakdown JSON/Markdown files and leaves the primary
+summary and metrics unchanged. Direction, distance, their combination and
+starting-color means share the same common parsed triplets. Available
+bare/calibrated pairs are shown separately if numeric parsing fails. Per-start
+leave-one-out means are descriptive leverage checks, not grounds to drop
+colors. Wins/ties/losses use an explicitly exploratory 0.01 ΔE tolerance.
+Native numeric execution errors include all parsed controls; errors above 0.01
+are exported with expected/actual coordinates, prompt, response and observed
+finish metadata. Mean/median/p95/max and exact/within-one counts retain tail
+failures. All subgroup confidence intervals are exploratory and unadjusted for
+multiple comparisons. Fit no new controller to these held-out responses.
