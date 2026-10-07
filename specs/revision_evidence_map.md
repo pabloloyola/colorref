@@ -6,7 +6,7 @@ Based on the attached expert review, the submitted PDF, repository source audite
 
 | Concern | What we can establish now | Remaining action | Paper change |
 |---|---|---|---|
-| Output encoding versus color grounding | In the matched 64-example diagnostic, HEX has lower final error than plain LAB; an axis legend substantially improves LAB. Exact coordinate controls in the separate quantifier study are almost always executed correctly. | Analyze existing trajectories; compare feedback from a shared initial state. | State output representation and axis instructions explicitly. Treat the interface results as diagnostic protocol comparisons. |
+| Output encoding versus color grounding | In the matched 64-example diagnostic, HEX has lower final error than plain LAB; an axis legend substantially improves LAB. Exact coordinate controls in the separate quantifier study are almost always executed correctly. | The shared-start control is completed; inspect remaining trajectory/magnitude failure cases and retain uncertainty at the primary first-revision endpoint. | State output representation and axis instructions explicitly. Treat the interface results as diagnostic protocol comparisons. |
 | Ambiguous crowdsourced targets | Current error is distance to one recorded target, not a measure of whether every alternative color is linguistically implausible. Strong recovery from feedback shows localization of that assigned target. | Audit raw data for repeated descriptions, alternative targets, or per-color votes; distinguish description-validity scores from agreement about a target. If these data are absent, collect human alternative-color judgments for a modest stratified sample. | Replace broad statements that abstract descriptions are intrinsically wrong/noisy with disagreement from the recorded target. Bring this qualification into dataset/metrics/results prose. |
 | Following versus generating is only tested zero-shot | Existing teacher conditions are zero-shot; guesser ICL is not evidence about teacher few-shot performance. | Run few-shot teachers, starting with oracle-assisted feedback; compare demonstrations at fixed feedback constraints and output budgets. | Narrow the teacher claim to the evaluated zero-shot configurations until these controls exist. |
 | Oracle-assisted paraphrases may change meaning | The current prompt explicitly asks for a natural paraphrase and permits warmer/cooler and gray/less-gray phrases outside the oracle's primitive directions. | Compare unrestricted and exact-direction wording, each zero-shot and few-shot, using matched target/guess states and the same oracle directions. Audit additions, omissions, substitutions, and reversals separately. | Present the old result as a prompt-conditioned failure rather than a demonstrated inability to restate correct feedback. |
@@ -75,6 +75,16 @@ Draft paragraph:
 
 Report the full denominator next to this paragraph: 192 completed games, three legend-condition parse failures, 61/64 common fully parsed triplets. Do not combine this diagnostic's means with the original 12,000-example results or interpret its small regime groups as a replication of all earlier regime findings.
 
+### Shared-start feedback-following control
+
+The user completed the 64-example control with identical displayed starts and first corrections, 576/576 parsed revisions, and no missing matched cases. Detailed results are in `specs/results/shared_start_20261007.md`.
+
+Draft paragraph:
+
+> To separate initial prediction from subsequent correction, we supply the same HEX-derived displayed starting state to each interface. Across 64 matched examples, first-revision error is 32.10 ΔE76 for HEX, 38.29 for plain LAB, and 32.58 for LAB with the axis legend. Plain LAB exceeds HEX by 6.19 [0.85, 11.89] ΔE76, while the legend's first-revision improvement over plain LAB is uncertain (-5.71 [-11.44, 1.41]). After three fixed revisions, final errors are 22.78, 35.28, and 23.16, respectively; legend minus plain LAB is -12.11 [-18.04, -5.49]. Thus, output/prompt choices affect correction even when starts are held fixed. The similar HEX and legend mean endpoints do not establish equivalence, and later feedback is adaptive rather than identical.
+
+Intervals are paired regime-stratified percentile 95% intervals over the fixed cohort. Qualify findings as conditional on this HEX-derived start policy, single model, and prompting intervention. All outputs parsed, so this run has no parse-based cohort exclusion. Its forced rounds differ from the main paper's early stopping. Best-so-far error uses knowledge of the target and is not an automatically available editing policy.
+
 ### Operational interpretation of quantifiers
 
 Draft paragraph:
@@ -103,8 +113,8 @@ Suggested metric clarification:
 
 ## Evidence still needed before stronger conclusions
 
-1. Run the existing CPU trajectory analysis. It produces paired intervals, fixed-cohort turn curves, available-pair sensitivity to failed third interfaces, and checks for initially correct guesses drifting away under forced rounds.
-2. Use shared initial displayed states to compare feedback following. See `specs/shared_start_interface_study.md`. This is a proposed next experiment, not an already implemented or executed study.
+1. Inspect saved trajectory diagnostics, including the shared-start initially converged case. Run the existing CPU trajectory analysis. It produces paired intervals, fixed-cohort turn curves, available-pair sensitivity to failed third interfaces, and checks for initially correct guesses drifting away under forced rounds.
+2. The shared-start comparison is completed with all 64 matched examples and no parse failures. See `specs/results/shared_start_20261007.md`. Interpret its first-revision and final endpoints separately; near-equal HEX/legend means do not establish equivalence. Additional starting-state/model replications would extend the current conditional result.
 3. Run the restricted/unrestricted × zero-/few-shot oracle-assisted teacher comparison on held-out matched states. Set the clause budget at least as large as the supplied direction count and log both values. Canonical directions must be preserved exactly in the restricted condition; magnitude language is excluded so the audit does not mix direction fidelity with step-size effects. Demonstration examples must be separate from evaluated examples/descriptions. Reuse one model instance for same-model teacher/guesser calls on the A100, or audit teacher outputs offline on frozen states; do not require two independent 14B model loads.
 4. Audit the source data's target ambiguity. Description validity and target agreement are separate measurements; do not assume that a high validity score is low target ambiguity.
 5. Evaluate a magnitude-calibrated oracle on held-out examples after directions and output compliance are controlled. Fit language-to-step behavior on a calibration split and compare target-distance error, overshooting, off-axis movement, and projection cost on a separate evaluation split at matched feedback budgets. Creative editing remains a motivation until this downstream benefit is demonstrated.

@@ -1,6 +1,6 @@
 # Shared-start output-interface comparison
 
-Implemented in `scripts/run_shared_start_study.py`. This study has not yet been run on the A100; CPU tests use simulated responses. Its purpose is to separate feedback following from the different initial color predictions in the completed interface study. The existing CPU trajectory analysis remains useful alongside this new control.
+Implemented in `scripts/run_shared_start_study.py`. The user completed the A100 study on 2026-10-07: 192/192 games and 576/576 parsed revisions. CPU tests use simulated responses; production results are recorded in `specs/results/shared_start_20261007.md`. Its purpose is to separate feedback following from the different initial color predictions in the completed interface study. The existing CPU trajectory analysis remains useful alongside this new control.
 
 ## Running on the A100
 

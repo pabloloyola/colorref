@@ -33,7 +33,7 @@ spec.loader.exec_module(runner)
 import run_interface_study as parent_runner  # noqa: E402
 
 
-def parent_inputs(tmp_path, quota=1):
+def parent_inputs(tmp_path, quota=1, start_hex="#404040"):
     cfg = yaml.safe_load(
         (ROOT / "configs/experiments/interface_study_a100_40gb.yaml").read_text()
     )
@@ -66,7 +66,7 @@ def parent_inputs(tmp_path, quota=1):
         # select the membership of the shared-start experiment.
         if task["variant"] == "hex":
             prompt, feedback = next_prompt(task, [], cfg, templates)
-            record = score_record(task, [], prompt, feedback, "#404040")
+            record = score_record(task, [], prompt, feedback, start_hex)
             parent_runner.write_json(
                 parent_runner.checkpoint_path(directory, task),
                 {
@@ -394,3 +394,58 @@ def test_hf_client_preserves_generation_settings_and_returns_observed_diagnostic
     assert response.raw["generated_tokens"] == 3
     assert response.raw["finish_reason"] == "eos"
     assert response.raw["token_limit_reached"] is False
+
+
+def test_case_inspection_empty_selection_and_unknown_id(tmp_path):
+    from inspect_shared_start_cases import inspect
+
+    _, directory, _, _, _ = inputs(tmp_path)
+    assert inspect(directory)["case_count"] == 0
+    with pytest.raises(ValueError, match="Unknown example ID"):
+        inspect(directory, "nonexistent")
+
+
+def test_case_inspection_retains_raw_failures_and_does_not_rewrite_outputs(
+    tmp_path, monkeypatch
+):
+    from inspect_shared_start_cases import inspect
+
+    parent = parent_inputs(tmp_path, start_hex="#808080")
+    cfg, plan = runner.prepare_parent(parent, output_root=tmp_path / "shared")
+    directory = runner.create_run(cfg, plan)
+    cfg, plan, metadata = runner.load_plan(directory)
+    saved = {}
+    runner.run_pending(Client(invalid_at=1), cfg, plan, metadata, directory, saved)
+    with runner.run_lock(directory):
+        pass
+    before = {
+        str(p.relative_to(directory)): p.read_bytes()
+        for p in directory.rglob("*")
+        if p.is_file()
+    }
+
+    def forbidden(_):
+        raise AssertionError("Case inspection must not load a model")
+
+    monkeypatch.setitem(
+        sys.modules, "colorref.llm_clients", SimpleNamespace(build_client=forbidden)
+    )
+    result = inspect(directory)
+    assert result["case_count"] == 4
+    assert all(
+        c["initially_converged"] and c["starting_error"] == 0 for c in result["cases"]
+    )
+    assert all(len(c["trajectories"]) == 3 for c in result["cases"])
+    trajectories = [t for c in result["cases"] for t in c["trajectories"]]
+    assert sum(len(t["revisions"]) for t in trajectories) == 35
+    failed = [r for t in trajectories for r in t["revisions"] if not r["parse_ok"]]
+    assert len(failed) == 1 and failed[0]["raw_response"] == "invalid"
+    assert failed[0]["projected_error"] is None
+    identifier = result["cases"][0]["example_id"]
+    assert inspect(directory, identifier)["case_count"] == 1
+    after = {
+        str(p.relative_to(directory)): p.read_bytes()
+        for p in directory.rglob("*")
+        if p.is_file()
+    }
+    assert before == after
