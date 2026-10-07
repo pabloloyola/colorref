@@ -1,0 +1,564 @@
+\documentclass[11pt]{article}
+\usepackage[review]{acl}
+\usepackage{times}
+\usepackage{latexsym}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{microtype}
+\usepackage{inconsolata}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage[table]{xcolor}
+\usepackage{array,booktabs,amsmath,amssymb,multirow,url}
+
+\title{ColorRef: Interactive Reference Games for Probing the Behavioral Geometry of Color Grounding}
+\author{Pablo Loyola\textsuperscript{1}, Andres Hoyos-Idobro\textsuperscript{2}, Edison Marrese-Taylor\textsuperscript{3} \\
+\textsuperscript{1} Rakuten Institute of Technology; Rakuten Group, Inc; Tokyo, Japan\\
+\textsuperscript{2} Rakuten Institute of Technology; Rakuten Group, Inc; Paris, France\\
+\textsuperscript{3} Graduate School of Engineering, The University of Tokyo\\
+\{pablo.a.loyola,andres.hoyosidrobo\}@rakuten.com, emarrese@weblab.t.u-tokyo.ac.jp}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+We introduce \textsc{ColorRef}, an interactive reference-game framework for
+studying natural-language control of color predictions. Using 518{,}830
+English color descriptions, we separate initial prediction, output encoding,
+direction following, correction magnitude, and teacher feedback.
+Controlled feedback reduces Qwen3-14B's mean target error from 40.58 to
+22.32 $\Delta E_{76}$ in a 12{,}000-example evaluation.
+Matched-start controls show sensitivity to output representation and explicit
+axis instructions. Graded corrections exhibit ordered but direction-dependent
+step sizes; correct directions alone do not prevent overshoot.
+A frozen wording policy calibrated on separate colors reduces sequential
+held-out target error from 6.46 to 2.98 and uses 34.5\% fewer evaluation
+calls, excluding calibration cost.
+Oracle-assisted teacher controls further distinguish preserving supplied
+directions from producing useful corrections: few-shot restatement can be
+faithful without yielding the best receiver accuracy.
+These results characterize prompt-conditioned control of recorded color
+targets, not uniquely correct color meanings or human perceptual calibration.
+\end{abstract}
+
+\section{Introduction}
+\label{sec:introduction}
+
+Color descriptions connect language to a continuous perceptual domain.
+Some expressions directly name a region, such as \textit{dark green};
+others invoke objects, materials, or associations, such as \textit{ocean blue}
+or \textit{abandoned hope}. A model's initial color prediction is informative,
+but grounded communication also involves revision. A user may request
+\textit{more blue}, then \textit{a little lighter}: the system must identify
+both a direction and an appropriate magnitude relative to its current state.
+
+Most language-to-color evaluations test one-shot prediction or reference
+among alternatives \citep{mcmahan2015bayesian,monroe2017colors}.
+Representation studies ask whether model embeddings align with perceptual
+color geometry \citep{abdou-etal-2021-language,loyola-etal-2023-perceptual}.
+We ask a complementary behavioral question: how reliably can language steer
+model outputs through color space? This requires separating initial prediction
+from output encoding, direction interpretation, step size, and feedback
+production. A geometrically valid direction need not reduce error if the
+receiver moves too far; a faithful teacher utterance need not induce a useful
+update.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{latex/figures/example.png}
+\caption{An archived paired trajectory for \textit{very scary berry}, with
+the same initial guess. Oracle feedback reaches $\Delta E_{76}=4.4$;
+the illustrated LLM-feedback trajectory ends at 105.1. This example
+illustrates a failure under the original prompts, not a general inability
+to produce feedback. Our matched controls separate wording, direction
+preservation, and receiving accuracy.}
+\label{fig:intro_trajectory}
+\end{figure}
+
+\textsc{ColorRef} makes these distinctions measurable. A guesser predicts a
+color from a description; a teacher sees the hidden target and provides
+corrections. We compare deterministic oracle policies and model-produced
+feedback, varying constraints per message, wording, and interaction length.
+Four semantic regimes distinguish direct color terms from prototype-mediated,
+compound-associative, and abstract-idiosyncratic descriptions.
+
+We report $\Delta E_{76}$, the Euclidean distance between predicted and
+target colors in CIELAB space \citep{colorimetry1986official}.
+Lower values indicate closer agreement with the recorded target, not that
+alternative colors are semantically invalid. This distinction matters for
+creative or ambiguous names. We use the metric as a reproducible distance,
+not a strict just-noticeable-difference threshold.
+
+The original large-scale evaluation shows that controlled feedback roughly
+halves mean error and improves global distance-geometry alignment.
+Sequential feedback also outperforms single-turn delivery at matched maximum
+constraint budgets. We extend these results with controls that hold starting
+colors fixed, probe graded instructions independently of color names, and
+evaluate a calibration-derived wording policy on unseen starting colors.
+The latter demonstrates controlled target localization relevant to iterative
+creative interfaces; image editing and human interaction remain untested.
+
+Finally, we compare zero- and four-shot oracle-assisted teachers under natural
+and restricted wording instructions, then pass their unchanged messages to
+the same receiver. The results replace a broad following-versus-generating
+capability claim with a more specific finding: feedback preservation, output
+format, and downstream usefulness are distinct, prompt-sensitive outcomes.
+
+\section{Related Work}
+\label{sec:related_work}
+
+\paragraph{Color semantics and representation geometry.}
+Color language has been studied through cross-linguistic regularities,
+perceptual geometry, and communicative efficiency
+\citep{berlin1991basic,regier2007color,zaslavsky2018efficient}.
+Probabilistic and neural approaches map descriptions to perceptual
+observations \citep{mcmahan2015bayesian,monroe2017colors}.
+\citet{abdou-etal-2021-language} compare color-term representations with
+CIELAB geometry; \citet{loyola-etal-2023-perceptual} study how alignment
+changes with subjectivity and abstraction. We complement representation
+probing with controlled output trajectories rather than infer internal
+representations from behavioral success.
+
+\paragraph{Comparatives and interactive grounding.}
+\citet{winn-muresan-2018-lighter} model comparative color terms as directions
+in color space. Reference games and pragmatic models treat communication as
+speaker--listener coordination
+\citep{lewis1969convention,frank2012predicting,goodman2016pragmatic}.
+Grounded clarification distinguishes perceptual and collaborative grounding
+\citep{benotti2021recipe}, while interactive evaluation studies common-ground
+formation \citep{imai2025measuring}. Our context is the current continuous
+state: we examine both directional corrections and the operational magnitude
+of graded modifiers.
+
+\paragraph{Feedback and revision.}
+Feedback supports instruction tuning, AI critique, and iterative refinement
+\citep{ouyang2022training,bai2022constitutional,saunders2022selfcritiquing,
+madaan2023selfrefine,shinn2023reflexion}. However, feedback and its reception
+can introduce separate errors. We use oracle-assisted restatement and matched
+receiving revisions to distinguish supplied-direction preservation from
+usefulness, without equating linguistic audit scores with task success.
+
+\section{Framework}
+\label{sec:colorref}
+
+\subsection{Descriptions and assigned targets}
+\label{sec:dataset}
+We construct the corpus from ColorNames-derived English descriptions and
+sRGB hex codes. After preprocessing and validity filtering, 518{,}830 rows
+remain. Each example $(x_i,h_i,c_i,r_i)$ contains a description, recorded
+HEX target, its CIELAB coordinate, and a semantic-regime label.
+The validity filter asks whether a string plausibly functions as a color
+description; it does not measure agreement about its paired target.
+Construction and filtering details appear in Appendix~\ref{sec:appendix-dataset}.
+
+The four regimes are \emph{explicit grounded}, with direct color terms;
+\emph{prototype mediated}, referring through objects or materials;
+\emph{compound associative}, combining a color anchor with other content;
+and \emph{abstract idiosyncratic}, using metaphorical or affective expressions.
+They are coarse parser-based categories, not exhaustive semantic analyses.
+Examples and counts appear in Appendix~\ref{app:corpus-examples}.
+
+\subsection{Interactive states and evaluation}
+\label{sec:game}
+In the original protocol, the guesser initially observes only $x_i$ and
+outputs HEX. The teacher sees the target and current guess, emits feedback,
+and the guesser receives the description, previous guess, and latest message.
+The reference game permits up to three revisions, with early stopping at
+$\Delta E_{76}<5$. Controlled studies below either supply the start or
+replace description prediction with an isolated adjustment task.
+
+For direct-LAB outputs, retain both native coordinates $z_t$ and the displayed
+state $\hat c_t=P(z_t)$, obtained by conversion to clipped, rounded uint8
+sRGB and back to LAB. Feedback and subsequent prompts use the displayed state
+in the matched controls. Native and displayed behavior can differ:
+rectangular LAB encoding bounds are not the sRGB gamut.
+
+\subsection{Metrics}
+\label{sec:metrics}
+The primary error is $e_t=\|c-\hat c_t\|_2=\Delta E_{76}$.
+We report initial and endpoint error, gain $e_0-e_T$, and mean per-example
+relative improvement $(e_0-e_T)/(e_0+\epsilon)$; the latter is not the
+percentage reduction of the cohort mean. Alignment compares the displayed
+update $u_t=\hat c_{t+1}-\hat c_t$ with ideal correction $v_t=c-\hat c_t$:
+\begin{equation}
+A_t=\frac{v_t^\top u_t}{\|v_t\|_2\|u_t\|_2}.
+\end{equation}
+Zero-length vectors are excluded from alignment, not from target error.
+Constraint satisfaction checks signed movement along supplied oracle
+directions, including HSV saturation where applicable.
+Pairwise Spearman correlation and kernel alignment compare the geometry
+of target colors with the geometry of guesses and trajectories.
+
+For an isolated instruction with unit requested direction $d$, we measure
+signed step $s=d^\top(z'-z)$ and off-axis drift
+$\|(z'-z)-sd\|_2$, also reporting displayed counterparts.
+Positive steps follow the requested direction; zero and wrong-sign steps
+remain separate. Ordinal comparisons test the ladder
+\emph{a little} $<$ \emph{somewhat} $<$ \emph{much}; bare wording is unranked.
+Projection cost is $\|z'-P(z')\|_2$.
+Direction compliance alone is insufficient: a nonzero update reduces
+Euclidean error only when $\|u\|_2<2\|v\|_2\cos\theta$.
+
+\section{Experimental Setup}
+\label{sec:experimental_setup}
+
+\subsection{Oracle feedback and original evaluation}
+Oracle policies compute LAB lightness, red--green, yellow--blue and HSV
+saturation discrepancies, threshold candidates, and rank them by normalized
+absolute error. They emit up to one, two, or three selected constraints.
+The minimal and axis-$c1$ policies share a one-constraint setting; template
+wording expresses the same selected directions through deterministic phrases.
+These phrases do not introduce the graded modifiers studied separately below.
+Examples appear in Appendix~\ref{app:bandwidth_wording_examples}.
+An additional primitive-direction template variant was originally named
+\emph{template-vocab}; the implementation does not establish a ceiling for
+all broader teacher vocabulary.
+
+The original Qwen3-14B evaluation uses 12{,}000 regime-balanced descriptions.
+Bandwidth and maximum total-constraint-budget comparisons supplement it;
+we distinguish maximum budgets from actual emitted constraints.
+The initial prediction is shared across the original main conditions.
+The archived teacher prompts are documented separately, but their historical
+table is not used to establish a general capability gap in this revision.
+
+\subsection{Matched output-interface control}
+\label{sec:setup_interface}
+On 64 descriptions, 16 per regime, compare HEX, plain LAB, and LAB with an
+explicit axis legend. Each receives the same displayed start from the parent
+HEX predictions and the same first oracle correction, with at most three
+constraints. Three fixed revisions yield 192 games and 576 generations;
+later adaptive messages can differ. The first revision is the primary
+matched endpoint, and the third is secondary. Fresh contexts show only the
+latest feedback. Supplied starts cost no generation within this control.
+
+\subsection{Graded wording and held-out control}
+\label{sec:setup_magnitude}
+An isolated probe uses 12 fixed colors, six directions, four wordings
+(bare, a little, somewhat, much), and plain versus axis-legend LAB prompts.
+Exact 5-/10-unit and no-change controls separate coordinate execution from
+qualitative instructions: 888 responses in total, all in fresh contexts.
+
+For policy calibration, 12 separately drawn sRGB colors produce 288
+direction/wording responses. Fit direction-specific medians of displayed
+signed movement, including nonpositive parsed movements; only positive
+graded medians are selection candidates. For a hidden target, choose the
+phrase whose median is closest to the current requested-axis residual.
+The bare arm supplies direction only; a numeric control supplies the exact
+coordinate increment and explicit holds on the other coordinates.
+These arms share one requested axis, not equal semantic information.
+
+One-step evaluation uses 12 disjoint starts and 196 feasible targets.
+Sequential transfer freezes the fitted policy and uses 12 further fresh
+starts, 200 targets, target-known stopping at $\Delta E_{76}\leq5$, and a
+five-revision cap. Targets are constructed at native distances 6, 12, or 24
+along one of six LAB directions. Input-only feasibility checks exclude
+20/216 and 16/216 targets, respectively; generated outputs are never filtered
+by projection cost. The original axis remains fixed during transfer, but
+the requested sign can reverse after overshoot. Appendix~\ref{app:new-controls}
+details selection, projection, and cost accounting.
+
+\subsection{Teacher restatement and feedback reception}
+\label{sec:setup_teacher}
+From the shared-start cohort, four input-selected demonstrations (one per
+regime) leave 60 evaluation examples. Compare the archived natural-paraphrase
+prompt with a restricted exact-direction prompt, each zero-shot and four-shot,
+at maximum bandwidths one and three: 480 teacher messages.
+All conditions see identical target/guess states and oracle directions;
+the clause budget always covers the supplied count. Demonstration answers
+are canonical oracle sentences, not teacher outputs selected by performance.
+This tests oracle-assisted restatement, not unaided geometric generation.
+
+A separate receiver study passes every original teacher message unchanged,
+plus a canonical oracle arm, to the same HEX guesser from identical starts:
+120 cases and 600 single revisions. No audit labels select or repair messages;
+target coordinates and direction JSON are not appended to receiver prompts.
+We keep frozen lexical audits, supplementary scope-aware interpretation,
+and receiving target error separate.
+
+\subsection{Models, uncertainty, and failures}
+All new controls use \texttt{Qwen/Qwen3-14B} \citep{yang2025qwen3} through
+Hugging Face Transformers \citep{wolf2020transformers}, bfloat16 on an
+A100 40\,GB, temperature zero, and thinking disabled. Receiver budgets are
+64 output tokens; teacher budgets are 80. Plans, prompts, model-revision
+metadata, and atomic response checkpoints are preserved.
+Strict parse failures remain failures, without repaired colors; backend
+exceptions remain pending. All reported receiving/control evaluations here
+parse fully; calibration parses 287/288 responses.
+
+Original main intervals use 1{,}000 percentile bootstrap draws.
+New paired intervals use 2{,}000 draws: whole examples within regimes for
+interface/teacher reception, and whole starting colors for magnitude control,
+retaining all associated cases and pooled weights. They condition on observed
+cohorts, not generation randomness or unrestricted population generalization.
+Subgroup analyses are exploratory and not multiplicity-adjusted.
+
+\section{Results}
+\label{sec:results}
+
+\subsection{Interaction localizes recorded targets}
+\label{sec:results_main}
+In the original 12{,}000-example evaluation, mean error falls from 40.58
+to 22.32 with three-constraint axis feedback and to 22.88 with template
+feedback (Table~\ref{tab:main_results}). Axis final error has a bootstrap
+95\% interval [21.85, 22.76]. The mean per-example relative improvement
+is 0.262; the reduction of mean error is approximately 45\%.
+
+\begin{table}[t]
+\centering\small
+\begin{tabular}{@{}lrrr@{}}
+\toprule
+Condition & Initial $\Delta E$ & Final $\Delta E$ & Mean RI \\
+\midrule
+One-shot & 40.58 & 40.58 & 0.000 \\
+Axis, $c3$ & 40.58 & 22.32 & 0.262 \\
+Template, $c3$ & 40.58 & 22.88 & 0.243 \\
+Minimal, $c1$ & 40.58 & 28.29 & 0.124 \\
+Template-vocab & 40.58 & 29.68 & 0.120 \\
+\bottomrule
+\end{tabular}
+\caption{Original 12k evaluation of Qwen3-14B. RI is the mean per-example
+relative improvement, not the relative change of the mean error.}
+\label{tab:main_results}
+\end{table}
+
+The original bandwidth comparison shows a larger gain from one to two
+constraints than from two to three. At maximum budget three, sequential
+one-constraint feedback reaches 28.13 versus 31.88 for a single three-constraint
+message; at budget two, the corresponding means are 29.71 versus 31.98.
+These comparisons support adaptive localization rather than merely a larger
+constraint allowance. Abstract descriptions have greater initial disagreement
+with their recorded targets (49.92) but larger mean relative recovery (0.343),
+ending at 24.05. This does not establish that their initial predictions are
+semantically implausible. Across the 12k cohort, final-guess distance-geometry
+correlation rises from 0.461 to 0.796 with axis feedback, complementing
+pointwise target localization. Original detailed tables and diagnostic
+ablations are retained in Appendix~\ref{app:original-results}.
+
+\subsection{Output encoding affects correction from shared starts}
+\label{sec:results_interface}
+All 576 shared-start revisions parse; every interface is evaluated on all
+64 examples (Table~\ref{tab:shared_interface}). Plain LAB exceeds HEX
+first-revision error by 6.19 [0.85, 11.89] $\Delta E_{76}$.
+Adding an axis legend reduces that error by 5.71, but its first-revision
+interval spans zero. After three revisions, legend minus plain LAB is
+$-12.11$ [$-18.04$, $-5.49$]. Thus, the encoding/instruction intervention
+affects feedback following beyond differences in initial prediction.
+Legend and HEX endpoints are close, but their difference 0.38
+[$-4.85$, 6.29] does not establish equivalence. Later feedback is adaptive,
+and the result is conditional on HEX-derived starts.
+
+\begin{table}[t]
+\centering\small
+\begin{tabular}{@{}lrrr@{}}
+\toprule
+Interface & First $\Delta E$ & Third $\Delta E$ & C-sat \\
+\midrule
+HEX & 32.10 & 22.78 & 0.888 \\
+Plain LAB & 38.29 & 35.28 & 0.823 \\
+LAB + legend & 32.58 & 23.16 & 0.906 \\
+\bottomrule
+\end{tabular}
+\caption{Shared starts and first corrections, $N=64$ per interface;
+mean starting error 41.96. Displayed-state error is primary. Three revisions
+are forced rather than stopped at convergence.}
+\label{tab:shared_interface}
+\end{table}
+
+\subsection{Graded instructions specify unequal step sizes}
+\label{sec:results_quantifiers}
+All 888 isolated-probe responses parse. Explicit axis instructions increase
+positive-direction qualitative updates from 228/288 to 288/288.
+Strictly increasing ordinal comparisons rise from 172/216 to 210/216;
+nondecreasing comparisons, which include ties, rise from 208/216 to 216/216.
+These overlapping within-color comparisons concern 12 fixed anchors, not
+216 independent colors. Numeric and no-change controls are exact except
+one legend-condition 10-unit instruction executed as a 20-unit update.
+
+The separate calibration split gives displayed median steps for
+\emph{a little} ranging from 1.14 to 4.92 across directions,
+\emph{somewhat} from 5.07 to 10.09, and \emph{much} from 28.72 to 75.84.
+These are model/prompt-specific operational measurements, not universal
+perceptual units. Large updates often leave the displayable gamut:
+54/72 calibration responses for \emph{much} have projection error above one.
+Native step variation and display projection must be distinguished; neither
+the model's internal interpretation nor human perceptual nonuniformity is
+identified by these outputs alone.
+
+\subsection{Calibrated magnitude improves held-out localization}
+\label{sec:results_magnitude}
+In one-step control, all 588 evaluation responses parse.
+Calibrated wording reduces mean target error from 11.77 to 6.36
+(paired difference $-5.41$ [$-10.22$, $-2.17$]), and harmful updates
+from 48 to 3, despite perfect requested-axis compliance in both arms.
+The median paired error difference is zero: gains are not uniform across
+targets. Small/moderate corrections improve most; the 24-unit aggregate
+contrast spans zero, and red corrections expose coarse phrase resolution.
+
+\begin{table}[t]
+\centering\small
+\begin{tabular}{@{}llrrr@{}}
+\toprule
+Study & Arm & Final $\Delta E$ & $\leq5$ & Calls \\
+\midrule
+One step & Bare & 11.77 & 94 & 196 \\
+ & Calibrated & 6.36 & 125 & 196 \\
+ & Numeric & 0.53 & 192 & 196 \\
+\midrule
+Sequential & Bare & 6.46 & 148 & 516 \\
+ & Calibrated & 2.98 & 192 & 338 \\
+ & Numeric & 0.10 & 200 & 205 \\
+\bottomrule
+\end{tabular}
+\caption{Magnitude control: 196 one-step targets and 200 sequential targets
+on separate sets of 12 starting colors. Sequential control stops at displayed
+error $\leq5$, with a five-revision cap. Calls exclude the common calibration
+stage of 288 responses. Numeric feedback supplies additional precision.}
+\label{tab:magnitude}
+\end{table}
+
+Transfer to 12 further starts completes all 600 games with 1{,}059 parsed
+revisions. Calibrated minus bare endpoint error is $-3.48$
+[$-4.20$, $-2.74$]; convergence rises from 148/200 to 192/200.
+Evaluation calls fall from 516 to 338 (34.5\%), excluding calibration.
+All twelve per-start mean contrasts favor the calibrated policy, but
+individual targets do not uniformly improve. There is no uncalibrated
+graded-selection arm, so the comparison does not isolate the necessity of
+empirical fitting from the benefit of supplying magnitude information.
+
+Eight calibrated trajectories exhaust the cap: all concern 24-unit lighter
+or greener targets and end with off-axis disagreement exceeding the
+threshold. The fixed-axis policy does not explicitly restore display-induced
+drift. Numeric feedback has the lowest endpoint error, but retains execution
+tails: four one-step responses have native error above one (maximum 39),
+and five sequential responses exceed one (maximum 44). The latter reach
+convergence after subsequent oracle corrections, not autonomous self-repair.
+Appendix~\ref{app:magnitude_diagnostics} preserves these limitations.
+
+\subsection{Restatement fidelity and usefulness are distinct}
+\label{sec:results_llm_teacher}
+All 480 teacher messages and 600 receiver revisions complete.
+A supplementary scope-aware audit resolves all supplied-direction sets in
+both four-shot conditions as preserved; restricted zero-shot preserves
+104/120. Natural zero-shot has 81 resolved matches, 17 mismatches, and
+22 unresolved cases (Table~\ref{tab:teacher_receiver}).
+These are finite-grammar diagnostics, not independent human judgments.
+Literal keywords can invert the intended correction: \textit{your guess is
+darker than the target} implies a lighter update. Harmless \textit{Feedback:}
+prefixes can also lower strict format certification.
+
+\begin{table}[t]
+\centering\small
+\begin{tabular}{@{}lrrr@{}}
+\toprule
+Teacher arm & Matches & $\Delta E$ & C-sat \\
+\midrule
+Natural, 0-shot & 81 & 36.89 & 0.650 \\
+Natural, 4-shot & 120 & 34.40 & 0.863 \\
+Restricted, 0-shot & 104 & 31.94 & 0.867 \\
+Restricted, 4-shot & 120 & 33.68 & 0.868 \\
+Oracle & 120 & 33.78 & 0.868 \\
+\bottomrule
+\end{tabular}
+\caption{Oracle-assisted direction restatement and one-revision reception,
+120 cases on 60 examples. Matches are supplementary resolved set matches;
+natural zero-shot has 22 unresolved cases. All receiver endpoints remain in
+the comparison, with common starting error 39.83. C-sat uses supplied oracle
+directions, not inferred teacher intent.}
+\label{tab:teacher_receiver}
+\end{table}
+
+Restricted zero-shot reduces receiver error relative to natural zero-shot
+by 4.95 [$1.32$, $8.39$]. The natural four-shot mean improvement is 2.49,
+but its interval includes zero. Faithful restatement therefore does not
+guarantee the best receiving accuracy. Restricted four-shot is close to the
+oracle (difference $-0.10$ [$-0.40$, 0.09]), without establishing equivalence.
+
+Restricted zero-shot's advantage over the oracle is concentrated:
+11 wins, 104 ties, 5 losses, and median difference zero.
+Its 98 literally identical messages tie; six changed same-set messages and
+sixteen messages with additions contribute 57.1\% and 42.9\% of its net
+advantage. This is an arithmetic decomposition, not a causal effect of
+surface wording or extra information. The sixteen additions also prevent an
+information-matched claim of better restatement.
+These controls establish prompt sensitivity in oracle-assisted feedback,
+not a general inability to generate geometrically correct guidance unaided.
+
+\section{Discussion}
+\label{sec:discussion}
+\paragraph{Language as a graded control interface.}
+Direction, magnitude, and stopping are separate requirements. Given
+$\Delta E_{76}\leq5$, further valid-axis corrections can still overshoot.
+A saved-prefix stopping replay retains nine otherwise lost convergence
+outcomes and saves 23/576 revisions in the shared-start study
+(Appendix~\ref{app:stopping}); this is target-known stopping, not an
+available model-only policy. Calibrated wording improves control above the
+threshold, but display projection and a sparse phrase ladder limit transfer.
+
+\paragraph{Grounding versus coordinate execution.}
+Shared-start results isolate correction from initial name prediction;
+isolated numeric probes further separate execution from linguistic magnitude.
+LAB with a legend is an instructed coordinate interface, not proof of unaided
+perceptual understanding. The observed color control is relevant to creative
+tools, but its utility in image editing, where descriptions and transformations
+are richer, requires separate evaluation.
+
+\paragraph{Teacher claims require matched evidence.}
+Comparative framing, restricted instructions, and demonstrations affect
+restatement. A word-level audit is not a semantic judgment, and preserving
+directions is not equivalent to maximizing target-error reduction.
+Our conclusions concern tested prompt pipelines and receiving behavior,
+not a universal following-versus-generating capability gap.
+
+\section{Conclusion and Future Work}
+\label{sec:conclusion}
+\textsc{ColorRef} evaluates feedback-driven color prediction beyond a
+one-shot endpoint. Controlled feedback improves localization and behavioral
+geometry; matched controls expose encoding sensitivity, direction-dependent
+graded steps, and the distinction between teacher restatement and usefulness.
+A frozen magnitude-wording policy transfers to fresh controlled targets,
+with lower error and evaluation-call cost, while projection drift and numeric
+execution tails remain. Future work should study alternative target
+distributions, human and multilingual interaction, cross-model transfer,
+multi-axis magnitude policies, and downstream creative editing.
+
+\section{Limitations}
+\label{sec:limitations}
+Our recorded crowd targets need not be uniquely appropriate for their
+descriptions. Validity filtering is not target-agreement measurement;
+alternative-color judgments or target distributions remain needed,
+especially for abstract names. CIELAB is approximately perceptually uniform,
+but Euclidean $\Delta E_{76}$ is not a human magnitude calibration or a
+strict visibility threshold. Equal coordinate steps have equal norm in
+this metric; differences between directions can also reflect generated
+native steps and the restricted sRGB gamut, rather than perceptual
+nonuniformity alone.
+
+The new controls use one model and prompt family, finite fixed anchors or
+twelve-color sampling clusters, English descriptions, and HEX-derived
+starting states. Bootstrap intervals do not establish broad population
+generalization, generation-randomness uncertainty, or multiplicity-adjusted
+significance. All new receiving/control outputs parse, but failed calibration
+output remains in counts; more generally matched parsed cohorts can introduce
+selection bias. No outputs are repaired or filtered by projection cost.
+
+Teacher studies test oracle-assisted restatement, not unaided geometry;
+supplementary finite-grammar and assistant review are not independent human
+labels. Restriction changes several prompt instructions simultaneously.
+Numeric feedback adds exact magnitude and coordinate holds, and calibrated
+wording adds a selected magnitude category; neither is information-matched
+to bare directions. Target-known stopping and benchmark oracles are not
+deployable model-only policies. Evaluation-call savings omit calibration
+cost, and fixed-axis transfer does not intentionally correct off-axis drift.
+Creative applications, multilingual behavior, HSV magnitude calibration,
+and alternative perceptual metrics require further studies.
+
+\begingroup
+% Permit flexible bibliography wrapping without changing fonts or margins.
+\let\aclthebibliography\thebibliography
+\renewcommand{\thebibliography}[1]{%
+  \aclthebibliography{#1}\raggedright}
+\bibliography{custom}
+\endgroup
+\appendix
+\input{latex/revision-appendix}
+\end{document}

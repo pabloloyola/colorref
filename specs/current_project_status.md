@@ -286,3 +286,21 @@ consolidation and manuscript revision; schedule new inference only for a concret
 remaining central claim. Crowdsourced-target ambiguity and unaided teacher
 geometry remain unresolved scope limits. This update changes documentation only;
 the preceding implementation passed all 339 repository CI tests.
+
+## 2026-10-08 first manuscript rewrite
+
+The imported Overleaf baseline remains unchanged. A separate working main,
+`paper/latex/color-games-revised.tex`, incorporates the completed matched
+controls, quantifier and magnitude transfer results, teacher scope diagnostics,
+and unchanged-message reception. New appendices preserve protocol details,
+failure tails, stopping replay, original diagnostic tables, and AI disclosure.
+The revised claims concern recorded-target control and oracle-assisted
+restatement, not unaided perception or universal teacher incapability.
+
+Source checks and a scratch-only alternate-font diagnostic build pass;
+the diagnostic has no overfull boxes or undefined references/citations.
+The publication-font build still requires Overleaf because local inconsolata
+is unavailable. No final revised PDF is claimed. Author review of historical
+diagnostic denominators and exact-font layout remains necessary.
+See `specs/manuscript_revision_20261008.md` for changes, run provenance, and
+remaining checks. No code or GPU protocol changes accompany this rewrite.

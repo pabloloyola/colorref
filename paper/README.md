@@ -4,11 +4,13 @@ The author supplied this Overleaf source export and compiled PDF on 2026-10-08
 (Asia/Tokyo). The imported LaTeX files are unchanged. This establishes the
 manuscript baseline before incorporating the completed revision experiments.
 
-- Main source: `latex/color-games.tex`
+- Revised working draft: `latex/color-games-revised.tex`
+- Original unchanged source: `latex/color-games.tex`
 - Bibliography: `latex/custom.bib`
 - Supplied compiled baseline: `baseline/overleaf-20261008.pdf`
 - File checksums and archive provenance: `baseline/import_manifest.json`
 - Revision entry points: `../specs/manuscript_baseline_20261008.md`
+- First-revision changes and remaining checks: `../specs/manuscript_revision_20261008.md`
 - Experimental evidence: `../specs/results/`
 
 ## Compile locally
@@ -22,17 +24,28 @@ TEXINPUTS="$paper_root/latex//:" \
 BIBINPUTS="$paper_root/latex//:" \
 BSTINPUTS="$paper_root/latex//:" \
 latexmk -pdf -interaction=nonstopmode -halt-on-error \
-  -outdir=build latex/color-games.tex
+  -outdir=build latex/color-games-revised.tex
 ```
 
 The source keeps its original `latex/figures/` paths, so compile from `paper/`,
-not from `paper/latex/`. Select `latex/color-games.tex` as the main document if
-importing the project back into Overleaf.
+not from `paper/latex/`. Select `latex/color-games-revised.tex` as the main
+document for the revision in Overleaf; `latex/color-games.tex` still compiles
+the original baseline. Revision appendix files must be uploaded too.
 
-The initial local compilation attempt stopped because `inconsolata.sty` is
-absent from this workspace's TeX installation. Do not remove the template's
-font package to conceal that dependency. Compilation/layout equivalence to
-the supplied PDF has not yet been verified locally.
+The exact-font local compilation is blocked because `inconsolata.sty` is
+absent from this workspace's TeX installation. The committed source retains
+that package and the unchanged ACL style, fonts, margins, and font sizes.
+A temporary, uncommitted Courier-font diagnostic compiled successfully with
+no overfull boxes or unresolved references/citations, and its rendered pages
+were inspected. This does not verify the publication-font layout. Compile the
+working draft in Overleaf and inspect that PDF before treating it as final.
+
+The working draft inputs `latex/revision-appendix.tex` and
+`latex/revision-legacy-results.tex`. Upload all three revision files into
+the corresponding `latex/` folder of the existing Overleaf project, retain
+its original styles/bibliography/figures, and select the revised main document.
+Appendix tables stay beside their explanations; bibliography wrapping is
+ragged-right to avoid a small inherited overfull line without shrinking text.
 
 Before a submission, inspect the complete build log for overfull boxes,
 unresolved citations/references and missing assets, then visually review the
