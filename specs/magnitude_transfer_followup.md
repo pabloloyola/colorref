@@ -1,7 +1,7 @@
 # Sequential magnitude transfer — frozen-controller protocol
 
 Status: implemented and CPU-tested in `scripts/run_magnitude_transfer.py`.
-The GPU study has not run. This follows the completed one-step pilot and CPU
+The GPU study completed in run `20261007_072214_768541_magnitude_transfer_a100_40gb`: all 600 games, 1,059 parsed revisions and 200 common terminal triplets. See `specs/results/magnitude_transfer_20261007.md` for user-supplied production results and the next CPU inspection. Do not rerun the completed study merely to recreate these results. This follows the completed one-step pilot and CPU
 breakdown; it does not replace or retune them.
 
 ## Question

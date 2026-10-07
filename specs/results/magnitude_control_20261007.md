@@ -202,5 +202,5 @@ This writes only `metrics/magnitude_breakdown.json` and
 `reports/magnitude_breakdown.md`; primary summaries, configuration, plans,
 controller and checkpoints remain unchanged. The completed subgroup analysis is
 exploratory after seeing aggregate results. The proposed sequential follow-up
-is implemented and CPU-tested in `scripts/run_magnitude_transfer.py`, with the frozen protocol in `specs/magnitude_transfer_followup.md`. It has not run on the GPU. Do not retune the controller on
+is implemented and CPU-tested in `scripts/run_magnitude_transfer.py`, with the frozen protocol in `specs/magnitude_transfer_followup.md`. It is now complete on fresh starts; see `specs/results/magnitude_transfer_20261007.md`. Do not retune the controller on
 this evaluation set; a changed policy needs a fresh held-out comparison.
