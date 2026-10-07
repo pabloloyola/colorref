@@ -146,3 +146,42 @@ matched natural/restricted × zero-/few-shot oracle-assisted teacher fidelity
 control, with separate demonstrations and evaluation states, adequate clause
 budgets and explicit model/prompt provenance. Magnitude and display controls do
 not resolve the original teacher capability claim or dataset target ambiguity.
+
+## Implemented teacher-fidelity control — GPU run pending
+
+`scripts/run_teacher_fidelity_study.py` implements Machel's matched
+**natural/restricted × zero-/four-shot** oracle-assisted restatement comparison.
+It takes the saved shared-start run as its parent, validates and snapshots its
+frozen assigned starts, and selects four input-only demonstrations (one per
+regime). Evaluation excludes those IDs, matching normalized descriptions,
+identical target/guess pairs, and empty oracle sets. All conditions share each
+held-out case's supplied oracle directions, with up-to-one/up-to-three budgets
+and a clause budget at least as large as the actual supplied direction count.
+Absent further exclusions, the 64-example parent yields 60 held-out examples
+and 480 teacher responses. The archived natural zero-shot prompt is unchanged;
+the new literal prompt asks for exact canonical primitive directions.
+
+The runner inherits the parent HF model configuration, with 80 output tokens
+for every condition, fresh contexts and one loaded model per invocation.
+Atomic response checkpoints, strict frozen-plan reproduction, parent snapshots,
+observed model-revision guards, run locks, pending backend errors without fallback,
+and CPU-only reanalysis support interrupted runs. Empty/ambiguous teacher text
+remains in completion and audit counts rather than being repaired or excluded.
+
+Reports separate finite-vocabulary conservative preservation, simple keyword
+set equality, restricted canonical compliance, recognized geometric precision,
+negation/broad-vocabulary/unknown-content flags, additions/omissions/reversals,
+redundancy, magnitude language and token cost. Raw diagnostic examples and
+full manual-review candidates are retained. Uncertified natural feedback is
+not automatically wrong; inspect ambiguous wording before attributing any
+conservative audit gap to geometric incompetence. Paired uncertainty resamples
+whole examples within regimes, retaining both bandwidths; common quartets
+and available-pair sensitivity retain completion denominators.
+
+See `specs/teacher_fidelity_study.md` for dry-run, eight-response smoke, resume
+and report-only commands. No production teacher result has been run or supplied
+yet; CPU simulations validate software only. Local tests pass 117 available
+cases, including twelve new teacher tests, with focused lint passing. The next
+user action is the dry-run followed by the limited smoke, not a new magnitude
+sweep or a rerun of archived completed experiments. Downstream receiving-guesser
+effects and unaided teacher generation still need separate evidence.

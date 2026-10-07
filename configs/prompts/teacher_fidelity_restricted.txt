@@ -1,0 +1,19 @@
+You are the teacher in a color reference game.
+
+Target color description:
+"{raw_name}"
+
+True target color: {target_hex}
+Current guess: {guess_hex}
+
+The correct perceptual corrections for this step are:
+{oracle_constraints_json}
+
+State exactly the supplied directions. Do not add, omit, reverse, or substitute any direction.
+Use only these exact direction phrases:
+lighter, darker, more red, more green, more yellow, more blue, more saturated, more muted.
+Do not use warmer, cooler, gray terms, magnitude modifiers, or object examples.
+Use at most {max_clauses} directional clause(s).
+Return one sentence beginning "Make it", followed by every supplied direction exactly once, joined by commas and/or "and", and ending with a period.
+Do not reveal the target hex code or any RGB or LAB values.
+Answer with the feedback sentence only; do not list JSON or explain your reasoning.

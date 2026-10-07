@@ -144,3 +144,17 @@ traces and recomputed residuals. These are controlled coordinate localization
 results and pipeline diagnostics, not human quantifier calibration, autonomous
 self-correction or downstream creative-editing evidence. Teacher few-shot and
 restricted-restatement controls remain the next experimental priority.
+
+## Teacher restatement control implemented; production evidence pending
+
+The natural/restricted × zero-/four-shot experiment is now implemented in
+`scripts/run_teacher_fidelity_study.py`; protocol, scope and exact commands
+are in `specs/teacher_fidelity_study.md`. It reuses frozen shared-start target/guess
+states, separates four demonstrations from evaluation, compares c1/c3 supplied
+constraints with adequate clause budgets, and preserves the archived natural
+zero-shot prompt. Reports keep conservative lexical certification separate
+from canonical compliance, keyword precision and ambiguous natural language
+requiring manual review. A lexical-certification gap alone is not evidence
+that broader teacher wording is geometrically wrong. No production findings
+exist yet; the original teacher claim remains narrowed pending this evidence
+and a subsequent matched receiving-guesser evaluation.
