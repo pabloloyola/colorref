@@ -1,7 +1,7 @@
-# Sequential magnitude transfer — proposed next protocol
+# Sequential magnitude transfer — frozen-controller protocol
 
-Status: research specification only. The runner and GPU study are not yet
-implemented or executed. This follows the completed one-step pilot and CPU
+Status: implemented and CPU-tested in `scripts/run_magnitude_transfer.py`.
+The GPU study has not run. This follows the completed one-step pilot and CPU
 breakdown; it does not replace or retune them.
 
 ## Question
@@ -132,3 +132,71 @@ restricted-axis restatement versus the old natural paraphrase prompt before
 retaining broad claims about inability to generate correct feedback. Keep
 model identity, exact example split and clause/constraint budgets explicit.
 The direct-LAB and magnitude controls do not substitute for that experiment.
+
+
+## A100 commands and saved evidence
+
+Pull the active branch, then validate the completed parent and inspect the
+fresh plan without loading a model or creating a new run:
+
+```bash
+git pull --ff-only origin refactor/quantifier-calibration
+MAG_RUN=runs/20261007_054337_204395_magnitude_control_a100_40gb_pilot
+uv run python scripts/run_magnitude_transfer.py --parent-run "$MAG_RUN" --dry-run
+```
+
+Under the unchanged production parent configuration, the deterministic target
+construction gives 12 fresh colors, 200 feasible targets, 16 feasibility
+exclusions, 600 games and at most 3,000 new revisions. These are plan counts,
+not model performance. No new calibration generations occur. The parent must
+have complete calibration/evaluation checkpoints and an existing frozen
+controller; its calibration-only fitted map and saved scores are reproduced
+for validation. The dry run prints the required observed model revision.
+
+Start a 12-revision smoke while retaining that full plan:
+
+```bash
+uv run python scripts/run_magnitude_transfer.py --parent-run "$MAG_RUN" --limit 12
+```
+
+Use the exact run directory printed by this invocation. The helper below selects
+the latest default-name run; verify it matches the printed path when multiple
+runs exist. Resume this run instead of starting another `--parent-run` run:
+
+```bash
+TRANSFER_RUN=$(find runs -maxdepth 1 -type d \
+  -name '*magnitude_transfer_a100_40gb' | sort | tail -1)
+cat "$TRANSFER_RUN/reports/transfer_summary.md"
+uv run python scripts/run_magnitude_transfer.py --resume "$TRANSFER_RUN"
+```
+
+CPU-only reporting after completion or during an interrupted run:
+
+```bash
+uv run python scripts/run_magnitude_transfer.py --report-only "$TRANSFER_RUN"
+cat "$TRANSFER_RUN/reports/transfer_summary.md"
+```
+
+The new run copies `inputs/parent_snapshot.json` containing validated parent
+configuration, plan, metadata, calibration responses and controller, together
+with the completed parent evaluation count/digest. Resume does not depend on
+the parent folder's continuing presence. The new plan/config/snapshot are
+hashed and reproduced before resume/reporting. The copied provenance does not
+include the entire parent evaluation outputs; those remain in the parent run.
+
+Each generated revision atomically updates its game's
+`raw_outputs/games/NNNN.json`. Frozen task inputs, raw response, native/projected
+state, score, token/EOS diagnostics and prompt-token counts remain in the
+checkpoint. Unknown game files, altered inputs/scores and revisions after a
+terminal state are rejected. A changed observed HF model revision is rejected
+before generation. Each invocation loads one model only if inference is still
+needed. Backend errors leave a pending revision and save a diagnostic; strict
+parse failures terminate that game without repair.
+
+`metrics/transfer_analysis.json` and `reports/transfer_summary.md` report
+terminal/common and available-pair effects for error, calls and convergence,
+observed one-/three-call prefixes, all-planned completion, stopping reasons,
+native/displayed overshoot and drift, tokens, exploratory direction/distance
+bins and per-start leverage, and numeric execution tails with raw miss exports.
+Report-only mode updates only those two files and never queries a model. All
+counts and intervals remain provisional for incomplete runs.

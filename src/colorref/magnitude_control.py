@@ -109,8 +109,24 @@ def build_plan(cfg, template):
                     }
                 )
     rng.shuffle(tasks)
+    cases, exclusions = build_targets(splits["evaluation"], study)
+    rng.shuffle(cases)
+    return {
+        "schema_version": 1,
+        "template": template,
+        "splits": splits,
+        "excluded_hex": sorted(excluded),
+        "candidate_rejections": rejected,
+        "calibration_tasks": tasks,
+        "evaluation_cases": cases,
+        "feasibility_exclusions": exclusions,
+    }
+
+
+def build_targets(starts, study):
+    """Freeze target feasibility independently of generated responses."""
     cases, exclusions = [], []
-    for base in splits["evaluation"]:
+    for base in starts:
         for direction, d in DIRECTION_SPECS.items():
             for distance in study["target_steps"]:
                 candidate = base["state"]["lab"].copy()
@@ -156,17 +172,7 @@ def build_plan(cfg, template):
                         "initially_converged": initial <= study["convergence_delta_e"],
                     }
                 )
-    rng.shuffle(cases)
-    return {
-        "schema_version": 1,
-        "template": template,
-        "splits": splits,
-        "excluded_hex": sorted(excluded),
-        "candidate_rejections": rejected,
-        "calibration_tasks": tasks,
-        "evaluation_cases": cases,
-        "feasibility_exclusions": exclusions,
-    }
+    return cases, exclusions
 
 
 def score(task, text):
