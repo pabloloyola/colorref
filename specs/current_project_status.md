@@ -222,3 +222,25 @@ target leakage is allowed, and comparison starts/interface/budgets must match.
 This receiving-guesser extension is specified in the review document but is not
 yet implemented or run. Full repository CI for the preceding semantic-audit
 commit 5d3a600 passed all 330 tests.
+
+## 2026-10-08 receiving-guesser control implemented
+
+`scripts/run_teacher_receiver_study.py` now implements the specified matched
+five-arm, one-revision HEX experiment. It requires and validates the complete
+teacher run, snapshots every original message, uses identical starts and supplied
+constraints across arms, and never selects or repairs feedback using audit labels.
+The production plan is 60 examples, 120 example/budget cases, 600 generations.
+The shared-start receiver decoding setup is inherited (64 production output
+tokens), rather than the teacher's 80-token budget. Recorded model revisions,
+frozen-input reproduction, atomic checkpoints and pending backend errors guard
+resume; empty/invalid receiver responses remain failures without imputed endpoints.
+
+Reports separate planned completion, common parsed quintets, available pairs,
+oracle-constraint movement satisfaction, alignment denominators, close-start drift
+and token counts. Paired intervals resample whole examples within regimes with
+both budgets retained. Seven added CPU tests cover matched inputs/no injected
+target, complete/empty teacher snapshots, smoke/resume and parent preservation,
+pending errors and parse failures, integrity/revision guards, matched cohorts,
+and production-shape dry-run without model loading. No production receiving
+responses exist yet. Commands and limits are in `specs/teacher_receiver_study.md`;
+next user step is dry-run followed by a ten-response smoke.

@@ -172,3 +172,16 @@ The post-inspection finite grammar is exploratory and preserves primary reports.
 Full-checkpoint CPU audit, manual review and downstream receiving-guesser control
 remain next. These new results do not establish that the historical table was
 entirely an artifact. See `specs/results/teacher_fidelity_20261007.md`.
+
+### Receiving-guesser control implemented, pending GPU evidence
+
+`scripts/run_teacher_receiver_study.py` uses the complete frozen teacher run to
+compare unchanged natural/restricted zero-/four-shot messages and canonical
+oracle feedback on the same 120 supplied-start cases. Six hundred one-revision
+HEX calls hold receiver model, prompt template, starting color and output budget
+fixed. Labels from the lexical or contextual audits never select cases or repair
+messages. Target disagreement and movement against supplied oracle constraints
+are separate outcomes; common parsed quintets and available-pair effects preserve
+failure denominators. This is the next direct test of comparative feedback's
+usefulness, not evidence yet for either a general teacher capability gap or its
+absence. Protocol and commands: `specs/teacher_receiver_study.md`.
