@@ -1,0 +1,69 @@
+experiment_name: magnitude_control_a100_40gb_pilot
+seed: 29
+output:
+  run_root: runs
+model:
+  alias: qwen3_14b_a100_magnitude_control
+  provider: hf_transformers
+  model_name: Qwen/Qwen3-14B
+  hf_home: null
+  device_map: auto
+  torch_dtype: bfloat16
+  enable_thinking: false
+  temperature: 0.0
+  max_tokens: 64
+study:
+  template_path: configs/prompts/quantifier_calibration_lab_axis_legend.txt
+  calibration_colors: 12
+  evaluation_colors: 12
+  rgb_channel_range:
+  - 48
+  - 208
+  target_steps:
+  - 6
+  - 12
+  - 24
+  convergence_delta_e: 5.0
+  max_target_projection_delta_e: 1.0
+  exclude_hex:
+  - '#8b0000'
+  exclude_lab:
+  - - 35.0
+    - 0.0
+    - 0.0
+  - - 35.0
+    - 18.0
+    - 12.0
+  - - 35.0
+    - -18.0
+    - 12.0
+  - - 35.0
+    - 8.0
+    - -18.0
+  - - 50.0
+    - 0.0
+    - 0.0
+  - - 50.0
+    - 18.0
+    - 12.0
+  - - 50.0
+    - -18.0
+    - 12.0
+  - - 50.0
+    - 8.0
+    - -18.0
+  - - 65.0
+    - 0.0
+    - 0.0
+  - - 65.0
+    - 18.0
+    - 12.0
+  - - 65.0
+    - -18.0
+    - 12.0
+  - - 65.0
+    - 8.0
+    - -18.0
+analysis:
+  resamples: 5000
+  seed: 13

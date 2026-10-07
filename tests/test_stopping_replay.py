@@ -16,7 +16,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
 from replay_shared_start_stopping import run_analysis  # noqa: E402
-from test_shared_start_study import Client, inputs, runner  # noqa: E402
+from tests.test_shared_start_study import Client, inputs, runner  # noqa: E402
 
 
 def records(errors):

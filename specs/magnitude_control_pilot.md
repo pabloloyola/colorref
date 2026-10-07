@@ -1,9 +1,10 @@
-# Held-out magnitude-control pilot — protocol draft
+# Held-out magnitude-control pilot — implemented protocol
 
-This is a specified follow-up, not an implemented runner or a completed model
-experiment. First run the CPU stopping replay on the completed shared-start
-study; its results will distinguish loss after reached convergence from errors
-that remain above threshold. Preserve the existing forced-round results.
+The resumable runner is implemented and CPU tested; GPU model performance is
+not yet available. The completed CPU stopping replay modestly improves error
+and preserves successful states while leaving interface differences largely
+intact (see `specs/results/stopping_replay_20261007.md`). Preserve the existing
+forced-round results.
 
 ## Question and scope
 
@@ -124,3 +125,100 @@ Stopping remains a target-known benchmark control; a deployed editor without
 the target requires a separate stopping criterion. Machel's restricted wording
 and zero-/few-shot teacher experiments and crowdsourced-target ambiguity audit
 remain separate revision requirements.
+
+## Exact implementation and commands
+
+Runner: `scripts/run_magnitude_control.py`; production configuration:
+`configs/experiments/magnitude_control_a100_40gb_pilot.yaml`.
+
+The candidate generator uses Python's seeded RNG (seed 29), drawing each uint8
+RGB channel uniformly from the prespecified inclusive range [48, 208]. These
+are moderate encoded RGB channels, not perceptually uniform sampling. It
+selects all 24 unique starts before any target-feasibility check; it rejects
+only duplicates and the frozen old-anchor/close-case HEX exclusion list during
+split selection. Exclusions apply to both splits. LAB conversion uses the
+project's D65 convention; model-visible starts have six decimal places. The
+plan stores exact displayed starts, native target candidates, projected targets,
+exclusion reasons and coverage. No feasibility-based replacement colors are
+selected.
+
+The frozen production plan has 288 calibration calls and 196 feasible held-out
+targets (20 exclusions out of 216), hence at most 588 evaluation calls, 876 total.
+Calibration uses the same axis-legend adjustment template as evaluation, now
+with six-decimal displayed-color inputs; old quantifier outputs do not fit this
+controller. The plan digest freezes colors, targets, template and analysis
+settings before calibration. After all calibration responses are checkpointed,
+`inputs/controller.json` freezes medians, source-output/model-prompt digests,
+tie rules and rendered evaluation tasks. Resume validates this bundle against
+calibration responses and recomputes checkpoint scores. The observed HF model
+commit is recorded when available; a later differing/missing revision cannot
+silently continue a run with a known recorded revision.
+
+Numeric increments use the six-decimal target-axis residual from the prompted
+start, holding other prompted coordinates fixed. Their exact expected native
+coordinates and projected instructed result are saved. This preserves the tiny
+non-axis distinction between that instructed result and the hidden fully
+projected target instead of treating numeric execution error as grounding error.
+Outputs use the existing strict numeric LAB parser; unevaluated expressions,
+truncated triplets and out-of-bound coordinates fail parsing. No parsing or
+projection repairs are made. The first valid triplet rule is inherited from
+that parser. Generated prompt/completion token counts are backend-observed
+when available; unknown counts remain null. Numeric holds are flagged
+separately from the one requested-axis correction count.
+
+Paired means are pooled over matched cases. Bootstrap draws resample whole
+starting-color clusters with replacement, preserving all retained case pairs
+and their directions/distances; unequal feasibility/failure counts retain case
+weights. Reports show common-triplet and available-pair cohorts and their
+starting-color counts, missing mappings, failures and pending work. Assigned
+threshold stops are zero-call outcomes counted separately, not generated
+responses or imputed parsed measurements. The chosen target distances exceed
+the threshold; all production-plan targets are initially above it.
+
+Start with a CPU dry run and a limited calibration smoke, retaining the full
+frozen plan for resume:
+
+```bash
+git pull --ff-only origin refactor/quantifier-calibration
+
+uv run python scripts/run_magnitude_control.py \
+  --config configs/experiments/magnitude_control_a100_40gb_pilot.yaml \
+  --dry-run
+
+uv run python scripts/run_magnitude_control.py \
+  --config configs/experiments/magnitude_control_a100_40gb_pilot.yaml \
+  --phase calibration --limit 12
+```
+
+Use the exact printed run directory for subsequent phases (not another
+`--config` invocation, which creates a new frozen run):
+
+```bash
+MAG_RUN=runs/YOUR_PRINTED_MAGNITUDE_RUN
+
+cat "$MAG_RUN/reports/magnitude_summary.md"
+
+# Finish the 288-response calibration only; inspect medians first.
+uv run python scripts/run_magnitude_control.py \
+  --resume "$MAG_RUN" --phase calibration
+
+# Once calibration is complete, start with a limited held-out smoke.
+uv run python scripts/run_magnitude_control.py \
+  --resume "$MAG_RUN" --phase evaluation --limit 12
+
+# Finish the saved evaluation plan.
+uv run python scripts/run_magnitude_control.py \
+  --resume "$MAG_RUN" --phase evaluation
+
+# CPU-only validated reporting.
+uv run python scripts/run_magnitude_control.py \
+  --report-only "$MAG_RUN"
+```
+
+`--phase all` (the default) can finish calibration and evaluation under one
+model load. `--limit` caps new calls across both phases without shrinking the
+plan. A backend error leaves its condition pending; a completed unparsable
+response remains a failure and is not regenerated on resume. Each invocation
+loads at most one model. Completed runs and report-only mode load no model.
+The runner needs no private dataset download because these stimuli are
+constructed, not color-name records.

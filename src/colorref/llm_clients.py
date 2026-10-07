@@ -172,6 +172,8 @@ class HFTransformersClient(LLMClient):
                 new_ids, model.generation_config.eos_token_id, max_tokens
             )
 
+            diagnostics["prompt_tokens"] = int(inputs.input_ids.shape[1])
+
             return LLMResponse(
                 text=response_text.strip(),
                 raw=diagnostics,
