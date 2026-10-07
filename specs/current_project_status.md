@@ -203,3 +203,22 @@ to validate all checkpoints and produce separate supplementary reports. It never
 changes primary scores, responses or prompts. Review unresolved wording before
 claiming semantic failures, then evaluate matched receiving-guesser revisions.
 The original historical teacher table is not reproduced by this new study.
+
+## 2026-10-08 full teacher audit and contextual review
+
+The supplied full-checkpoint report audits all 480 raw responses, with no
+aggregate-only records, and exactly confirms the earlier supplementary counts.
+`specs/results/teacher_manual_review_20261008.md` records contextual assistant
+review of all 22 unresolved messages: fourteen matches under stated task/context
+readings, five set mismatches (one scope-sensitive), and three ambiguous cases.
+These post-hoc assistant notes do not replace independently reviewed labels or
+the frozen finite-grammar report. Named targets such as `lilac rug` explain some
+valid comparisons rejected by the deliberately narrow grammar.
+
+The next control is 600 matched, single-revision guesser generations: sixty
+examples times two budgets times four original teacher messages plus a canonical
+oracle baseline. Messages must remain unchanged, no review-label filtering or
+target leakage is allowed, and comparison starts/interface/budgets must match.
+This receiving-guesser extension is specified in the review document but is not
+yet implemented or run. Full repository CI for the preceding semantic-audit
+commit 5d3a600 passed all 330 tests.
