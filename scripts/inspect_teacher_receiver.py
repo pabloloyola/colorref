@@ -98,6 +98,19 @@ def report(result):
             "", "```text", "Teacher: " + row["teacher_feedback"], "Oracle: " + row["oracle_feedback"], "```", "",
         ])
     lines.extend(["## Limits", "", "This is an exploratory audit of already saved outputs, with no inference, prompt repair, case replacement or fitted controller. Group labels come from the frozen lexical audit and are not semantic judgments for natural comparisons. Added primitive directions are checked against all threshold-qualified oracle candidates; threshold validity does not guarantee useful movement, optimal wording or magnitude. Supplied-set fidelity, information budget and target accuracy are distinct. Group sums describe where the observed paired mean originates, not a causal effect of adding information: cases were not randomized to faithful versus unfaithful teacher outputs. Literal text equivalence and actual prompt equivalence are retained separately; identical greedy prompts do not constitute a proof of backend determinism. Wins/ties use an exploratory 0.01 ΔE tolerance. These subgroup summaries have no population intervals, and multiple cases share each starting example. Pending or unparsed endpoints receive no imputed errors. Original primary reports, prompts, plans and checkpoints are preserved. Full pair text, raw responses, score flags and equivalence checks remain in metrics/receiver_message_audit.json."])
+    lines.extend(["", "## Changed restricted zero-shot messages with the same lexical set", "",
+                  "All matching planned cases are shown, including pending/unparsed pairs. Lexical equality is not a causal label.", ""])
+    for row in result["pairs"]:
+        if row["arm"] != "restricted_0" or "lexical_set_equal" not in row["tags"] or "different_feedback" not in row["tags"]:
+            continue
+        lines.extend([
+            f"### {row['condition_id']}", "",
+            f"Paired parsed: {row['paired_parsed']}; teacher-minus-oracle error: {fmt(row['error_difference'])}.",
+            "", "```text", "Teacher: " + row["teacher_feedback"],
+            "Oracle: " + row["oracle_feedback"],
+            "Teacher-arm response: " + str(row["arm_raw_response"]),
+            "Oracle-arm response: " + str(row["oracle_raw_response"]), "```", "",
+        ])
     return "\n".join(lines) + "\n"
 
 

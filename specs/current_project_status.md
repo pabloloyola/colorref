@@ -322,3 +322,21 @@ audit for target multiplicity, and raw trace review before a second prose pass.
 These audits are not claimed completed. No new GPU study or formatting change
 is requested; broad capability, human-calibration, and creative-editing claims
 remain outside the tested scope. The title and first revised main are unchanged.
+
+## 2026-10-08 source/availability audit and CPU handoff
+
+The checked original configs and May-20 HANDOFF support planned 1k diagnostic
+runs, but original captions say 4k; historical teacher debug_400/debug_4000 and
+backend/dtype descriptions also conflict. Actual historical table provenance
+cannot be established without frozen run metadata. The dataset builder retains
+all English entries and joins quality scores by last-occurrence exact-name
+lookup; neither target multiplicity nor evaluation collisions have yet been
+measured on production data. The builder keeps score >=0.75, while manuscript
+prose said >0.75; the working appendix now uses neutral threshold wording.
+
+Added CPU-only target multiplicity inventory and extended the receiver inspector
+to print changed same-lexical-set restricted-zero-shot pairs. The uploaded
+262-row diagnostic teacher export contains none of those certified pairs.
+Five local fixture checks pass. No scientific result, primary report, inference
+or controller fitting changes. See specs/results/content_source_audit_20261008.md
+for findings, limits and commands to run where the full data/checkpoints reside.

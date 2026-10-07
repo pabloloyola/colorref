@@ -6,6 +6,8 @@ the Git history and individual result notes preserve the chronological record.
 The original review is paraphrased, not reproduced publicly.
 
 Working manuscript: `paper/latex/color-games-revised.tex`.
+Completed source/availability audit and machine-side commands:
+`specs/results/content_source_audit_20261008.md`.
 Content decisions and remaining tasks: `specs/manuscript_content_review_20261008.md`.
 Import/rewrite provenance: `specs/manuscript_baseline_20261008.md` and
 `specs/manuscript_revision_20261008.md`.

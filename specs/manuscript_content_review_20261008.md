@@ -3,6 +3,10 @@
 Scope: expert feedback, completed evidence, and the first revised manuscript.
 Formatting is deliberately deferred. No new inference or fitting is performed.
 The current concern checklist is `specs/revision_evidence_map.md`.
+The subsequent source audit is `specs/results/content_source_audit_20261008.md`:
+archival discrepancies and data-preservation behavior are checked; production
+multiplicity counts and the six raw receiver pairs still require the supplied
+CPU-only commands on the machine containing those files.
 
 ## Recommended central argument
 
