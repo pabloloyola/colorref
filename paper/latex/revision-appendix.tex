@@ -4,13 +4,25 @@
 
 The ColorNames-derived source pairs user-provided color names with sRGB HEX
 codes. Preprocessing retains English strings with valid HEX codes and a
-description-validity score threshold of 0.75. The original validity scoring
+description-validity score $\geq 0.75$. The original validity scoring
 uses GPT-4o to judge whether a string plausibly functions as a color description,
 accepting literal, figurative, and subjective expressions while rejecting
 spam, URLs, nonsensical strings, and personal messages. This score is not
 a measure of inter-speaker agreement about the paired color. Canonicalization
 assigns stable identifiers and normalizes fields; color conversion produces
 RGB, HSV, and CIELAB coordinates. The final corpus has 518{,}830 rows.
+
+A read-only inventory confirms that 43{,}187 retained rows have score exactly
+0.75; a strict $>0.75$ filter would retain 475{,}643 rows instead.
+Each of the 705{,}869 raw English entries and 518{,}830 retained entries has
+a distinct description, including after lowercasing and whitespace
+normalization. Neither inventory contains repeated description--color pairs
+or multiple recorded colors for a description. The 725{,}203 evaluation
+records likewise have distinct exact descriptions; their fields concern
+language, reasoning, and quality score, without explicit votes or alternative
+color targets. These inventories establish recorded multiplicity, not human
+agreement: evaluation therefore measures distance from the assigned recorded
+target, rather than from a uniquely correct interpretation.
 
 \begin{table}[H]
 \centering\small

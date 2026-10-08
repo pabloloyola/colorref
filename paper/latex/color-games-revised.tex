@@ -147,7 +147,8 @@ We construct the corpus from ColorNames-derived English descriptions and
 sRGB hex codes. After preprocessing and validity filtering, 518{,}830 rows
 remain. Each example $(x_i,h_i,c_i,r_i)$ contains a description, recorded
 HEX target, its CIELAB coordinate, and a semantic-regime label.
-The validity filter asks whether a string plausibly functions as a color
+We retain description-validity scores $\geq 0.75$, including 43{,}187 rows
+at the boundary. The validity filter asks whether a string plausibly functions as a color
 description; it does not measure agreement about its paired target.
 Construction and filtering details appear in Appendix~\ref{sec:appendix-dataset}.
 
@@ -524,7 +525,9 @@ multi-axis magnitude policies, and downstream creative editing.
 \section{Limitations}
 \label{sec:limitations}
 Our recorded crowd targets need not be uniquely appropriate for their
-descriptions. Validity filtering is not target-agreement measurement;
+descriptions. Both the retained corpus and raw English source record one
+color per description, without repeated targets for estimating agreement
+or acceptable variation. Validity filtering is not target-agreement measurement;
 alternative-color judgments or target distributions remain needed,
 especially for abstract names. CIELAB is approximately perceptually uniform,
 but Euclidean $\Delta E_{76}$ is not a human magnitude calibration or a

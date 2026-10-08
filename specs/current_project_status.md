@@ -340,3 +340,18 @@ to print changed same-lexical-set restricted-zero-shot pairs. The uploaded
 Five local fixture checks pass. No scientific result, primary report, inference
 or controller fitting changes. See specs/results/content_source_audit_20261008.md
 for findings, limits and commands to run where the full data/checkpoints reside.
+
+## 2026-10-08 completed production target inventory
+
+The author's machine-side audits now confirm 518,830 unique retained
+descriptions and 705,869 unique raw English descriptions, also unique after
+case/whitespace normalization. There are no repeated targets. The 725,203
+evaluation records have unique exact descriptions, resolving the potential
+last-occurrence collision concern for this archived file. Fields contain no
+explicit votes or alternative-color targets; human agreement is unmeasured.
+Exactly 43,187 retained rows score 0.75, confirming >=0.75 and disproving the
+previous strict-threshold wording. Main text and appendix now state the exact
+threshold and recorded-target limitation without changing data or results.
+See `specs/results/target_inventory_verified_20261008.md` for counts, input
+hashes, evidence provenance and limits. Earlier pending-audit notes above are
+historical; denominator provenance and raw same-set message review remain open.
