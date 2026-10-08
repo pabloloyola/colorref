@@ -26,8 +26,8 @@ We introduce \textsc{ColorRef}, an interactive reference-game framework for
 studying natural-language control of color predictions. Using 518{,}830
 English color descriptions, we separate initial prediction, output encoding,
 direction following, correction magnitude, and teacher feedback.
-Controlled feedback reduces Qwen3-14B's mean target error from 40.58 to
-22.32 $\Delta E_{76}$ in a 12{,}000-example evaluation.
+Controlled feedback reduces Qwen3-14B's mean target error from 42.33 to
+22.15 $\Delta E_{76}$ on 1{,}000 new regime-balanced descriptions.
 Matched-start controls show sensitivity to output representation and explicit
 axis instructions. Graded corrections exhibit ordered but direction-dependent
 step sizes; correct directions alone do not prevent overshoot.
@@ -63,18 +63,6 @@ production. A geometrically valid direction need not reduce error if the
 receiver moves too far; a faithful teacher utterance need not induce a useful
 update.
 
-\begin{figure}[t]
-\centering
-\includegraphics[width=\columnwidth]{latex/figures/example.png}
-\caption{An archived paired trajectory for \textit{very scary berry}, with
-the same initial guess. Oracle feedback reaches $\Delta E_{76}=4.4$;
-the illustrated LLM-feedback trajectory ends at 105.1. This example
-illustrates a failure under the original prompts, not a general inability
-to produce feedback. Our matched controls separate wording, direction
-preservation, and receiving accuracy.}
-\label{fig:intro_trajectory}
-\end{figure}
-
 \textsc{ColorRef} makes these distinctions measurable. A guesser predicts a
 color from a description; a teacher sees the hidden target and provides
 corrections. We compare deterministic oracle policies and model-produced
@@ -89,10 +77,9 @@ alternative colors are semantically invalid. This distinction matters for
 creative or ambiguous names. We use the metric as a reproducible distance,
 not a strict just-noticeable-difference threshold.
 
-The original large-scale evaluation shows that controlled feedback roughly
-halves mean error and improves global distance-geometry alignment.
-Sequential feedback also outperforms single-turn delivery at matched maximum
-constraint budgets. We extend these results with controls that hold starting
+Our fresh evaluation shows that controlled feedback reduces mean disagreement
+with recorded targets by approximately 48\%. We complement this result with
+controls that hold starting
 colors fixed, probe graded instructions independently of color names, and
 evaluate a calibration-derived wording policy on unseen starting colors.
 The latter demonstrates controlled target localization relevant to iterative
@@ -187,8 +174,6 @@ A_t=\frac{v_t^\top u_t}{\|v_t\|_2\|u_t\|_2}.
 Zero-length vectors are excluded from alignment, not from target error.
 Constraint satisfaction checks signed movement along supplied oracle
 directions, including HSV saturation where applicable.
-Pairwise Spearman correlation and kernel alignment compare the geometry
-of target colors with the geometry of guesses and trajectories.
 
 For an isolated instruction with unit requested direction $d$, we measure
 signed step $s=d^\top(z'-z)$ and off-axis drift
@@ -203,7 +188,7 @@ Euclidean error only when $\|u\|_2<2\|v\|_2\cos\theta$.
 \section{Experimental Setup}
 \label{sec:experimental_setup}
 
-\subsection{Oracle feedback and original evaluation}
+\subsection{Oracle feedback and fresh grounding evaluation}
 Oracle policies compute LAB lightness, red--green, yellow--blue and HSV
 saturation discrepancies, threshold candidates, and rank them by normalized
 absolute error. They emit up to one, two, or three selected constraints.
@@ -215,12 +200,15 @@ An additional primitive-direction template variant was originally named
 \emph{template-vocab}; the implementation does not establish a ceiling for
 all broader teacher vocabulary.
 
-The original Qwen3-14B evaluation uses 12{,}000 regime-balanced descriptions.
-Bandwidth and maximum total-constraint-budget comparisons supplement it;
-we distinguish maximum budgets from actual emitted constraints.
-The initial prediction is shared across the original main conditions.
-The archived teacher prompts are documented separately, but their historical
-table is not used to establish a general capability gap in this revision.
+The fresh Qwen3-14B grounding evaluation uses 1{,}000 descriptions, 250 per
+regime, sampled with seed 113 after excluding all 400 original debug-subset
+IDs. Every game uses HEX output and three fixed revisions with canonical
+axis feedback supplying at most three constraints. The initial prediction
+also provides its paired one-shot baseline. All 4{,}000 responses parse.
+The sample is equally weighted across regimes, not weighted by corpus
+frequency. Plans, selected IDs, source/subset hashes and prompts are frozen;
+the model revision is pinned to \texttt{40c06982}. This protocol is a fresh
+evaluation, rather than reconstruction of the earlier unrecoverable runs.
 
 \subsection{Matched output-interface control}
 \label{sec:setup_interface}
@@ -298,42 +286,38 @@ Subgroup analyses are exploratory and not multiplicity-adjusted.
 
 \subsection{Interaction localizes recorded targets}
 \label{sec:results_main}
-In the original 12{,}000-example evaluation, mean error falls from 40.58
-to 22.32 with three-constraint axis feedback and to 22.88 with template
-feedback (Table~\ref{tab:main_results}). Axis final error has a bootstrap
-95\% interval [21.85, 22.76]. The mean per-example relative improvement
-is 0.262; the reduction of mean error is approximately 45\%.
+Across all 1{,}000 fresh descriptions, mean initial error is 42.33
+[40.70, 44.01] and final error is 22.15 [21.28, 22.99]. The paired
+initial-minus-final gain is 20.19 [18.61, 21.79] $\Delta E_{76}$, reducing
+mean error by approximately 47.7\%. This reduction of means is not mean
+per-example relative improvement. Initial and final convergence counts
+are 5 and 38 of 1{,}000 at the $\Delta E_{76}\leq5$ threshold.
 
 \begin{table}[t]
 \centering\small
 \begin{tabular}{@{}lrrr@{}}
 \toprule
-Condition & Initial $\Delta E$ & Final $\Delta E$ & Mean RI \\
+Regime & Initial $\Delta E$ & Final $\Delta E$ & Gain \\
 \midrule
-One-shot & 40.58 & 40.58 & 0.000 \\
-Axis, $c3$ & 40.58 & 22.32 & 0.262 \\
-Template, $c3$ & 40.58 & 22.88 & 0.243 \\
-Minimal, $c1$ & 40.58 & 28.29 & 0.124 \\
-Template-vocab & 40.58 & 29.68 & 0.120 \\
+Explicit & 36.41 & 22.02 & 14.39 \\
+Prototype & 43.39 & 22.41 & 20.98 \\
+Compound & 37.89 & 20.64 & 17.24 \\
+Abstract & 51.64 & 23.51 & 28.12 \\
+Overall & 42.33 & 22.15 & 20.19 \\
 \bottomrule
 \end{tabular}
-\caption{Original 12k evaluation of Qwen3-14B. RI is the mean per-example
-relative improvement, not the relative change of the mean error.}
+\caption{Fresh Qwen3-14B grounding evaluation: 250 descriptions per regime,
+canonical $c3$ feedback and three fixed revisions. Initial predictions are
+the paired one-shot baseline. Gain is initial minus final error.}
 \label{tab:main_results}
 \end{table}
 
-The original bandwidth comparison shows a larger gain from one to two
-constraints than from two to three. At maximum budget three, sequential
-one-constraint feedback reaches 28.13 versus 31.88 for a single three-constraint
-message; at budget two, the corresponding means are 29.71 versus 31.98.
-These comparisons support adaptive localization rather than merely a larger
-constraint allowance. Abstract descriptions have greater initial disagreement
-with their recorded targets (49.92) but larger mean relative recovery (0.343),
-ending at 24.05. This does not establish that their initial predictions are
-semantically implausible. Across the 12k cohort, final-guess distance-geometry
-correlation rises from 0.461 to 0.796 with axis feedback, complementing
-pointwise target localization. Original detailed tables and diagnostic
-ablations are retained in Appendix~\ref{app:original-results}.
+All regimes improve descriptively (Table~\ref{tab:main_results}). Abstract
+descriptions have both greater initial disagreement and larger absolute
+gain; these means do not establish a separate between-regime effect or
+semantic implausibility of alternative colors. This evaluation measures
+localization after additional corrections; it does not isolate sequential
+adaptation from feedback information at a matched constraint budget.
 
 \subsection{Output encoding affects correction from shared starts}
 \label{sec:results_interface}
@@ -517,8 +501,8 @@ not a universal following-versus-generating capability gap.
 \section{Conclusion and Future Work}
 \label{sec:conclusion}
 \textsc{ColorRef} evaluates feedback-driven color prediction beyond a
-one-shot endpoint. Controlled feedback improves localization and behavioral
-geometry; matched controls expose encoding sensitivity, direction-dependent
+one-shot endpoint. Controlled feedback improves target localization;
+matched controls expose encoding sensitivity, direction-dependent
 graded steps, and the distinction between teacher restatement and usefulness.
 A frozen magnitude-wording policy transfers to fresh controlled targets,
 with lower error and evaluation-call cost, while projection drift and numeric

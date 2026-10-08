@@ -15,7 +15,7 @@ import yaml
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 from run_interface_study import run_lock, write_json  # noqa: E402
-from colorref.magnitude_control import build_plan, evaluation_tasks, fit_mapping, score  # noqa: E402
+from colorref.magnitude_control import build_plan, evaluation_arms, evaluation_tasks, fit_mapping, score  # noqa: E402
 from colorref.magnitude_reports import analyze, report  # noqa: E402
 from colorref.quantifier_study import plan_digest  # noqa: E402
 from colorref.shared_start_study import generation_diagnostics  # noqa: E402
@@ -312,7 +312,9 @@ def main():
                         "evaluation_colors": len(plan["splits"]["evaluation"]),
                         "calibration_calls": len(plan["calibration_tasks"]),
                         "held_out_cases": len(plan["evaluation_cases"]),
-                        "maximum_evaluation_calls": 3
+                        "arms": list(evaluation_arms(cfg)),
+                        "primary_comparison": ["unfitted", "calibrated"] if "unfitted_cutpoints" in cfg["study"] else ["bare", "calibrated"],
+                        "maximum_evaluation_calls": len(evaluation_arms(cfg))
                         * sum(
                             not c["initially_converged"]
                             for c in plan["evaluation_cases"]

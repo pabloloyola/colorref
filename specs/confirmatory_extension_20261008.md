@@ -54,7 +54,7 @@ use both elapsed wall time and saved latency. HEX estimates do not predict
 longer LAB/teacher generation latency. Backup compact frozen configs/plans,
 metadata, reports and response checkpoints off the GPU machine as they accrue.
 
-## Stage 2 — primary magnitude confirmation, implementation still required
+## Stage 2 — primary magnitude confirmation, implemented
 
 Target 32 calibration colors and 128 distinct held-out starting colors, drawn
 before inference with a new seed and explicit exclusion of all pilot colors.
@@ -81,6 +81,28 @@ Calibration/evaluation prompts, scopes and policies must match. Numeric adds
 coordinate precision and is not an information-matched linguistic baseline.
 No evaluation outputs fit medians or change thresholds, colors or target steps.
 Do not launch the existing three-arm runner and label it this four-arm design.
+
+Implementation uses an opt-in `unfitted_cutpoints` field; old configurations
+remain three-arm. `scripts/prepare_magnitude_confirmation.py` validates the
+frozen original magnitude and transfer plans, excludes all of their stimulus
+colors, and writes the new config/manifest without changing parent runs.
+Calibration and evaluation starts are disjoint, 32 and 128 respectively;
+model revision is pinned as in Stage 1. Evaluation tasks are deterministically
+shuffled, while old task order is preserved. Reports name the common four-arm
+cohort, its observed color-cluster count and the primary contrast explicitly.
+Partial/failed cases remain visible and available-pair sensitivity is retained.
+Existing three-arm transfer/inspection scripts should not be used to describe
+this four-arm confirmation; sequential-transfer parent validation rejects it.
+
+```
+uv run python scripts/prepare_magnitude_confirmation.py --pilot-run runs/20261007_054337_204395_magnitude_control_a100_40gb_pilot --transfer-run runs/20261007_072214_768541_magnitude_transfer_a100_40gb
+uv run python scripts/run_magnitude_control.py --config data/confirmatory/magnitude_128/config.yaml --dry-run
+time uv run python scripts/run_magnitude_control.py --config data/confirmatory/magnitude_128/config.yaml --limit 100
+```
+Resume the printed run directory, not another `--config` launch. First 100
+calls are part of the 768 calibration calls; a successful timing prefix cannot
+yet establish the held-out primary effect or forecast all evaluation latencies.
+Save the frozen protocol and checkpoints off-machine before relying on them.
 
 ## Stage 3 — replication and task transfer, ordered by remaining budget
 

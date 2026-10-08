@@ -15,6 +15,15 @@ WORDINGS = ("baseline", "a_little", "somewhat", "much")
 ARMS = ("bare", "calibrated", "numeric")
 
 
+def evaluation_arms(cfg):
+    return ("bare", "unfitted", "calibrated", "numeric") if "unfitted_cutpoints" in cfg["study"] else ARMS
+
+
+def unfitted_phrase(residual, cutpoints):
+    """Fixed distance bins; no model-response statistics enter this rule."""
+    return "a_little" if residual < cutpoints[0] else "somewhat" if residual < cutpoints[1] else "much"
+
+
 def prompt(template, base, instruction):
     return template.format(
         base_lab="LAB({:.6f}, {:.6f}, {:.6f})".format(*base["lab"]),
@@ -24,6 +33,10 @@ def prompt(template, base, instruction):
 
 def validate_config(cfg):
     study = cfg["study"]
+    if "unfitted_cutpoints" in study:
+        cuts = study["unfitted_cutpoints"]
+        if not isinstance(cuts, list) or len(cuts) != 2 or any(type(x) not in (int, float) or not math.isfinite(x) for x in cuts) or not 0 < cuts[0] < cuts[1]:
+            raise ValueError("Require two positive increasing finite unfitted cutpoints")
     for key in ("calibration_colors", "evaluation_colors"):
         if type(study[key]) is not int or study[key] < 1:
             raise ValueError("Split sizes must be positive integers")
@@ -312,7 +325,7 @@ def evaluation_tasks(cfg, plan, mapping):
     for case in plan["evaluation_cases"]:
         choice = choose_phrase(mapping, case["direction"], case["axis_residual"])
         d = DIRECTION_SPECS[case["direction"]]
-        for arm in ARMS:
+        for arm in evaluation_arms(cfg):
             expected = None
             instruction, status, selected = None, "generate", None
             if case["initially_converged"]:
@@ -327,7 +340,8 @@ def evaluation_tasks(cfg, plan, mapping):
                 expected[d.index] = round(expected[d.index] + d.sign * step, 6)
                 instruction = f"{'Increase' if d.sign > 0 else 'Decrease'} the {('L', 'a', 'b')[d.index]} coordinate by exactly {step:.6f} units. Leave the other coordinates unchanged."
             else:
-                selected = choice["wording"] if arm == "calibrated" else "baseline"
+                selected = (choice["wording"] if arm == "calibrated" else
+                            unfitted_phrase(case["axis_residual"], cfg["study"]["unfitted_cutpoints"]) if arm == "unfitted" else "baseline")
                 instruction = make_instruction(selected, case["direction"])
             tasks.append(
                 {
@@ -350,4 +364,6 @@ def evaluation_tasks(cfg, plan, mapping):
                     else None,
                 }
             )
+    if "unfitted_cutpoints" in cfg["study"]:
+        random.Random(cfg["seed"] + 1).shuffle(tasks)
     return tasks

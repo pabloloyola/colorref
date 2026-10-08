@@ -386,3 +386,28 @@ Run a 100-generation prefix and resume its frozen plan. No new GPU outputs have
 been produced here. Later 128-start four-arm magnitude confirmation and model
 replication remain planned, not implemented or completed.
 See `specs/confirmatory_extension_20261008.md` for protocol and boundaries.
+
+## 2026-10-08 fresh grounding complete; larger magnitude protocol implemented
+
+Author report: all 1,000 fresh grounding games and 4,000 responses complete,
+with zero parse failures. Mean initial/final error 42.332/22.147, paired gain
+20.185 [18.611,21.785], convergence 5/1,000 to 38/1,000. Saved generation
+latency averages 0.334s; this does not predict LAB response throughput.
+`specs/results/grounding_replication_20261008.md` records the evidence and hashes.
+The revised manuscript now uses this result instead of historical 12k values;
+unrecoverable historical diagnostic tables and the old failure vignette are
+excluded from the revised main/appendix compilation. Original source and the
+archived legacy table file are preserved. Matched-budget adaptation and global
+geometry gains are no longer asserted as observed results of this fresh run.
+
+Added opt-in four-arm magnitude confirmation: bare, unfitted residual-bin
+wording, fitted wording, exact numeric. Primary comparison is fitted minus
+unfitted displayed error. Dynamic cohort/cluster reporting and dry-run call
+counts distinguish quartets from old triplets. Legacy three-arm plans retain
+their task construction/order. Existing sequential-transfer tooling explicitly
+rejects a new four-arm parent rather than silently dropping the unfitted arm.
+The preparation script validates frozen pilot/transfer plans, excludes their
+colors plus earlier anchors, and freezes 32 new calibration + 128 new held-out
+colors with cutpoints 9/18 and seed 211. Only input stimuli enter preparation;
+no evaluation response fits the new protocol. Six new CPU acceptance checks
+pass. No larger-study model responses have yet been generated.

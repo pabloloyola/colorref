@@ -107,7 +107,14 @@ remain separate measurements.
 
 ## Remaining content tasks, in order
 
-### 1. Historical evidence consistency — required for retained numerical tables
+### 1. Historical evidence consistency — superseded by fresh replication
+
+Update: the author confirmed that the original machine was wiped and historical
+outputs cannot be recovered. Do not request them again. The completed fresh
+1,000-description replication replaces historical grounding values in the
+working main text. Unresolved historical tables remain archived and excluded
+from its compilation. The recovery guidance below is historical, not a pending
+task. See `specs/results/grounding_replication_20261008.md`.
 
 Recover original run metadata for bandwidth, budget, ICL, model-size, and
 historical teacher evaluations. Confirm subset sizes, selected IDs, model

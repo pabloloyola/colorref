@@ -50,10 +50,13 @@ older chronological note says they are pending. The planned package is complete.
 The production raw-data availability audit and six changed same-set message
 review are complete: see `specs/results/target_inventory_verified_20261008.md`
 and `specs/results/receiver_same_set_review_20261008.md`. Human target agreement
-remains unmeasured. The remaining central content work is recovery of original
-diagnostic denominators/teacher provenance and author review of the revised
-claim hierarchy. These are primarily archival
-and interpretation tasks. Human target judgments, unaided teacher geometry,
+remains unmeasured. The author confirms that historical outputs were lost when
+the original machine was wiped. The completed fresh 1,000-description replication
+now supplies the main grounding evidence; unresolved historical numerical tables
+are excluded from the working manuscript. See
+`specs/results/grounding_replication_20261008.md`. Next, the four-arm magnitude
+confirmation needs GPU execution on 128 held-out starting colors. Human target
+judgments, unaided teacher geometry,
 cross-model transfer, and downstream creative editing remain extensions unless
 the paper is broadened to claim them.
 
@@ -61,7 +64,7 @@ the paper is broadened to claim them.
 
 1. Treat language as a graded control interface over recorded color states.
    Direction, magnitude, display projection, and stopping are distinct.
-2. Keep original large-scale oracle gains as motivation and baseline evidence;
+2. Use the fresh 1,000-description oracle gains as baseline evidence;
    do not describe them as proof that ambiguous names have a unique true color.
 3. Present the new magnitude policy as a held-out policy comparison. Its benefit
    does not isolate the necessity of empirical calibration from the addition of

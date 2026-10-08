@@ -12,6 +12,7 @@ from colorref.magnitude_control import (
     build_plan as build_parent_plan,
     build_targets,
     evaluation_tasks,
+    evaluation_arms,
     fit_mapping,
     score,
 )
@@ -24,6 +25,8 @@ VALID_TERMINALS = {"threshold_stop", "budget_exhausted", "off_axis_residual"}
 def validate_parent(snapshot):
     """Reproduce the calibration-only map and all frozen parent task scores."""
     cfg, plan, meta = snapshot["config"], snapshot["plan"], snapshot["metadata"]
+    if evaluation_arms(cfg) != ARMS:
+        raise ValueError("Sequential transfer currently supports the three-arm pilot; four-arm transfer requires its own protocol")
     if (
         meta.get("schema_version") != 1
         or meta["config_sha256"] != plan_digest([cfg])

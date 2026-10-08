@@ -7,7 +7,7 @@ from statistics import mean
 
 import numpy as np
 
-from colorref.magnitude_control import ARMS, WORDINGS
+from colorref.magnitude_control import ARMS, WORDINGS, evaluation_arms
 from colorref.quantifiers import DIRECTION_SPECS
 
 
@@ -42,7 +42,14 @@ def average(rows, accessor):
 
 
 def analyze(cfg, plan, calibration, mapping, tasks, evaluation):
+    arms = evaluation_arms(cfg)
+    cohort_name = "common_quartets" if len(arms) == 4 else "common_triplets"
     result = {
+        "arms": list(arms),
+        "common_cohort": cohort_name,
+        "evaluation_starts_planned": cfg["study"]["evaluation_colors"],
+        "primary_comparison": ["unfitted", "calibrated"] if len(arms) == 4 else ["bare", "calibrated"],
+        "unfitted_cutpoints": cfg["study"].get("unfitted_cutpoints"),
         "calibration_completed": len(calibration),
         "calibration_planned": len(plan["calibration_tasks"]),
         "calibration_parsed": sum(r["parse_ok"] for r in calibration.values()),
@@ -97,7 +104,7 @@ def analyze(cfg, plan, calibration, mapping, tasks, evaluation):
     grouped = {}
     for t in tasks:
         grouped.setdefault(t["case_id"], {})[t["arm"]] = t
-    for arm in ARMS:
+    for arm in arms:
         planned = [t for t in tasks if t["arm"] == arm]
         rows = [
             evaluation[t["condition_id"]]
@@ -158,12 +165,13 @@ def analyze(cfg, plan, calibration, mapping, tasks, evaluation):
         row = evaluation.get(t["condition_id"])
         return t["status"] == "generate" and row is not None and row["parse_ok"]
 
-    common = [g for g in grouped.values() if all(usable(g[a]) for a in ARMS)]
-    for cohort in ("common_triplets", "available_pairs"):
-        for left, right in (("bare", "calibrated"), ("bare", "numeric")):
+    common = [g for g in grouped.values() if all(usable(g[a]) for a in arms)]
+    comparisons = (("unfitted", "calibrated"), ("bare", "unfitted"), ("bare", "calibrated"), ("bare", "numeric")) if len(arms) == 4 else (("bare", "calibrated"), ("bare", "numeric"))
+    for cohort in (cohort_name, "available_pairs"):
+        for left, right in comparisons:
             cases = (
                 common
-                if cohort == "common_triplets"
+                if cohort == cohort_name
                 else [
                     g for g in grouped.values() if usable(g[left]) and usable(g[right])
                 ]
@@ -190,13 +198,15 @@ def analyze(cfg, plan, calibration, mapping, tasks, evaluation):
                     ),
                 }
             )
-    result["common_triplets"] = len(common)
+    result[cohort_name] = len(common)
+    result["common_count"] = len(common)
+    result["common_starting_colors"] = len({g[arms[0]]["base_id"] for g in common})
     result["common_accuracy"] = {
         arm: average(
             [evaluation[g[arm]["condition_id"]] for g in common],
             lambda r: r["metrics"]["projected_target_error"],
         )
-        for arm in ARMS
+        for arm in arms
     }
     for row in [*calibration.values(), *evaluation.values()]:
         if not row["parse_ok"]:
@@ -238,12 +248,16 @@ def fmt(value):
 
 
 def report(result, run_id):
+    count = result.get("common_count", result.get("common_triplets", 0))
+    quartet = len(result.get("arms", ARMS)) == 4
     lines = [
         f"# Held-out magnitude control: {run_id}",
         "",
         f"- Calibration completed: {result['calibration_completed']} / {result['calibration_planned']}; parsed: {result['calibration_parsed']}",
         f"- Frozen held-out cases: {result['evaluation_cases']}; feasibility exclusions: {result['exclusions']}",
-        f"- Common generated parsed triplets: {result['common_triplets']}",
+        f"- Common generated parsed {'quartets' if quartet else 'triplets'}: {count}",
+        f"- Planned independent starting colors: {result.get('evaluation_starts_planned', 'n/a')}; common observed colors: {result.get('common_starting_colors', 'n/a')}",
+        f"- Primary comparison: {' → '.join(result.get('primary_comparison', ['bare', 'calibrated']))} (right minus left).",
         "- Displayed uint8 sRGB target error is primary; one fresh-context revision.",
         "",
         "## Calibration progress and diagnostics",
@@ -283,14 +297,14 @@ def report(result, run_id):
         )
     lines += [
         "",
-        "## Target accuracy on common generated parsed triplets",
+        f"## Target accuracy on common generated parsed {'quartets' if quartet else 'triplets'}",
         "",
         "| Arm | N | Mean displayed target ΔE |",
         "|---|---:|---:|",
     ]
-    for arm in ARMS:
+    for arm in result.get("arms", ARMS):
         lines.append(
-            f"| {arm} | {result['common_triplets']} | {fmt(result['common_accuracy'][arm])} |"
+            f"| {arm} | {count} | {fmt(result['common_accuracy'][arm])} |"
         )
     lines += [
         "",
@@ -345,4 +359,6 @@ def report(result, run_id):
         "",
         "Calibration medians include wrong-direction and zero updates among parsed responses; failed parsing remains in counts. Only positive graded medians are candidates, and bare wording is unranked. Evaluation colors never fit the mapping. Output projection error never filters generated responses. This is one model, one prompt, a small fixed RGB-range pilot, not downstream creative editing or a human perceptual magnitude calibration. Exact numeric feedback includes greater precision and explicit coordinate holds, so it is an execution control rather than an information-matched wording arm. Six-decimal prompted coordinates, native target candidates and displayed targets are retained separately. Cluster intervals use a case-weighted pooled mean, condition on observed parsed pairs, and do not remove failure-selection bias or establish population generalization. Missing mappings, failed responses and pending work are not imputed. HSV saturation and multi-turn transfer require separate studies. Detailed movement, numeric execution, token, failure and projection diagnostics are in metrics/magnitude_analysis.json; prompts and raw responses are in per-response checkpoints.",
     ]
+    if quartet:
+        lines += ["", f"The unfitted arm uses fixed residual cutpoints {result['unfitted_cutpoints']} with a_little, somewhat, much in increasing bins. It has no fitted receiver medians. The primary contrast tests this particular calibration policy against this particular unfitted rule, not calibration necessity against all possible rules. Extra targets within a starting color are repeated observations, not independent colors. Calibration, model loading, and preparation costs are additional to held-out execution."]
     return "\n".join(lines) + "\n"
