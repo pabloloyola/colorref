@@ -67,3 +67,13 @@ these additions. The Gemma numeric failure inspection is now incorporated: all 2
 concern decreasing the a coordinate; 25 finish at EOS and two reach the token
 cap. Seventeen omit a coordinate and ten emit invalid negative lightness.
 No failed response is repaired or excluded from completion counts.
+
+## Calibration evidence figure
+
+The working draft now centers receiver-calibrated graded feedback. Its two-panel
+figure shows the primary within-model contrasts and exploratory distance effects.
+Rebuild the figure with `uv run python scripts/plot_calibration_evidence.py`.
+Reported rounded estimates and run IDs are recorded in
+`latex/figures/calibration_effects.json`; they were not recomputed from raw
+responses in this workspace. The PDF figure was rendered and visually inspected.
+The full manuscript layout has not been revalidated after these content additions.

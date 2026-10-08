@@ -11,7 +11,7 @@
 \usepackage[table]{xcolor}
 \usepackage{array,booktabs,amsmath,amssymb,multirow,url}
 
-\title{ColorRef: Interactive Reference Games for Probing the Behavioral Geometry of Color Grounding}
+\title{ColorRef: Calibrating Natural-Language Feedback for Color Control}
 \author{Pablo Loyola\textsuperscript{1}, Andres Hoyos-Idobro\textsuperscript{2}, Edison Marrese-Taylor\textsuperscript{3} \\
 \textsuperscript{1} Rakuten Institute of Technology; Rakuten Group, Inc; Tokyo, Japan\\
 \textsuperscript{2} Rakuten Institute of Technology; Rakuten Group, Inc; Paris, France\\
@@ -79,19 +79,24 @@ alternative colors are semantically invalid. This distinction matters for
 creative or ambiguous names. We use the metric as a reproducible distance,
 not a strict just-noticeable-difference threshold.
 
-Our fresh evaluation shows that controlled feedback reduces mean disagreement
-with recorded targets by approximately 48\%. We complement this result with
-controls that hold starting
-colors fixed, probe graded instructions independently of color names, and
-evaluate a calibration-derived wording policy on unseen starting colors.
-The latter demonstrates controlled target localization relevant to iterative
-creative interfaces; image editing and human interaction remain untested.
+Our central contribution is a receiver-calibrated feedback policy:
+measure the displayed step induced by each graded phrase on separate colors,
+then select the phrase whose measured step best matches the target residual.
+With the same frozen task plan and prompts, independently calibrated policies
+reduce held-out error for Qwen3-14B and Gemma 4 12B relative to a fixed
+graded-wording rule. Both evaluations cover 128 starting colors; directions
+and distances within a color are repeated observations. The main benefit
+is avoiding excessive large corrections, rather than improving every update
+or guaranteeing convergence.
 
-Finally, we compare zero- and four-shot oracle-assisted teachers under natural
-and restricted wording instructions, then pass their unchanged messages to
-the same receiver. The results replace a broad following-versus-generating
-capability claim with a more specific finding: feedback preservation, output
-format, and downstream usefulness are distinct, prompt-sensitive outcomes.
+Three supporting controls place this result in context. A fresh evaluation
+on 1{,}000 descriptions shows that oracle corrections reduce mean recorded-target
+disagreement by approximately 48\%. Matched starts and isolated coordinate
+probes separate initial prediction, output encoding and correction execution.
+Finally, oracle-assisted teacher restatement and unchanged-message reception
+separate preservation of supplied directions from downstream usefulness.
+Together these experiments test language as an operational control interface;
+human interaction and creative image editing remain untested.
 
 \section{Related Work}
 \label{sec:related_work}
@@ -392,7 +397,8 @@ identified by these outputs alone.
 
 \subsection{Calibrated magnitude improves held-out localization}
 \label{sec:results_magnitude}
-Each model completes all 8{,}432 held-out responses.
+Each model completes all 8{,}432 held-out responses
+(Figure~\ref{fig:calibration_effects}).
 For Qwen, there are 2{,}098 fully parsed quartets spanning all 128 starting colors;
 parse failures number 3, 5, 0, and 2 for bare, unfitted, calibrated, and
 numeric feedback. Calibrated wording reduces mean target error from 12.36
@@ -442,6 +448,20 @@ from 333 to 75, but convergence counts do not increase (1{,}400 versus
 leave-one-start-out effects range from $-5.19$ to $-5.12$.
 These descriptive audits support lower average error and fewer harmful
 updates, rather than universal improvement or greater threshold success.
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.96\textwidth]{latex/figures/calibration_effects.pdf}
+\caption{Receiver-specific calibration reduces displayed target error relative
+to the fixed unfitted quantifier rule for both models (left).
+Exploratory distance breakdowns concentrate the benefit at 24-unit targets
+(right). Bars show 95\% starting-color cluster percentile intervals;
+each model covers the same 128 starting colors, with 2{,}098 Qwen and
+2{,}081 Gemma common parsed quartets. These are within-model contrasts,
+not a paired between-model test. The panels use different horizontal scales.
+Values are reproduced from reported rounded estimates.}
+\label{fig:calibration_effects}
+\end{figure*}
 
 \begin{table}[t]
 \centering\small
@@ -552,8 +572,11 @@ $\Delta E_{76}\leq5$, further valid-axis corrections can still overshoot.
 A saved-prefix stopping replay retains nine otherwise lost convergence
 outcomes and saves 23/576 revisions in the shared-start study
 (Appendix~\ref{app:stopping}); this is target-known stopping, not an
-available model-only policy. Calibrated wording improves control above the
-threshold, but display projection and a sparse phrase ladder limit transfer.
+available model-only policy. The two-model magnitude studies show that calibration lowers average error
+under the tested fixed rule, chiefly for large requested corrections.
+This need not increase threshold success: Gemma's common-cohort convergence
+counts remain nearly unchanged despite fewer harmful updates.
+Display projection and gaps in a three-phrase ladder still limit accuracy.
 
 \paragraph{Grounding versus coordinate execution.}
 Shared-start results isolate correction from initial name prediction;
@@ -576,11 +599,14 @@ not a universal following-versus-generating capability gap.
 one-shot endpoint. Controlled feedback improves target localization;
 matched controls expose encoding sensitivity, direction-dependent
 graded steps, and the distinction between teacher restatement and usefulness.
-A frozen magnitude-wording policy transfers to fresh controlled targets,
-with lower error and evaluation-call cost, while projection drift and numeric
-execution tails remain. Future work should study alternative target
-distributions, human and multilingual interaction, cross-model transfer,
-multi-axis magnitude policies, and downstream creative editing.
+Independently calibrated wording policies lower held-out one-step error
+for two model families relative to the same fixed quantifier rule, primarily
+by avoiding excessive large corrections. A smaller Qwen sequential pilot
+also reduces endpoint error and evaluation calls; this cost benefit has not
+been replicated with Gemma. Projection drift, coarse phrase resolution and
+numeric output failures remain. Future work should test alternative target
+distributions, human and multilingual interaction, cross-model policy transfer,
+multi-axis control, and downstream creative editing.
 
 \section{Limitations}
 \label{sec:limitations}

@@ -1,0 +1,10 @@
+{
+  "provenance": "Author-provided completed reports; rounded reported estimates, not recomputed from raw responses.",
+  "contrast": "calibrated minus unfitted displayed target error, Delta E76",
+  "interval": "95% starting-color cluster percentile interval; distance breakdowns exploratory",
+  "independent_starts_per_model": 128,
+  "models": [
+    {"name": "Qwen3-14B", "run_id": "20261008_030403_354222_magnitude_confirmation_128_a100_40gb", "common_cases": 2098, "overall": [-5.497, -5.786, -5.203], "distance": {"6": [-0.708, -0.798, -0.613], "12": [0.0, 0.0, 0.0], "24": [-18.352, -19.765, -17.009]}},
+    {"name": "Gemma 4 12B", "run_id": "20261008_082307_472301_magnitude_replication_128_gemma4_12b_a100_40gb", "common_cases": 2081, "overall": [-5.161, -5.484, -4.842], "distance": {"6": [-0.064, -0.130, 0.004], "12": [0.0, 0.0, 0.0], "24": [-18.182, -19.820, -16.652]}}
+  ]
+}
