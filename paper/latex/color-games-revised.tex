@@ -32,9 +32,10 @@ Matched-start controls show sensitivity to output representation and explicit
 axis instructions. Graded corrections exhibit ordered but direction-dependent
 step sizes; correct directions alone do not prevent overshoot.
 A frozen wording policy calibrated on 32 separate colors reduces one-step
-held-out target error from 12.36 to 6.86 relative to a fixed graded-wording
-rule across 128 starting colors. A smaller sequential pilot also tests
-transfer and generation cost.
+held-out target error from 12.36 to 6.86 for Qwen3-14B and from 11.06
+to 5.89 for Gemma 4 12B relative to a fixed graded-wording rule on the same
+128 starting colors. Gains concentrate on avoiding excessive large corrections.
+A smaller Qwen sequential pilot also tests transfer and generation cost.
 Oracle-assisted teacher controls further distinguish preserving supplied
 directions from producing useful corrections: few-shot restatement can be
 faithful without yielding the best receiver accuracy.
@@ -244,6 +245,9 @@ cutpoints 9 and 18, without receiver medians. The primary comparison is
 calibrated minus unfitted displayed target error. Input-only feasibility
 checks retain 2{,}108 targets and exclude 196; previous study colors are
 excluded before inference. Whole starting colors are resampled for intervals.
+Gemma 4 12B repeats the identical frozen input plan, task order and prompts,
+fitting its own medians on the same 32 calibration colors. No Qwen responses
+fit the Gemma policy, and no held-out responses fit either policy.
 
 One-step evaluation uses 12 disjoint starts and 196 feasible targets.
 Sequential transfer freezes the fitted policy and uses 12 further fresh
@@ -274,15 +278,21 @@ We keep frozen lexical audits, supplementary scope-aware interpretation,
 and receiving target error separate.
 
 \subsection{Models, uncertainty, and failures}
-All new controls use \texttt{Qwen/Qwen3-14B} \citep{yang2025qwen3} through
-Hugging Face Transformers \citep{wolf2020transformers}, bfloat16 on an
-A100 40\,GB, temperature zero, and thinking disabled. Receiver budgets are
+Grounding and diagnostic controls use \texttt{Qwen/Qwen3-14B}
+\citep{yang2025qwen3}; the four-arm magnitude study additionally uses
+\texttt{google/gemma-4-12B-it}, pinned to revision \texttt{707f0a3b}.
+Both run through Hugging Face Transformers \citep{wolf2020transformers},
+bfloat16 on an A100 40\,GB, temperature zero, and thinking disabled.
+Gemma uses its multimodal processor/model loader with text-only inputs.
+Receiver budgets are
 64 output tokens; teacher budgets are 80. Plans, prompts, model-revision
 metadata, and atomic response checkpoints are preserved.
 Strict parse failures remain failures, without repaired colors; backend
 exceptions remain pending. Grounding, shared-start, and teacher-reception
 outputs parse fully. The four-arm confirmation has 10 held-out parse failures
 and one calibration failure; pilot calibration parses 287/288 responses.
+Gemma calibration parses 768/768; its 27 held-out failures all occur in the
+numeric arm. All three Gemma language arms parse fully.
 Failures remain visible in completion counts and matched-cohort denominators.
 
 Original main intervals use 1{,}000 percentile bootstrap draws.
@@ -382,8 +392,8 @@ identified by these outputs alone.
 
 \subsection{Calibrated magnitude improves held-out localization}
 \label{sec:results_magnitude}
-The four-arm confirmation completes all 8{,}432 held-out responses.
-There are 2{,}098 fully parsed quartets spanning all 128 starting colors;
+Each model completes all 8{,}432 held-out responses.
+For Qwen, there are 2{,}098 fully parsed quartets spanning all 128 starting colors;
 parse failures number 3, 5, 0, and 2 for bare, unfitted, calibrated, and
 numeric feedback. Calibrated wording reduces mean target error from 12.36
 to 6.86 relative to the unfitted rule: paired difference $-5.50$
@@ -412,27 +422,54 @@ remaining 713 cases: calibration selects \textit{somewhat} instead of
 and darker comparisons reuse identical prompts. These observations localize
 the policy differences; they are not an independent controller experiment.
 
+Gemma replicates the primary contrast: on 2{,}081 common parsed quartets,
+calibrated minus unfitted error is $-5.16$ [$-5.48$, $-4.84$].
+The language-only available-pair contrast includes all 2{,}108 cases and
+is $-5.10$ [$-5.42$, $-4.77$], so the benefit persists without excluding
+numeric parse failures. Bare wording is also better than the unfitted rule
+by 2.69 units; a quantifier ladder alone is not sufficient.
+The two models' main means use different parsed cohorts and are not a
+direct ranking of model ability.
+
+Gemma's exploratory distance effects are $-0.06$, $0.00$, and $-18.18$
+at 6, 12, and 24 units. Of its 2{,}081 common cases, 1{,}524 share identical
+prompts and colors. The other 557 contain 443 wins, four ties and 110 losses.
+Calibration replaces \textit{much} with \textit{somewhat} for 24-unit darker,
+red, yellow and blue corrections, and usually replaces \textit{a little}
+with \textit{somewhat} for 6-unit green corrections. Harmful updates fall
+from 333 to 75, but convergence counts do not increase (1{,}400 versus
+1{,}398). Every observed starting-color mean favors calibration, and
+leave-one-start-out effects range from $-5.19$ to $-5.12$.
+These descriptive audits support lower average error and fewer harmful
+updates, rather than universal improvement or greater threshold success.
+
 \begin{table}[t]
 \centering\small
 \begin{tabular}{@{}llrrr@{}}
 \toprule
 Study & Arm & Final $\Delta E$ & $\leq5$ & Calls \\
 \midrule
-One step & Bare & 11.91 & -- & 2{,}108 \\
+Qwen & Bare & 11.91 & -- & 2{,}108 \\
  & Unfitted & 12.36 & -- & 2{,}108 \\
  & Calibrated & 6.86 & -- & 2{,}108 \\
  & Numeric & 0.35 & -- & 2{,}108 \\
+\midrule
+Gemma & Bare & 8.36 & 924 & 2{,}108 \\
+ & Unfitted & 11.06 & 1{,}400 & 2{,}108 \\
+ & Calibrated & 5.89 & 1{,}398 & 2{,}108 \\
+ & Numeric & 0.08 & 2{,}081 & 2{,}108 \\
 \midrule
 Sequential & Bare & 6.46 & 148 & 516 \\
  & Calibrated & 2.98 & 192 & 338 \\
  & Numeric & 0.10 & 200 & 205 \\
 \bottomrule
 \end{tabular}
-\caption{One-step confirmation: means on 2{,}098 common parsed quartets
-from 128 starts; calls include failed outputs. Sequential pilot: 200 targets
-from 12 further starts, stopping at error $\leq5$ with a five-revision cap.
-Calls exclude calibration: 768 responses for confirmation and 288 for the
-sequential pilot. Numeric feedback supplies additional precision.}
+\caption{One-step means on model-specific common quartets: 2{,}098 for
+Qwen and 2{,}081 for Gemma, each spanning the same 128 starts.
+Calls include failed outputs and exclude 768 calibration calls per model.
+Sequential Qwen pilot: 200 targets from 12 further starts, stopping at
+error $\leq5$ with a five-revision cap, excluding 288 calibration calls.
+Numeric feedback supplies additional precision.}
 \label{tab:magnitude}
 \end{table}
 
@@ -559,8 +596,10 @@ this metric; differences between directions can also reflect generated
 native steps and the restricted sRGB gamut, rather than perceptual
 nonuniformity alone.
 
-The new controls use one model and prompt family, finite fixed anchors or
-twelve-color sampling clusters, English descriptions, and HEX-derived
+The magnitude confirmation covers two model families with the same prompt
+and 128 held-out starting-color clusters. Other diagnostic controls use Qwen
+alone and smaller fixed samples, including twelve-color pilot clusters.
+The studies use English descriptions and supplied numeric or HEX-derived
 starting states. Bootstrap intervals do not establish broad population
 generalization, generation-randomness uncertainty, or multiplicity-adjusted
 significance. Failed calibration and held-out outputs remain in counts;

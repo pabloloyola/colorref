@@ -61,4 +61,7 @@ grounding evidence, the completed four-arm 128-color magnitude confirmation,
 subgroup/identity audits, and corrected parse-failure denominators. The local
 review PDF uses Courier instead of unavailable Inconsolata for monospace text;
 committed source keeps Inconsolata. It is a content review, not a final
-publication-font or submission-readiness check. Second-model results are pending.
+publication-font or submission-readiness check. The working source now also incorporates the completed Gemma 4 12B replication
+and its saved-output breakdown/identity audits. The earlier review PDF predates
+these additions. Numeric failure inspection (27 Gemma outputs) is outstanding;
+no failed response is repaired or excluded from completion counts.

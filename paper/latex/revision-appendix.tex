@@ -259,6 +259,39 @@ This identity partition is descriptive, not a replacement primary cohort.
 Numeric execution has 39 parsed native errors above one, maximum 51.004;
 misses remain in the reported performance.
 
+\subsection{Gemma replication and saved-output diagnostics}
+Gemma 4 12B uses revision \texttt{707f0a3b8a3c7ad586ed01e27eafbad8a27dd0f7},
+the identical frozen plan and text prompts, and independently fitted medians.
+All 768 calibration outputs parse. Of 8{,}432 evaluation responses, only
+27 numeric outputs fail parsing; bare, unfitted and calibrated each parse
+2{,}108/2{,}108. Common quartets contain 2{,}081 cases from all 128 starts.
+The primary contrast is $-5.161$ [$-5.484$, $-4.842$]; available language
+pairs give $-5.095$ [$-5.417$, $-4.772$] over all 2{,}108 cases.
+
+Direction-specific medians differ between receivers under this protocol:
+for \textit{a little more red}, displayed medians are 1.054 for Qwen
+and 4.953 for Gemma. The experiment does not test a controller fitted on
+one model and deployed on the other, so it establishes within-model
+calibration benefits, not cross-model policy transfer.
+
+The Gemma identity audit finds 1{,}547 identical prompts among planned
+unfitted/calibrated pairs, with no parsed-LAB mismatch on identical prompts.
+On common quartets, 1{,}524 identical prompts give zero error difference;
+557 changed prompts give a mean difference of $-19.282$.
+The overall median paired difference remains zero. Distance-specific effects
+at 6/12/24 units are $-0.064$, $0.000$, and $-18.182$; the largest gains
+occur for 24-unit red, yellow and blue targets. Harmful updates fall from
+333 to 75, while threshold success remains nearly unchanged (1{,}400 to
+1{,}398). All 128 per-start mean differences favor calibration; omitting
+one start yields differences between $-5.194$ and $-5.121$.
+These audits are exploratory and do not replace the primary cohort.
+
+Among parsed numeric outputs, mean native execution error is 0.006;
+2{,}058/2{,}081 are within 0.01 of instructed coordinates.
+The 27 invalid outputs remain failures, without imputed colors or repaired
+responses. Their raw-output inspection is outstanding; low parsed-response
+error does not establish reliable execution across all planned cases.
+
 \subsection{Uncertainty and saved inputs}
 Paired bootstrap draws resample whole starting colors for magnitude studies
 and whole examples within regimes for interface/teacher studies, keeping
