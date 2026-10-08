@@ -280,8 +280,10 @@ A100 40\,GB, temperature zero, and thinking disabled. Receiver budgets are
 64 output tokens; teacher budgets are 80. Plans, prompts, model-revision
 metadata, and atomic response checkpoints are preserved.
 Strict parse failures remain failures, without repaired colors; backend
-exceptions remain pending. All reported receiving/control evaluations here
-parse fully; calibration parses 287/288 responses.
+exceptions remain pending. Grounding, shared-start, and teacher-reception
+outputs parse fully. The four-arm confirmation has 10 held-out parse failures
+and one calibration failure; pilot calibration parses 287/288 responses.
+Failures remain visible in completion counts and matched-cohort denominators.
 
 Original main intervals use 1{,}000 percentile bootstrap draws.
 New paired intervals use 2{,}000 draws: whole examples within regimes for

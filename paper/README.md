@@ -41,8 +41,9 @@ no overfull boxes or unresolved references/citations, and its rendered pages
 were inspected. This does not verify the publication-font layout. Compile the
 working draft in Overleaf and inspect that PDF before treating it as final.
 
-The working draft inputs `latex/revision-appendix.tex` and
-`latex/revision-legacy-results.tex`. Upload all three revision files into
+The working draft inputs `latex/revision-appendix.tex`; unrecoverable historical
+numerical tables in `latex/revision-legacy-results.tex` are archived but excluded.
+Upload the revised main document and revision appendix into
 the corresponding `latex/` folder of the existing Overleaf project, retain
 its original styles/bibliography/figures, and select the revised main document.
 Appendix tables stay beside their explanations; bibliography wrapping is
@@ -54,3 +55,10 @@ rendered PDF. A successful TeX exit alone does not validate formatting.
 
 The source is in ACL review mode. Build products should stay out of version
 control. The supplied baseline PDF is retained deliberately as provenance.
+
+The 2026-10-08 intermediate review copy incorporates fresh 1,000-description
+grounding evidence, the completed four-arm 128-color magnitude confirmation,
+subgroup/identity audits, and corrected parse-failure denominators. The local
+review PDF uses Courier instead of unavailable Inconsolata for monospace text;
+committed source keeps Inconsolata. It is a content review, not a final
+publication-font or submission-readiness check. Second-model results are pending.

@@ -233,14 +233,41 @@ the protocol permits an explicit off-axis-residual ending instead of an
 empty correction. No such ending occurs in the completed transfer study.
 Reaching the cap is a valid observed endpoint, not an imputed success.
 
+\subsection{Four-arm magnitude confirmation}
+The confirmation uses seed 211, 32 new calibration colors and 128 held-out
+starting colors, excluding 49 previously used colors before inference.
+Calibration covers six directions and four wordings (768 responses, 767
+parsed). Frozen direction-specific medians use parsed responses including
+nonpositive updates; held-out responses never refit the mapping.
+The fixed unfitted rule selects \textit{a little} below residual 9,
+\textit{somewhat} from 9 to below 18, and \textit{much} otherwise.
+Calibrated wording instead selects the positive graded median nearest the
+requested-axis residual. Bare directions and exact numeric instructions
+complete the four arms. All use fresh contexts and one revision.
+
+The existing native-distance targets at 6, 12 and 24 units yield 2{,}108
+feasible cases; 196 candidates fail frozen input-only feasibility checks.
+All 8{,}432 held-out responses complete. Parse failures are 3/5/0/2 for
+bare/unfitted/calibrated/numeric. Primary means use 2{,}098 common parsed
+quartets covering all 128 starts. The primary calibrated-minus-unfitted
+contrast is $-5.497$ [$-5.786$, $-5.203$]; available paired responses
+give $-5.528$ [$-5.814$, $-5.245$] on 2{,}103 cases.
+All 12-unit and darker comparisons share identical prompts. On the common
+cohort, 1{,}385 prompt-identical cases produce identical colors; the other
+713 cases contain 556 wins, 34 ties and 123 losses at tolerance 0.01.
+This identity partition is descriptive, not a replacement primary cohort.
+Numeric execution has 39 parsed native errors above one, maximum 51.004;
+misses remain in the reported performance.
+
 \subsection{Uncertainty and saved inputs}
 Paired bootstrap draws resample whole starting colors for magnitude studies
 and whole examples within regimes for interface/teacher studies, keeping
 associated direction/distance or bandwidth cases together. All use 2{,}000
-resamples and seed 13. Pooled case weights remain unchanged; twelve starts
-are twelve clusters, not hundreds of independent colors. Available-pair
-sensitivity equals common-triplet estimates in the completed magnitude
-studies because every evaluation response parses.
+resamples and seed 13. Pooled case weights remain unchanged. The pilot
+uses twelve starting-color clusters; the confirmation uses 128. Multiple
+targets per start are not independent colors. Available-pair sensitivity
+equals common-triplet estimates in the fully parsed pilot; confirmation
+quartets and available pairs have different, explicitly reported denominators.
 
 Frozen configuration, plans, calibration/controller snapshots, rendered
 prompts, responses, parsing results, native/displayed states and scores are
