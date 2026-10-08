@@ -63,5 +63,7 @@ review PDF uses Courier instead of unavailable Inconsolata for monospace text;
 committed source keeps Inconsolata. It is a content review, not a final
 publication-font or submission-readiness check. The working source now also incorporates the completed Gemma 4 12B replication
 and its saved-output breakdown/identity audits. The earlier review PDF predates
-these additions. Numeric failure inspection (27 Gemma outputs) is outstanding;
-no failed response is repaired or excluded from completion counts.
+these additions. The Gemma numeric failure inspection is now incorporated: all 27 failures
+concern decreasing the a coordinate; 25 finish at EOS and two reach the token
+cap. Seventeen omit a coordinate and ten emit invalid negative lightness.
+No failed response is repaired or excluded from completion counts.

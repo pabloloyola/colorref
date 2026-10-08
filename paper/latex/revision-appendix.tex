@@ -289,8 +289,24 @@ These audits are exploratory and do not replace the primary cohort.
 Among parsed numeric outputs, mean native execution error is 0.006;
 2{,}058/2{,}081 are within 0.01 of instructed coordinates.
 The 27 invalid outputs remain failures, without imputed colors or repaired
-responses. Their raw-output inspection is outstanding; low parsed-response
-error does not establish reliable execution across all planned cases.
+responses. Saved-output inspection finds all 27 failures in numeric
+\textit{more green} instructions (decreasing $a$), across 17 starts:
+four at distance 6, seven at 12 and sixteen at 24. Seventeen outputs
+contain only two coordinates; ten contain a triplet rejected for negative
+$L$. Twenty-five terminate at EOS below the budget, and two reach the
+64-token cap after first emitting an invalid triplet and starting a correction.
+Thus, truncation does not explain most observed failures.
+
+For example, starting from $(49.742386,10.289397,5.133036)$ and decreasing
+$a$ by 24.238567 requires $(49.742386,-13.949170,5.133036)$;
+the model instead returns \texttt{LAB(-13.94917, 5.133036)}.
+This example computes the requested $a$ value but omits $L$.
+Other outputs place a negative adjusted value in the $L$ position or
+duplicate coordinates. These are observed coordinate-output failures,
+not evidence of a particular internal reasoning mechanism. No missing
+coordinate is supplied retrospectively. Numeric parsing succeeds on
+2{,}081/2{,}108 planned responses (98.7\%); its low parsed-response error
+does not establish reliable execution across all planned cases.
 
 \subsection{Uncertainty and saved inputs}
 Paired bootstrap draws resample whole starting colors for magnitude studies
