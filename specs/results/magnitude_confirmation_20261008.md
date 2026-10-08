@@ -34,4 +34,33 @@ The result supports this receiver-calibration policy over the fixed cutpoint
 rule [9,18], for this model, prompt, RGB sampling range and one-revision task.
 It does not prove all unfitted policies inferior, human perceptual magnitude
 calibration, model-family generalization or creative image-editing effectiveness.
-Direction/distance subgroup and numeric-tail audits are next, CPU-only.
+## Completed saved-output subgroup audit (author report)
+
+Common quartets reproduce −5.497 [−5.786, −5.203]. Wins/ties/losses:
+556/1,419/123 at 0.01 tolerance; median paired difference zero.
+Requested-distance contrasts: 6 units −0.708 [−0.798, −0.613];
+12 units 0.000 [0.000,0.000]; 24 units −18.352 [−19.765,−17.009].
+Approximately 95% of the pooled summed reduction is contributed by the
+24-unit stratum (calculated from rounded subgroup counts and means).
+This is descriptive, not a causal decomposition.
+
+Largest direction/distance contrasts: red/24 −39.449, yellow/24 −25.126,
+blue/24 −33.552. Darker cases and all 12-unit cases tie exactly in error;
+phrase/prompt identity remains to be checked from saved records before
+interpreting those as identical interventions.
+
+Harmful updates: unfitted 318/2,098, calibrated 58/2,098. All displayed
+per-start average deltas are negative; one is only −0.002 (within the
+exploratory tie tolerance). Leave-one-start-out means span −5.528 to −5.459.
+Individual cases do not all improve. Subgroup intervals are exploratory,
+not multiplicity adjusted; repeated targets share starting colors.
+
+Numeric control: 2,106 parsed responses, 2 parse failures; 2,035 native
+errors ≤0.01, 2,067 ≤1, 39 >1. Native error mean/median/p95/max:
+0.296/0.000/0.001/51.004. Largest ten misses include large positive
+requested-coordinate deviations; these do not reveal an internal mechanism.
+Misses remain included. Source: author attachment `Pasted text(8).txt`.
+
+Next CPU-only check: `scripts/audit_magnitude_identity.py`. No new inference,
+prompt replacement, controller refitting, case selection or primary analysis
+change is required.

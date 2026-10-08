@@ -422,3 +422,13 @@ do not rerun it. Next: CPU direction/distance and numeric-tail audit using
 `scripts/analyze_magnitude_control.py`, followed by separately calibrated
 model-family replication. Four-arm sequential transfer is not implemented.
 
+# 2026-10-08 subgroup audit received
+
+The completed CPU breakdown is recorded in
+`specs/results/magnitude_confirmation_20261008.md`. The observed reduction
+is concentrated in large chromatic corrections; all 12-unit errors tie.
+Next machine command: `scripts/audit_magnitude_identity.py --run` with the
+same completed confirmation directory. It writes only identity diagnostics
+and does not alter the controller or primary reports. Model-family
+replication remains the next inference experiment; do not rerun Qwen confirmation.
+
