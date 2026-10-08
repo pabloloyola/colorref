@@ -93,6 +93,7 @@ class HFTransformersClient(LLMClient):
         enable_thinking: bool = False,
         alias: str | None = None,
         revision: str | None = None,
+        model_loader: str = "causal",
     ) -> None:
         if hf_home:
             os.environ["HF_HOME"] = hf_home
@@ -101,11 +102,22 @@ class HFTransformersClient(LLMClient):
         self.alias = alias or model_name_or_path
         self.enable_thinking = enable_thinking
         self.revision = revision
+        if model_loader not in {"causal", "multimodal"}:
+            raise ValueError(f"Unknown HF model loader: {model_loader!r}")
+        self.model_loader = model_loader
         self._model_and_tokenizer = self._load_model(device_map, torch_dtype)
 
     def _load_model(self, device_map: str, torch_dtype_str: str):
         import torch
         from transformers import AutoModelForCausalLM, AutoTokenizer
+
+        model_class, tokenizer_class = AutoModelForCausalLM, AutoTokenizer
+        if getattr(self, "model_loader", "causal") == "multimodal":
+            try:
+                from transformers import AutoModelForMultimodalLM, AutoProcessor
+            except ImportError as exc:
+                raise RuntimeError("This model requires Transformers with AutoModelForMultimodalLM support") from exc
+            model_class, tokenizer_class = AutoModelForMultimodalLM, AutoProcessor
 
         dtype_map = {
             "bfloat16": torch.bfloat16,
@@ -117,8 +129,8 @@ class HFTransformersClient(LLMClient):
         logger.info("Loading model %s (device_map=%s, dtype=%s)…", self.model_name, device_map, torch_dtype_str)
         t0 = time.time()
         revision_kwargs = {"revision": self.revision} if self.revision is not None else {}
-        tokenizer = AutoTokenizer.from_pretrained(self.model_name, **revision_kwargs)
-        model = AutoModelForCausalLM.from_pretrained(
+        tokenizer = tokenizer_class.from_pretrained(self.model_name, **revision_kwargs)
+        model = model_class.from_pretrained(
             self.model_name,
             dtype=dtype,
             device_map=device_map,
@@ -133,10 +145,22 @@ class HFTransformersClient(LLMClient):
         Uses model + tokenizer directly (not pipeline) so that
         apply_chat_template kwargs (e.g. enable_thinking) work correctly.
         """
-        import torch
-
         model, tokenizer = self._model_and_tokenizer
         messages = [{"role": "user", "content": prompt}]
+
+        if getattr(self, "model_loader", "causal") == "multimodal":
+            # Text-only inputs through the official multimodal processor; no
+            # extra tokenization or silently ignored thinking configuration.
+            inputs = tokenizer.apply_chat_template(
+                messages, tokenize=True, return_dict=True, return_tensors="pt",
+                add_generation_prompt=True, enable_thinking=self.enable_thinking,
+            ).to(model.device)
+        else:
+            inputs = self._causal_inputs(model, tokenizer, messages)
+
+        return self._generate_inputs(model, tokenizer, inputs, max_tokens, temperature)
+
+    def _causal_inputs(self, model, tokenizer, messages):
 
         # apply_chat_template: Qwen3 respects enable_thinking here
         template_kwargs: dict[str, Any] = {
@@ -153,7 +177,10 @@ class HFTransformersClient(LLMClient):
         except TypeError:
             text = tokenizer.apply_chat_template(messages, **template_kwargs)
 
-        inputs = tokenizer([text], return_tensors="pt").to(model.device)
+        return tokenizer([text], return_tensors="pt").to(model.device)
+
+    def _generate_inputs(self, model, tokenizer, inputs, max_tokens, temperature):
+        import torch
 
         gen_kwargs: dict[str, Any] = {"max_new_tokens": max_tokens}
         if temperature > 0.0:
@@ -312,6 +339,7 @@ def build_client(cfg: dict) -> LLMClient:
             enable_thinking=cfg.get("enable_thinking", False),
             alias=cfg.get("alias"),
             revision=cfg.get("revision"),
+            model_loader=cfg.get("model_loader", "causal"),
         )
 
     if provider == "openai_compatible":

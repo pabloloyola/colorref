@@ -1,4 +1,4 @@
-"""Prepare Mistral replication on the confirmation's unchanged frozen stimuli."""
+"""Prepare Gemma replication on the confirmation's unchanged frozen stimuli."""
 from __future__ import annotations
 
 import argparse
@@ -15,8 +15,8 @@ sys.path.insert(0, str(ROOT / "src"))
 from colorref.magnitude_control import build_plan, evaluation_arms
 from run_magnitude_control import load_plan
 
-MODEL = "mistralai/Mistral-7B-Instruct-v0.3"
-REVISION = "c170c708c41dac9275d15a8fff4eca08d52bab71"
+MODEL = "google/gemma-4-12B-it"
+REVISION = "707f0a3b8a3c7ad586ed01e27eafbad8a27dd0f7"
 
 
 def prepare_config(parent_cfg, parent_plan, parent_meta):
@@ -26,12 +26,13 @@ def prepare_config(parent_cfg, parent_plan, parent_meta):
             or set(evaluation_arms(parent_cfg)) != {"bare", "unfitted", "calibrated", "numeric"}):
         raise ValueError("Parent must be the Qwen 32/128 four-arm confirmation")
     cfg = copy.deepcopy(parent_cfg)
-    cfg["experiment_name"] = "magnitude_replication_128_mistral7b_a100_40gb"
+    cfg["experiment_name"] = "magnitude_replication_128_gemma4_12b_a100_40gb"
     cfg["model"].update(
-        alias="mistral7b_magnitude_replication_128", model_name=MODEL,
+        alias="gemma4_12b_magnitude_replication_128", model_name=MODEL,
         revision=REVISION, provider="hf_transformers", device_map="auto",
         torch_dtype="bfloat16", temperature=0.0, max_tokens=64,
         enable_thinking=False,
+        model_loader="multimodal",
     )
     cfg["replication_sources"] = {
         "parent_run_id": parent_meta["run_id"],
@@ -48,7 +49,7 @@ def prepare_config(parent_cfg, parent_plan, parent_meta):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--parent-run", type=Path, required=True)
-    parser.add_argument("--out-dir", type=Path, default=ROOT / "data/confirmatory/magnitude_128_mistral")
+    parser.add_argument("--out-dir", type=Path, default=ROOT / "data/confirmatory/magnitude_128_gemma")
     args = parser.parse_args()
     if args.out_dir.exists():
         parser.error("Output exists; preserve the prepared protocol")
