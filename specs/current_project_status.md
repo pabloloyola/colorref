@@ -367,3 +367,22 @@ advantage. Main text and appendix now describe concentration and surface-form
 sensitivity without claiming a superior ordering or causal mechanism.
 See `specs/results/receiver_same_set_review_20261008.md`. No inference or
 performance-score changes. Historical metadata remains unresolved.
+
+## 2026-10-08 historical recovery closed; efficient expansion begins
+
+The author confirms the original machine was wiped and no historical outputs
+remain. Do not continue asking for archived runs. Original submitted source is
+preserved; historical numerical claims require replacement or exclusion in the
+submission version, not guessed provenance. The current rewrite still contains
+historical tables: it remains an author draft, not a validated submission.
+
+Stage 1 is implemented: a disjoint balanced 1,000-description subset excluding
+all debug_400 IDs, a pinned-revision HEX-only c3 grounding config, checkpointed
+runner reuse and initial/final paired reporting with stratified intervals,
+failure coverage and throughput. Maximum 4,000 generations, including initial
+one-shot predictions. Five focused CPU acceptance checks cover selection,
+design validation, interrupted resume, invalid outputs and revision forwarding.
+Run a 100-generation prefix and resume its frozen plan. No new GPU outputs have
+been produced here. Later 128-start four-arm magnitude confirmation and model
+replication remain planned, not implemented or completed.
+See `specs/confirmatory_extension_20261008.md` for protocol and boundaries.

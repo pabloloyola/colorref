@@ -1,0 +1,39 @@
+experiment_name: grounding_1000_a100_40gb
+seed: 113
+input:
+  subset_path: data/confirmatory/grounding_1000/examples.parquet
+output:
+  run_root: runs
+model:
+  alias: qwen3_14b_grounding_1000
+  provider: hf_transformers
+  model_name: Qwen/Qwen3-14B
+  revision: 40c069824f4251a91eefaf281ebe4c544efd3e18
+  hf_home: null
+  device_map: auto
+  torch_dtype: bfloat16
+  enable_thinking: false
+  temperature: 0.0
+  max_tokens: 64
+teacher:
+  type: axis_oracle
+  max_feedback_constraints: 3
+  min_delta:
+    lab_l: 2.0
+    lab_a: 3.0
+    lab_b: 3.0
+    hsv_s: 0.05
+execution:
+  max_turns: 3
+  convergence_delta_e: 5.0
+study:
+  design: grounding_replication
+  examples_per_regime: 250
+  variants:
+  - id: hex
+    output_space: hex
+    initial_template_path: configs/prompts/interface_study_hex_initial.txt
+    revision_template_path: configs/prompts/interface_study_hex_revision.txt
+analysis:
+  resamples: 5000
+  seed: 13

@@ -57,6 +57,8 @@ def game_summary(task, records, turns):
 
 
 def write_reports(cfg, tasks, checkpoints, run_dir):
+    if cfg["study"].get("design") == "grounding_replication":
+        return write_grounding_report(cfg, tasks, checkpoints, run_dir)
     turns = cfg["execution"]["max_turns"]
     summaries = [game_summary(t, checkpoints.get(t["slot"], []), turns) for t in tasks]
     grouped = {}
@@ -233,3 +235,64 @@ def write_reports(cfg, tasks, checkpoints, run_dir):
         "",
     ]
     (reports / "interface_summary.md").write_text("\n".join(lines), encoding="utf-8")
+
+
+def write_grounding_report(cfg, tasks, checkpoints, run_dir):
+    """Paired initial/final HEX evidence with failures and timing kept separate."""
+    from colorref.interface_analysis import paired_bootstrap
+
+    if any(t["variant"] != "hex" for t in tasks):
+        raise ValueError("Grounding report requires HEX-only tasks")
+    turns = cfg["execution"]["max_turns"]
+    summaries = [game_summary(t, checkpoints.get(t["slot"], []), turns) for t in tasks]
+    full = [r for r in summaries if r["full_trajectory"]]
+    estimates = paired_bootstrap(
+        [[r["initial_projected_error"], r["final_projected_error"], r["projected_gain"]] for r in full],
+        [r["regime_label"] for r in full],
+        cfg.get("analysis", {}).get("resamples", 5000),
+        cfg.get("analysis", {}).get("seed", 13),
+    ) if full else []
+    latencies = [r["latency_s"] for rows in checkpoints.values() for r in rows
+                 if r.get("latency_s") is not None]
+    result = {
+        "planned": len(tasks), "completed": sum(r["completed"] for r in summaries),
+        "full_parsed": len(full), "parse_failures": sum(r["parse_failures"] for r in summaries),
+        "saved_responses": sum(r["responses"] for r in summaries),
+        "maximum_generations": len(tasks) * (turns + 1),
+        "estimates": dict(zip(("initial_error", "final_error", "gain"), estimates)),
+        "known_latency_responses": len(latencies), "mean_generation_latency_s": _mean(latencies),
+        "games": summaries,
+    }
+    threshold = cfg["execution"]["convergence_delta_e"]
+    result["initial_converged"] = sum(r["initial_projected_error"] <= threshold for r in full)
+    result["final_converged"] = sum(r["final_projected_error"] <= threshold for r in full)
+    (run_dir / "metrics/grounding_analysis.json").write_text(json.dumps(result, indent=2, allow_nan=False) + "\n")
+    lines = [f"# Fresh grounding replication: {run_dir.name}", "",
+             f"- Completed games: {result['completed']} / {len(tasks)}",
+             f"- Fully parsed paired initial/final examples: {len(full)} / {len(tasks)}",
+             f"- Parse failures: {result['parse_failures']}",
+             f"- Saved responses: {result['saved_responses']} / {result['maximum_generations']} maximum",
+             f"- Model: {cfg['model']['model_name']} via {cfg['model']['provider']}",
+             f"- HEX output; axis oracle with at most three constraints; {turns} fixed revisions.",
+             "- Each initial prediction is also the one-shot baseline; no duplicate initial generation.",
+             "", "## Paired target error", "",
+             "| Quantity | N | Mean | 95% percentile interval |",
+             "|---|---:|---:|---|" ]
+    for name, e in result["estimates"].items():
+        interval = "n/a" if e["low"] is None else f"[{e['low']:.3f}, {e['high']:.3f}]"
+        lines.append(f"| {name} | {e['n']} | {_fmt(e['mean'])} | {interval} |")
+    lines += ["", f"- Initially/finally converged on the paired cohort: {result['initial_converged']} / {result['final_converged']} (threshold {threshold}).",
+              "", "## Regime coverage and outcomes", "",
+              "| Regime | Planned | Full parsed | Initial error | Final error | Gain |",
+              "|---|---:|---:|---:|---:|---:|"]
+    for regime in REGIMES:
+        rows = [r for r in full if r["regime_label"] == regime]
+        planned = sum(r["regime_label"] == regime for r in summaries)
+        cells = [_fmt(_mean([r[k] for r in rows])) for k in ("initial_projected_error", "final_projected_error", "projected_gain")]
+        lines.append(f"| {regime} | {planned} | {len(rows)} | " + " | ".join(cells) + " |")
+    lines += ["", "## Timing", "",
+              f"- Mean saved generation latency: {_fmt(_mean(latencies))} seconds ({len(latencies)} known responses).",
+              "Latency excludes model loading, checkpoint/report overhead, and unsaved backend failures. Partial-run estimates are provisional; HEX throughput does not predict longer LAB or teacher generations.",
+              "", "## Limits", "",
+              "Balanced regime sampling estimates an equal-regime benchmark, not corpus-frequency performance. Intervals resample whole descriptions within regimes and retain paired initial/final states; generations are not independent examples. They do not measure human target agreement, model randomness, or population generalization. Accuracy excludes failed/pending trajectories; completion remains visible. Fixed rounds continue after close guesses. More feedback also provides more information; this alone does not isolate sequential adaptation from a matched information budget. An unfinished run is not final evidence.", ""]
+    (run_dir / "reports/grounding_summary.md").write_text("\n".join(lines))

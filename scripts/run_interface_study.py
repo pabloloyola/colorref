@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import contextlib
 import fcntl
+import hashlib
 import json
 import logging
 import os
@@ -88,6 +89,10 @@ def create_run(cfg, templates, examples, config_path):
             "config_sha256": plan_digest([cfg]),
             "model": cfg["model"],
             "teacher": cfg["teacher"],
+            "input_artifact": {
+                "path": cfg["input"]["subset_path"],
+                "sha256": hashlib.sha256((ROOT / cfg["input"]["subset_path"]).read_bytes()).hexdigest(),
+            } if (ROOT / cfg["input"]["subset_path"]).is_file() else None,
             "state_space": "clipped_rounded_uint8_srgb",
             "primary_evaluation": "projected_lab",
             "fixed_feedback_rounds": cfg["execution"]["max_turns"],
@@ -240,6 +245,7 @@ def main():
                 json.dumps(
                     {
                         "examples": len(examples),
+                        "study_design": cfg["study"].get("design", "interface_comparison"),
                         "examples_per_regime": cfg["study"]["examples_per_regime"],
                         "games": len(tasks),
                         "maximum_generations": len(tasks)
@@ -296,7 +302,8 @@ def main():
                 )
         finally:
             write_reports(cfg, plan["tasks"], checkpoints, run_dir)
-        logger.info("Summary: %s/reports/interface_summary.md", run_dir)
+        report_name = "grounding_summary.md" if cfg["study"].get("design") == "grounding_replication" else "interface_summary.md"
+        logger.info("Summary: %s/reports/%s", run_dir, report_name)
 
 
 if __name__ == "__main__":

@@ -92,6 +92,7 @@ class HFTransformersClient(LLMClient):
         torch_dtype: str = "bfloat16",
         enable_thinking: bool = False,
         alias: str | None = None,
+        revision: str | None = None,
     ) -> None:
         if hf_home:
             os.environ["HF_HOME"] = hf_home
@@ -99,6 +100,7 @@ class HFTransformersClient(LLMClient):
         self.model_name = model_name_or_path
         self.alias = alias or model_name_or_path
         self.enable_thinking = enable_thinking
+        self.revision = revision
         self._model_and_tokenizer = self._load_model(device_map, torch_dtype)
 
     def _load_model(self, device_map: str, torch_dtype_str: str):
@@ -114,11 +116,13 @@ class HFTransformersClient(LLMClient):
 
         logger.info("Loading model %s (device_map=%s, dtype=%s)…", self.model_name, device_map, torch_dtype_str)
         t0 = time.time()
-        tokenizer = AutoTokenizer.from_pretrained(self.model_name)
+        revision_kwargs = {"revision": self.revision} if self.revision is not None else {}
+        tokenizer = AutoTokenizer.from_pretrained(self.model_name, **revision_kwargs)
         model = AutoModelForCausalLM.from_pretrained(
             self.model_name,
             dtype=dtype,
             device_map=device_map,
+            **revision_kwargs,
         )
         logger.info("Model loaded in %.1fs", time.time() - t0)
         return model, tokenizer
@@ -307,6 +311,7 @@ def build_client(cfg: dict) -> LLMClient:
             torch_dtype=cfg.get("torch_dtype", "bfloat16"),
             enable_thinking=cfg.get("enable_thinking", False),
             alias=cfg.get("alias"),
+            revision=cfg.get("revision"),
         )
 
     if provider == "openai_compatible":

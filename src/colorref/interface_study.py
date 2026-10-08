@@ -29,9 +29,13 @@ VARIANTS = {"hex": "hex", "lab_plain": "lab", "lab_axis_legend": "lab"}
 
 def validate_config(cfg: dict, templates: dict) -> None:
     variants = cfg["study"]["variants"]
-    if {x["id"]: x["output_space"] for x in variants} != VARIANTS or len(variants) != 3:
-        raise ValueError("Require exactly HEX, plain LAB, and LAB axis-legend variants")
-    if set(templates) != set(VARIANTS) or any(
+    design = cfg["study"].get("design", "interface_comparison")
+    if design not in {"interface_comparison", "grounding_replication"}:
+        raise ValueError("Unknown study design")
+    expected = {"hex": "hex"} if design == "grounding_replication" else VARIANTS
+    if {x["id"]: x["output_space"] for x in variants} != expected or len(variants) != len(expected):
+        raise ValueError("Require exactly HEX for grounding replication, or HEX, plain LAB, and LAB axis-legend variants for interface comparison")
+    if set(templates) != set(expected) or any(
         set(value) != {"initial", "revision"} for value in templates.values()
     ):
         raise ValueError("Every variant needs frozen initial and revision prompts")
@@ -116,7 +120,7 @@ def build_tasks(cfg: dict, examples: list[dict]) -> list[dict]:
     rng.shuffle(ordered)
     tasks = []
     for example in ordered:
-        variants = list(VARIANTS)
+        variants = ["hex"] if cfg["study"].get("design") == "grounding_replication" else list(VARIANTS)
         rng.shuffle(variants)
         for variant in variants:
             tasks.append(
