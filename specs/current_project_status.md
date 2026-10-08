@@ -355,3 +355,15 @@ threshold and recorded-target limitation without changing data or results.
 See `specs/results/target_inventory_verified_20261008.md` for counts, input
 hashes, evidence provenance and limits. Earlier pending-audit notes above are
 historical; denominator provenance and raw same-set message review remain open.
+
+## 2026-10-08 completed same-set message review
+
+The author exported all six changed restricted-zero-shot messages preserving
+the lexical direction set. All are c3: four reorder constraints (three wins,
+one loss), two change conjunctions/punctuation (one tie, one loss). The net
+sum -126.040 agrees with the earlier group audit to displayed precision.
+Case 52032 contributes -92.008, approximately 73% of this group's net
+advantage. Main text and appendix now describe concentration and surface-form
+sensitivity without claiming a superior ordering or causal mechanism.
+See `specs/results/receiver_same_set_review_20261008.md`. No inference or
+performance-score changes. Historical metadata remains unresolved.

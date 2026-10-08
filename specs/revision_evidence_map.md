@@ -47,9 +47,12 @@ Do not relaunch the already completed teacher few-shot/restricted controls,
 shared-start study, magnitude transfer, or saved-output CPU audits because an
 older chronological note says they are pending. The planned package is complete.
 
-The remaining central content work is a raw-data availability audit for target
-ambiguity, recovery of original diagnostic denominators/teacher provenance,
-and author review of the revised claim hierarchy. These are primarily archival
+The production raw-data availability audit and six changed same-set message
+review are complete: see `specs/results/target_inventory_verified_20261008.md`
+and `specs/results/receiver_same_set_review_20261008.md`. Human target agreement
+remains unmeasured. The remaining central content work is recovery of original
+diagnostic denominators/teacher provenance and author review of the revised
+claim hierarchy. These are primarily archival
 and interpretation tasks. Human target judgments, unaided teacher geometry,
 cross-model transfer, and downstream creative editing remain extensions unless
 the paper is broadened to claim them.
