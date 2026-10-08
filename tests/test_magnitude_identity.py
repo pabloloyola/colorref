@@ -27,6 +27,8 @@ class IdentityTests(unittest.TestCase):
         self.assertEqual(result['all_pairs']['both_parsed'], n)
         self.assertEqual(sum(r['planned_pairs'] for r in result['by_direction_distance']), n)
         self.assertEqual(sum(r['planned_pairs'] for r in result['by_prompt_identity']), n)
+        self.assertEqual([r['prompt_identical'] for r in result['by_prompt_identity']], [True, False])
+        self.assertIsInstance(result['by_prompt_identity'][0]['same_prompt'], int)
         self.assertEqual(result['all_pairs']['identical_prompt_different_native_lab'], 0)
         self.assertIn('Phrase transitions', report(result, 'fixture'))
         self.assertEqual((tasks, rows), before)

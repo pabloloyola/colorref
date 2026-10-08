@@ -64,3 +64,26 @@ Misses remain included. Source: author attachment `Pasted text(8).txt`.
 Next CPU-only check: `scripts/audit_magnitude_identity.py`. No new inference,
 prompt replacement, controller refitting, case selection or primary analysis
 change is required.
+
+## Completed identity audit (author report)
+
+Among 2,108 planned pairs, 1,386 have identical selected wording and prompts.
+Available parsed pairs: 2,103; identical native LAB 1,416; identical displayed
+HEX 1,419. No parsed prompt-identical pair has differing native LAB.
+On the primary common-quartet cohort, 1,385 prompt-identical cases tie exactly;
+713 prompt-different cases have mean calibrated minus unfitted error
+−16.175041, with 556 wins, 34 ties and 123 losses. Their composition is
+post hoc; this is not a replacement primary contrast or independent experiment.
+
+Every 12-unit case and every darker case has identical prompts. Policy changes
+are lighter/red/green at 6 units (a_little → somewhat), and red/yellow/blue
+at 24 units (much → somewhat). The latter avoids the excessively large
+displayed steps induced by much in this model/prompt. Magnitude selection can
+choose a verbally weaker term for a larger chromatic correction because phrase
+responses are direction-dependent. It does not imply that somewhat has a
+universal 24-unit meaning or that all large corrections are solved.
+
+The first report printed 1,385/0 under the boolean Same prompt column due to
+a dictionary-key collision between the grouping label and count. The code
+now keeps the label as prompt_identical; subgroup membership, effects, counts,
+saved responses, controller and primary report are unchanged.

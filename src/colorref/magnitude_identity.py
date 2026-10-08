@@ -57,7 +57,7 @@ def analyze(tasks, rows):
         selected = [p for p in pairs if p['direction'] == direction and p['requested_distance'] == distance]
         result['by_direction_distance'].append({'direction': direction, 'requested_distance': distance, **summarize(selected)})
     for same in (True, False):
-        result['by_prompt_identity'].append({'same_prompt': same, **summarize([p for p in common if p['same_prompt'] == same])})
+        result['by_prompt_identity'].append({'prompt_identical': same, **summarize([p for p in common if p['same_prompt'] == same])})
     return result
 
 
@@ -68,7 +68,7 @@ def report(result, run_id):
     lines += ['', '## Common-quartet effects by prompt identity', '', '| Same prompt | Cases | Mean calibrated − unfitted ΔE | Wins / ties / losses |', '|---|---:|---:|---|']
     for r in result['by_prompt_identity']:
         effect = f"{r['mean_error_delta']:.6f}" if r['mean_error_delta'] is not None else 'n/a'
-        lines.append(f"| {r['same_prompt']} | {r['both_parsed']} | {effect} | {r['wins']} / {r['tolerance_error_ties']} / {r['losses']} |")
+        lines.append(f"| {r['prompt_identical']} | {r['both_parsed']} | {effect} | {r['wins']} / {r['tolerance_error_ties']} / {r['losses']} |")
     lines += ['', '## Phrase transitions (all planned pairs)', '', '| Direction / distance | Unfitted → calibrated | N |', '|---|---|---:|']
     for r in result['by_direction_distance']:
         for transition, n in sorted(r['phrase_transitions'].items()):
