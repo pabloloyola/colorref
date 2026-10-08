@@ -411,3 +411,14 @@ colors plus earlier anchors, and freezes 32 new calibration + 128 new held-out
 colors with cutpoints 9/18 and seed 211. Only input stimuli enter preparation;
 no evaluation response fits the new protocol. Six new CPU acceptance checks
 pass. No larger-study model responses have yet been generated.
+# 2026-10-08 completed four-arm confirmation
+
+The author-provided complete report is recorded in
+`specs/results/magnitude_confirmation_20261008.md`. Calibration 768/768,
+held-out responses 8,432/8,432, common parsed quartets 2,098 spanning all
+128 independent evaluation colors. Primary calibrated minus unfitted error
+−5.497 [−5.786, −5.203]. Preparation/execution of this confirmation is complete;
+do not rerun it. Next: CPU direction/distance and numeric-tail audit using
+`scripts/analyze_magnitude_control.py`, followed by separately calibrated
+model-family replication. Four-arm sequential transfer is not implemented.
+

@@ -31,9 +31,10 @@ Controlled feedback reduces Qwen3-14B's mean target error from 42.33 to
 Matched-start controls show sensitivity to output representation and explicit
 axis instructions. Graded corrections exhibit ordered but direction-dependent
 step sizes; correct directions alone do not prevent overshoot.
-A frozen wording policy calibrated on separate colors reduces sequential
-held-out target error from 6.46 to 2.98 and uses 34.5\% fewer evaluation
-calls, excluding calibration cost.
+A frozen wording policy calibrated on 32 separate colors reduces one-step
+held-out target error from 12.36 to 6.86 relative to a fixed graded-wording
+rule across 128 starting colors. A smaller sequential pilot also tests
+transfer and generation cost.
 Oracle-assisted teacher controls further distinguish preserving supplied
 directions from producing useful corrections: few-shot restatement can be
 faithful without yielding the best receiver accuracy.
@@ -236,6 +237,14 @@ The bare arm supplies direction only; a numeric control supplies the exact
 coordinate increment and explicit holds on the other coordinates.
 These arms share one requested axis, not equal semantic information.
 
+The four-arm confirmation fits medians on 32 new colors (768 responses)
+and evaluates 128 disjoint starting colors. An unfitted arm selects
+\textit{a little}, \textit{somewhat}, or \textit{much} using fixed residual
+cutpoints 9 and 18, without receiver medians. The primary comparison is
+calibrated minus unfitted displayed target error. Input-only feasibility
+checks retain 2{,}108 targets and exclude 196; previous study colors are
+excluded before inference. Whole starting colors are resampled for intervals.
+
 One-step evaluation uses 12 disjoint starts and 196 feasible targets.
 Sequential transfer freezes the fitted policy and uses 12 further fresh
 starts, 200 targets, target-known stopping at $\Delta E_{76}\leq5$, and a
@@ -371,13 +380,18 @@ identified by these outputs alone.
 
 \subsection{Calibrated magnitude improves held-out localization}
 \label{sec:results_magnitude}
-In one-step control, all 588 evaluation responses parse.
-Calibrated wording reduces mean target error from 11.77 to 6.36
-(paired difference $-5.41$ [$-10.22$, $-2.17$]), and harmful updates
-from 48 to 3, despite perfect requested-axis compliance in both arms.
-The median paired error difference is zero: gains are not uniform across
-targets. Small/moderate corrections improve most; the 24-unit aggregate
-contrast spans zero, and red corrections expose coarse phrase resolution.
+The four-arm confirmation completes all 8{,}432 held-out responses.
+There are 2{,}098 fully parsed quartets spanning all 128 starting colors;
+parse failures number 3, 5, 0, and 2 for bare, unfitted, calibrated, and
+numeric feedback. Calibrated wording reduces mean target error from 12.36
+to 6.86 relative to the unfitted rule: paired difference $-5.50$
+[$-5.79$, $-5.20$]. The available-pair contrast is similar ($-5.53$).
+Unfitted versus bare error differs by $0.45$ [$-0.69$, $1.52$], so
+graded wording alone does not establish improvement in this comparison.
+Both graded arms follow the requested direction on approximately 99\%
+of parsed responses. Direction compliance therefore does not ensure
+accurate magnitude control. This tests the fitted policy against one fixed
+rule; it does not establish that every unfitted rule is inferior.
 
 \begin{table}[t]
 \centering\small
@@ -385,19 +399,21 @@ contrast spans zero, and red corrections expose coarse phrase resolution.
 \toprule
 Study & Arm & Final $\Delta E$ & $\leq5$ & Calls \\
 \midrule
-One step & Bare & 11.77 & 94 & 196 \\
- & Calibrated & 6.36 & 125 & 196 \\
- & Numeric & 0.53 & 192 & 196 \\
+One step & Bare & 11.91 & -- & 2{,}108 \\
+ & Unfitted & 12.36 & -- & 2{,}108 \\
+ & Calibrated & 6.86 & -- & 2{,}108 \\
+ & Numeric & 0.35 & -- & 2{,}108 \\
 \midrule
 Sequential & Bare & 6.46 & 148 & 516 \\
  & Calibrated & 2.98 & 192 & 338 \\
  & Numeric & 0.10 & 200 & 205 \\
 \bottomrule
 \end{tabular}
-\caption{Magnitude control: 196 one-step targets and 200 sequential targets
-on separate sets of 12 starting colors. Sequential control stops at displayed
-error $\leq5$, with a five-revision cap. Calls exclude the common calibration
-stage of 288 responses. Numeric feedback supplies additional precision.}
+\caption{One-step confirmation: means on 2{,}098 common parsed quartets
+from 128 starts; calls include failed outputs. Sequential pilot: 200 targets
+from 12 further starts, stopping at error $\leq5$ with a five-revision cap.
+Calls exclude calibration: 768 responses for confirmation and 288 for the
+sequential pilot. Numeric feedback supplies additional precision.}
 \label{tab:magnitude}
 \end{table}
 
@@ -406,9 +422,9 @@ revisions. Calibrated minus bare endpoint error is $-3.48$
 [$-4.20$, $-2.74$]; convergence rises from 148/200 to 192/200.
 Evaluation calls fall from 516 to 338 (34.5\%), excluding calibration.
 All twelve per-start mean contrasts favor the calibrated policy, but
-individual targets do not uniformly improve. There is no uncalibrated
-graded-selection arm, so the comparison does not isolate the necessity of
-empirical fitting from the benefit of supplying magnitude information.
+individual targets do not uniformly improve. This sequential pilot has no
+unfitted graded-selection arm; the larger four-arm confirmation tests that
+contrast for one revision only.
 
 Eight calibrated trajectories exhaust the cap: all concern 24-unit lighter
 or greener targets and end with off-axis disagreement exceeding the
@@ -528,8 +544,8 @@ The new controls use one model and prompt family, finite fixed anchors or
 twelve-color sampling clusters, English descriptions, and HEX-derived
 starting states. Bootstrap intervals do not establish broad population
 generalization, generation-randomness uncertainty, or multiplicity-adjusted
-significance. All new receiving/control outputs parse, but failed calibration
-output remains in counts; more generally matched parsed cohorts can introduce
+significance. Failed calibration and held-out outputs remain in counts;
+matched parsed cohorts can introduce
 selection bias. No outputs are repaired or filtered by projection cost.
 
 Teacher studies test oracle-assisted restatement, not unaided geometry;

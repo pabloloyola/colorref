@@ -8,7 +8,7 @@ from statistics import mean, median
 
 import numpy as np
 
-from colorref.magnitude_control import ARMS
+from colorref.magnitude_control import evaluation_arms
 from colorref.magnitude_reports import average, cluster_effect, fmt
 from colorref.quantifiers import DIRECTION_SPECS
 
@@ -32,16 +32,18 @@ def parsed(task, rows):
 
 
 def summarize(cases, rows, cfg):
-    """Statistics use common parsed triplets; completion retains every planned case."""
-    common = [g for g in cases if all(parsed(g[a], rows) for a in ARMS)]
+    """Statistics use all configured arms; completion retains every planned case."""
+    configured_arms = evaluation_arms(cfg)
+    left = "unfitted" if "unfitted" in configured_arms else "bare"
+    common = [g for g in cases if all(parsed(g[a], rows) for a in configured_arms)]
     starts = [g["bare"]["base_id"] for g in common]
     deltas = [
         rows[g["calibrated"]["condition_id"]]["metrics"]["projected_target_error"]
-        - rows[g["bare"]["condition_id"]]["metrics"]["projected_target_error"]
+        - rows[g[left]["condition_id"]]["metrics"]["projected_target_error"]
         for g in common
     ]
     arms = {}
-    for arm in ARMS:
+    for arm in configured_arms:
         planned = [g[arm] for g in cases]
         observed = [
             rows[t["condition_id"]] for t in planned if t["condition_id"] in rows
@@ -110,8 +112,14 @@ def summarize(cases, rows, cfg):
         if common
         else None,
         "arms": arms,
-        "calibrated_minus_bare": cluster_effect(
+        "comparison_left": left,
+        "primary_effect": cluster_effect(
             deltas, starts, cfg["analysis"]["resamples"], cfg["analysis"]["seed"]
+        ),
+        "calibrated_minus_bare": cluster_effect(
+            [rows[g["calibrated"]["condition_id"]]["metrics"]["projected_target_error"]
+             - rows[g["bare"]["condition_id"]]["metrics"]["projected_target_error"] for g in common],
+            starts, cfg["analysis"]["resamples"], cfg["analysis"]["seed"]
         ),
         "median_paired_error_delta": median(deltas) if deltas else None,
         "wins": sum(x < -PAIR_TOLERANCE for x in deltas),
@@ -186,6 +194,8 @@ def numeric_audit(tasks, rows):
 
 
 def analyze(cfg, plan, bundle, rows):
+    configured_arms = evaluation_arms(cfg)
+    left = "unfitted" if "unfitted" in configured_arms else "bare"
     tasks = bundle["evaluation_tasks"] if bundle else []
     grouped = {}
     for task in tasks:
@@ -193,6 +203,8 @@ def analyze(cfg, plan, bundle, rows):
     groups = list(grouped.values())
     result = {
         "analysis_kind": "exploratory_saved_output_breakdown",
+        "configured_arms": list(configured_arms),
+        "comparison_left": left,
         "pair_tie_tolerance_delta_e": PAIR_TOLERANCE,
         "numeric_exact_tolerance_delta_e": NUMERIC_TOLERANCE,
         "global": summarize(groups, rows, cfg),
@@ -239,13 +251,13 @@ def analyze(cfg, plan, bundle, rows):
                 **summarize(selected, rows, cfg),
             }
         )
-    common = [g for g in groups if all(parsed(g[a], rows) for a in ARMS)]
+    common = [g for g in groups if all(parsed(g[a], rows) for a in configured_arms)]
     keys = sorted({g["bare"]["base_id"] for g in common})
     for key in keys:
         remaining = [g for g in common if g["bare"]["base_id"] != key]
         deltas = [
             rows[g["calibrated"]["condition_id"]]["metrics"]["projected_target_error"]
-            - rows[g["bare"]["condition_id"]]["metrics"]["projected_target_error"]
+            - rows[g[left]["condition_id"]]["metrics"]["projected_target_error"]
             for g in remaining
         ]
         result["leave_one_start_out"].append(
@@ -256,11 +268,11 @@ def analyze(cfg, plan, bundle, rows):
             }
         )
     available = [
-        g for g in groups if all(parsed(g[a], rows) for a in ("bare", "calibrated"))
+        g for g in groups if all(parsed(g[a], rows) for a in (left, "calibrated"))
     ]
     differences = [
         rows[g["calibrated"]["condition_id"]]["metrics"]["projected_target_error"]
-        - rows[g["bare"]["condition_id"]]["metrics"]["projected_target_error"]
+        - rows[g[left]["condition_id"]]["metrics"]["projected_target_error"]
         for g in available
     ]
     result["available_pair"] = cluster_effect(
@@ -283,16 +295,18 @@ def effect_text(effect):
 
 def report(result, run_id):
     overall, numeric = result["global"], result["numeric"]
+    left = result["comparison_left"]
+    cohort = "quartets" if len(result["configured_arms"]) == 4 else "triplets"
     lines = [
-        f"# Magnitude pilot CPU audit: {run_id}",
+        f"# Magnitude saved-output CPU audit: {run_id}",
         "",
         "Exploratory diagnostics of saved outputs; no new model responses or controller fitting.",
         "",
-        f"- Common parsed triplets: {overall['common_cases']} / {overall['planned_cases']}; starting colors: {overall['common_starting_colors']}.",
-        f"- Calibrated minus bare ΔE: {effect_text(overall['calibrated_minus_bare'])}.",
+        f"- Common parsed {cohort}: {overall['common_cases']} / {overall['planned_cases']}; starting colors: {overall['common_starting_colors']}.",
+        f"- Calibrated minus {left} ΔE: {effect_text(overall['primary_effect'])}.",
         f"- Median paired ΔE: {fmt(overall['median_paired_error_delta'])}.",
         f"- Calibrated wins / ties / losses: {overall['wins']} / {overall['ties']} / {overall['losses']} (0.01 ΔE tie tolerance).",
-        f"- Available bare/calibrated pairs: {result['available_pair']['cases']}; {effect_text(result['available_pair'])}.",
+        f"- Available {left}/calibrated pairs: {result['available_pair']['cases']}; {effect_text(result['available_pair'])}.",
         "",
         "## Common-cohort movement and target accuracy",
         "",
@@ -314,7 +328,7 @@ def report(result, run_id):
             "",
             "Negative paired differences favor calibrated wording. Bins may share starts; intervals are exploratory and not multiplicity-adjusted.",
             "",
-            "| Direction / units | Common / planned | Starts | Bare ΔE | Calibrated ΔE | Numeric ΔE | Calibrated − bare [95% interval] | Wins / ties / losses | Median-target gap | Step-transfer mismatch |",
+            f"| Direction / units | Common / planned | Starts | {left} ΔE | Calibrated ΔE | Numeric ΔE | Calibrated − {left} [95% interval] | Wins / ties / losses | Median-target gap | Step-transfer mismatch |",
             "|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|",
         ]
         for r in rows:
@@ -322,7 +336,7 @@ def report(result, run_id):
                 str(r[k]) for k in ("direction", "requested_distance") if k in r
             )
             lines.append(
-                f"| {label} | {r['common_cases']} / {r['planned_cases']} | {r['common_starting_colors']} | {fmt(r['arms']['bare']['projected_target_error'])} | {fmt(r['arms']['calibrated']['projected_target_error'])} | {fmt(r['arms']['numeric']['projected_target_error'])} | {effect_text(r['calibrated_minus_bare'])} | {r['wins']} / {r['ties']} / {r['losses']} | {fmt(r['calibrated_median_target_gap']['mean'])} | {fmt(r['calibrated_step_transfer_mismatch']['mean'])} |"
+                f"| {label} | {r['common_cases']} / {r['planned_cases']} | {r['common_starting_colors']} | {fmt(r['arms'][left]['projected_target_error'])} | {fmt(r['arms']['calibrated']['projected_target_error'])} | {fmt(r['arms']['numeric']['projected_target_error'])} | {effect_text(r['primary_effect'])} | {r['wins']} / {r['ties']} / {r['losses']} | {fmt(r['calibrated_median_target_gap']['mean'])} | {fmt(r['calibrated_step_transfer_mismatch']['mean'])} |"
             )
     lines += [
         "",
@@ -332,7 +346,7 @@ def report(result, run_id):
         "",
         "## Per-start means and leave-one-start-out sensitivity",
         "",
-        "| Start | HEX | Common / planned | Bare ΔE | Calibrated ΔE | Δ error | Δ after omitting this start |",
+        f"| Start | HEX | Common / planned | {left} ΔE | Calibrated ΔE | Δ error | Δ after omitting this start |",
         "|---|---|---:|---:|---:|---:|---:|",
     ]
     omitted = {
@@ -341,7 +355,7 @@ def report(result, run_id):
     }
     for r in result["by_start"]:
         lines.append(
-            f"| {r['base_id']} | {r['hex']} | {r['common_cases']} / {r['planned_cases']} | {fmt(r['arms']['bare']['projected_target_error'])} | {fmt(r['arms']['calibrated']['projected_target_error'])} | {fmt(r['calibrated_minus_bare']['mean'])} | {fmt(omitted.get(r['base_id']))} |"
+            f"| {r['base_id']} | {r['hex']} | {r['common_cases']} / {r['planned_cases']} | {fmt(r['arms'][left]['projected_target_error'])} | {fmt(r['arms']['calibrated']['projected_target_error'])} | {fmt(r['primary_effect']['mean'])} | {fmt(omitted.get(r['base_id']))} |"
         )
     lines += [
         "",
@@ -368,6 +382,6 @@ def report(result, run_id):
         "",
         "## Interpretation",
         "",
-        "All movement/error tables use common generated parsed triplets. Completion counts, available-pair sensitivity and unparsed/missing cases remain in the JSON. Zero-call stops are counted separately from generated responses. Cluster draws resample entire starting colors with their observed paired cases and retain pooled case weights; per-start means have no within-start bootstrap interval. Leave-one-start-out values are descriptive leverage checks, not new confidence intervals or reasons to drop colors. The improvement bound is 2 d cos(theta) for displayed movement magnitude; crossing it diagnoses harmful overshoot in Euclidean LAB, independent of sign compliance. Boundary projection and native requested steps are reported separately; these observations do not establish an internal reasoning mechanism or a perceptual-uniformity explanation. Numeric errors measure exact instructed coordinates separately from displayed targets; misses remain in performance estimates. All intervals and tie thresholds in this added audit are exploratory. No held-out responses refit medians, replace cases or alter prompts. The 12 evaluation starts are the sampling clusters; multiple directions/distances are not independent colors. Full miss prompts/responses and subgroup diagnostics are in metrics/magnitude_breakdown.json. Primary magnitude_summary.md and its original metrics remain unchanged.",
+        f"All movement/error tables use common generated parsed {cohort}. Completion counts, available-pair sensitivity and unparsed/missing cases remain in the JSON. Zero-call stops are counted separately from generated responses. Cluster draws resample entire starting colors with their observed paired cases and retain pooled case weights; per-start means have no within-start bootstrap interval. Leave-one-start-out values are descriptive leverage checks, not new confidence intervals or reasons to drop colors. The improvement bound is 2 d cos(theta) for displayed movement magnitude; crossing it diagnoses harmful overshoot in Euclidean LAB, independent of sign compliance. Boundary projection and native requested steps are reported separately; these observations do not establish an internal reasoning mechanism or a perceptual-uniformity explanation. Numeric errors measure exact instructed coordinates separately from displayed targets; misses remain in performance estimates. All intervals and tie thresholds in this added audit are exploratory. No held-out responses refit medians, replace cases or alter prompts. The {overall['common_starting_colors']} observed evaluation starts are the sampling clusters; multiple directions/distances are not independent colors. Full miss prompts/responses and subgroup diagnostics are in metrics/magnitude_breakdown.json. Primary magnitude_summary.md and its original metrics remain unchanged.",
     ]
     return "\n".join(lines) + "\n"
