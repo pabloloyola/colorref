@@ -200,12 +200,26 @@ usefulness, without equating linguistic audit scores with task success.
 \section{Framework}
 \label{sec:colorref}
 
+ColorRef follows the interaction introduced in Figure~\ref{fig:intro_game}:
+a description elicits an initial guess, and verbal feedback guides its
+revision toward a target hidden from the guesser. We distinguish the
+description, the recorded target, and the current guess throughout. This
+section defines the game and its color states, then explains how we
+calibrate the language used to request an adjustment.
+
 \subsection{Descriptions and assigned targets}
 \label{sec:dataset}
+Each description-based game starts from an example $(x_i,h_i,c_i,r_i)$:
+$x_i$ is the color description, $h_i$ its recorded sRGB HEX target,
+$c_i$ the target's CIELAB coordinate under D65, and $r_i$ a semantic-regime
+label. The target is assigned by the recorded pairing, not inferred from
+the guesser's answer. Error against this target measures disagreement with
+that pairing; it does not establish that another interpretation of the
+description is semantically wrong.
+
 We construct the corpus from ColorNames-derived English descriptions and
 sRGB hex codes. After preprocessing and validity filtering, 518{,}830 rows
-remain. Each example $(x_i,h_i,c_i,r_i)$ contains a description, recorded
-HEX target, its CIELAB coordinate, and a semantic-regime label.
+remain.
 We retain description-validity scores $\geq 0.75$, including 43{,}187 rows
 at the boundary. The validity filter asks whether a string plausibly functions as a color
 description; it does not measure agreement about its paired target.
@@ -220,18 +234,38 @@ Examples and counts appear in Appendix~\ref{app:corpus-examples}.
 
 \subsection{Interactive states and evaluation}
 \label{sec:game}
-In the original protocol, the guesser initially observes only $x_i$ and
-outputs HEX. The teacher sees the target and current guess, emits feedback,
-and the guesser receives the description, previous guess, and latest message.
-The reference game permits up to three revisions, with early stopping at
-$\Delta E_{76}<5$. Controlled studies below either supply the start or
-replace description prediction with an isolated adjustment task.
+The \emph{guesser} initially receives only $x_i$ and returns a color guess
+at turn 0. This is the \emph{one-shot prediction}: a prediction before any
+revision, rather than a statement about the number of demonstrations in
+the prompt. The \emph{teacher} has access to the recorded target and the
+current guess, compares them, and issues verbal feedback. At revision
+$t+1$, the guesser receives the description, its displayed guess at turn
+$t$, and the teacher's latest message. It then returns a new color guess.
+The target itself is never appended to the guesser's prompt. A teacher
+can be a deterministic oracle or a language model; their messages and
+their effects on the guesser can be evaluated separately.
 
-For direct-LAB outputs, retain both native coordinates $z_t$ and the displayed
-state $\hat c_t=P(z_t)$, obtained by conversion to clipped, rounded uint8
-sRGB and back to LAB. Feedback and subsequent prompts use the displayed state
-in the matched controls. Native and displayed behavior can differ:
-rectangular LAB encoding bounds are not the sRGB gamut.
+All generations in the reported studies use a fresh context. In the
+description-based games, a revision includes the previous displayed guess
+and latest feedback, but not the complete conversation history. The fresh
+grounding evaluation and shared-start interface control use three fixed
+revisions: an initial or supplied state followed by turns 1--3. These
+protocols continue even when an intermediate guess is already close.
+The sequential magnitude pilot instead uses target-known threshold
+stopping and a five-revision cap. We report $\Delta E_{76}\leq5$ as an
+operational benchmark success criterion, not a universal perceptual
+threshold or a stopping decision learned by the guesser.
+
+The output interface specifies how the guesser expresses its color.
+A HEX response directly defines a displayed uint8 sRGB color. For a
+direct-LAB response, we retain its \emph{native} coordinates $z_t$ and
+convert them to clipped, rounded uint8 sRGB. Converting that displayed
+color back to LAB gives $\hat c_t=P(z_t)$. We use $\hat c_t$ for primary
+target error, oracle feedback, and the next prompt; a LAB prompt expresses
+this displayed state in LAB coordinates. Native and displayed behavior
+can differ because rectangular LAB encoding bounds are not the sRGB
+gamut. Keeping both prevents display projection from being mistaken for
+a change the model itself requested.
 
 Figure~\ref{fig:game_trajectory} makes these states concrete. For
 \textit{southern lime green}, the first verbal correction requests greater
@@ -265,9 +299,55 @@ performance result.}
 \label{fig:game_trajectory}
 \end{figure*}
 
-\subsection{Metrics}
+\subsection{Receiver-calibrated wording}
+\label{sec:calibration}
+The game leaves a practical choice to the teacher: how should a requested
+direction be worded to produce an appropriate step? We study this choice
+in isolated adjustment tasks. The guesser is supplied with a starting
+color, rather than asked to predict it from a description, and receives
+one requested LAB direction: lighter, darker, more red, more green,
+more yellow, or more blue. These controls separate the response to an
+adjustment from the initial interpretation of a color name. They do not
+replace the description-based game or test all of its multi-axis dynamics.
+
+For each receiving model, we measure responses to \textit{a little},
+\textit{somewhat}, and \textit{much} on separate calibration colors.
+Let $b_j$ be a displayed calibration color in LAB, $d$ a signed unit vector
+for the requested direction, and $q$ a graded wording. From the parsed
+responses $\hat c'_{j,d,q}$, we fit the typical displayed signed step:
+\begin{equation}
+m_{d,q}=\operatorname{median}_{j\in J_{d,q}}
+ d^\top(\hat c'_{j,d,q}-b_j),
+\end{equation}
+where $J_{d,q}$ contains the parsed calibration responses for that
+direction and wording. Zero and wrong-direction steps remain in the
+median; parse failures remain in completion counts. Bare wording is
+measured as a separate baseline and has no position in the graded ladder.
+
+At evaluation time, the teacher knows the hidden target $c$ and the
+displayed starting state $\hat c$. For a direction $d$ toward that target,
+their remaining requested-axis difference is
+$\rho=d^\top(c-\hat c)$. The calibrated policy selects
+\begin{equation}
+q^*=\arg\min_{q\in Q_d}|m_{d,q}-\rho|,
+\end{equation}
+where $Q_d$ contains graded phrases with positive fitted medians.
+Ties favor the smaller median and then the fixed phrase order.
+If no phrase is usable, the mapping is reported as unavailable.
+The guesser sees the selected verbal instruction, not the target or
+the fitted table. This procedure adapts phrase selection to the receiver's
+observed behavior; it does not fine-tune the receiver's weights.
+The mapping is frozen before held-out evaluation, and each model is
+calibrated using its own responses. Its medians describe this model and
+prompt, not universal meanings or human perceptual units.
+
+\subsection{Metrics and interpretation}
 \label{sec:metrics}
-The primary error is $e_t=\|c-\hat c_t\|_2=\Delta E_{76}$.
+We distinguish reaching the target, following a direction, and responding
+to graded magnitude. They are related outcomes, but one does not guarantee
+the others. With $c$ denoting the target LAB coordinate for the current
+game or adjustment task, primary error is
+$e_t=\|c-\hat c_t\|_2=\Delta E_{76}$.
 We report initial and endpoint error, gain $e_0-e_T$, and mean per-example
 relative improvement $(e_0-e_T)/(e_0+\epsilon)$; the latter is not the
 percentage reduction of the cohort mean. Alignment compares the displayed
@@ -287,28 +367,51 @@ remain separate. Ordinal comparisons test the ladder
 \emph{a little} $<$ \emph{somewhat} $<$ \emph{much}; bare wording is unranked.
 Projection cost is $\|z'-P(z')\|_2$.
 Direction compliance alone is insufficient: a nonzero update reduces
-Euclidean error only when $\|u\|_2<2\|v\|_2\cos\theta$.
+Euclidean error only when $\|u\|_2<2\|v\|_2\cos\theta$, where $\theta$
+is the angle between the update and the target correction.
+A directionally aligned step can therefore increase target error by
+moving too far. Conversely, an ordered response to graded words can
+leave a large gap between the available steps and the correction needed.
 
 \section{Experimental Setup}
 \label{sec:experimental_setup}
 
+The experiments progressively control different parts of the game.
+First, description-based games measure how oracle feedback changes
+initial target disagreement. Shared-start games then hold the initial
+state and first correction fixed to compare output interfaces. Isolated
+adjustments test direction and graded magnitude without requiring a
+color-name prediction, and held-out policy comparisons test whether
+receiver calibration improves phrase selection. A separate teacher study
+tests how supplied corrections are expressed and received. These designs
+answer complementary questions; the magnitude-policy results are not
+treated as evidence of calibrated full description-based games.
+
 \subsection{Oracle feedback and fresh grounding evaluation}
-Oracle policies compute LAB lightness, red--green, yellow--blue and HSV
-saturation discrepancies, threshold candidates, and rank them by normalized
-absolute error. They emit up to one, two, or three selected constraints.
-The minimal and axis-$c1$ policies share a one-constraint setting; template
-wording expresses the same selected directions through deterministic phrases.
-These phrases do not introduce the graded modifiers studied separately below.
-Examples appear in Appendix~\ref{app:bandwidth_wording_examples}.
-An additional primitive-direction template variant was originally named
-\emph{template-vocab}; the implementation does not establish a ceiling for
-all broader teacher vocabulary.
+This evaluation asks whether repeated verbal correction can reduce the
+disagreement left by a description-only prediction. The deterministic
+axis oracle compares the target with the displayed guess along LAB
+lightness, red--green, yellow--blue, and HSV saturation. A candidate
+correction must have absolute discrepancy at least 2, 3, 3, or 0.05,
+respectively. Qualifying candidates are ranked by absolute discrepancy
+divided by fixed ranges 100, 200, 220, and 1. These ranges define the
+selection policy, not a perceptual magnitude calibration.
+The oracle emits up to the configured number of selected directions,
+such as \textit{Make it darker and more green}. We call each selected
+property-direction request a \emph{constraint}; it is verbal feedback,
+not a hard restriction on the model's next output. The configured maximum
+number of constraints is the feedback \emph{bandwidth}; it does not
+specify the requested step size.
+Canonical oracle wording does not introduce the graded modifiers studied
+separately below. Appendix~\ref{app:bandwidth_wording_examples} gives
+examples and distinguishes the archived template variants from this policy.
 
 The fresh Qwen3-14B grounding evaluation uses 1{,}000 descriptions, 250 per
 regime, sampled with seed 113 after excluding all 400 original debug-subset
 IDs. Every game uses HEX output and three fixed revisions with canonical
 axis feedback supplying at most three constraints. The initial prediction
-also provides its paired one-shot baseline. All 4{,}000 responses parse.
+also provides its paired one-shot baseline, so no duplicate baseline
+generation is needed. All 4{,}000 responses parse.
 The sample is equally weighted across regimes, not weighted by corpus
 frequency. Plans, selected IDs, source/subset hashes and prompts are frozen;
 the model revision is pinned to \texttt{40c06982}. This protocol is a fresh
@@ -316,7 +419,9 @@ evaluation, rather than reconstruction of the earlier unrecoverable runs.
 
 \subsection{Matched output-interface control}
 \label{sec:setup_interface}
-On 64 descriptions, 16 per regime, compare HEX, plain LAB, and LAB with an
+This control asks how expressing a color in HEX or LAB affects revision
+when the guesser begins from the same color. On 64 descriptions, 16 per
+regime, we compare HEX, plain LAB, and LAB with an
 explicit axis legend. Each receives the same displayed start from the parent
 HEX predictions and the same first oracle correction, with at most three
 constraints. Three fixed revisions yield 192 games and 576 generations;
@@ -326,22 +431,24 @@ latest feedback. Supplied starts cost no generation within this control.
 
 \subsection{Graded wording and held-out control}
 \label{sec:setup_magnitude}
-An isolated probe uses 12 fixed colors, six directions, four wordings
+The adjustment studies first characterize how the receiver interprets
+direction and magnitude, then test the policy in Section~\ref{sec:calibration}
+on colors excluded from fitting. An isolated probe uses 12 fixed colors,
+six directions, four wordings
 (bare, a little, somewhat, much), and plain versus axis-legend LAB prompts.
 Exact 5-/10-unit and no-change controls separate coordinate execution from
 qualitative instructions: 888 responses in total, all in fresh contexts.
 
-In the exploratory pilot, 12 separately drawn sRGB calibration colors produce 288
-direction/wording responses. Fit direction-specific medians of displayed
-signed movement, including nonpositive parsed movements; only positive
-graded medians are selection candidates. For a hidden target, choose the
-phrase whose median is closest to the current requested-axis residual.
-The bare arm supplies direction only; a numeric control supplies the exact
+In the exploratory pilot, 12 separately drawn sRGB calibration colors produce
+288 direction/wording responses for fitting the receiver-calibrated mapping.
+The bare arm supplies direction only; the calibrated arm supplies the
+selected graded phrase. A numeric control supplies the exact
 coordinate increment and explicit holds on the other coordinates.
 These arms share one requested axis, not equal semantic information.
 
-The four-arm confirmation fits medians on 32 new colors (768 responses)
-and evaluates 128 disjoint starting colors. An unfitted arm selects
+The four-arm confirmation tests calibration against a rule that already
+uses the same graded vocabulary. It fits medians on 32 new colors
+(768 responses) and evaluates 128 disjoint starting colors. An unfitted arm selects
 \textit{a little}, \textit{somewhat}, or \textit{much} using fixed residual
 cutpoints 9 and 18, without receiver medians. The primary comparison is
 calibrated minus unfitted displayed target error. Input-only feasibility
@@ -363,6 +470,8 @@ details selection, projection, and cost accounting.
 
 \subsection{Teacher restatement and feedback reception}
 \label{sec:setup_teacher}
+These studies ask separately whether a teacher preserves supplied
+corrections and whether its resulting message helps the receiving guesser.
 From the shared-start cohort, four input-selected demonstrations (one per
 regime) leave 60 evaluation examples. Compare the archived natural-paraphrase
 prompt with a restricted exact-direction prompt, each zero-shot and four-shot,

@@ -159,3 +159,27 @@ introductory schematic. The current temporary-font build has no unresolved refer
 overfull boxes; all pages were rendered and inspected.
 The abstract, results, and later sections were not changed during this
 paragraph-by-paragraph introduction pass.
+
+## Framework and experimental progression
+
+The next content pass makes the game protocol explicit: description, recorded
+target, initial prediction, displayed guess, feedback and revision remain
+distinct. Turn 0 is a prediction or supplied state; the grounding/shared-start
+studies use three fixed revisions, while the sequential magnitude pilot uses
+target-known stopping with a five-revision cap. Native LAB, displayed uint8 sRGB,
+projection, direction and magnitude are defined before the results.
+
+A new Framework subsection gives the receiver-calibrated procedure: per-direction
+medians of parsed displayed signed steps, positive graded candidates, nearest-step
+phrase selection from a hidden-target residual, deterministic ties and unavailable
+mappings. Calibration remains separated from held-out colors and model weights
+are unchanged. The Experimental Setup now explains the purpose of each control
+and distinguishes description-based games from isolated adjustment policy tests.
+Oracle thresholds and fixed ranking ranges were checked against the implementation.
+
+This pass changes Framework and Experimental Setup only; the approved introduction,
+experimental outputs, Results and Discussion remain unchanged. See
+`../specs/framework_revision_20261009.md` for scope and checks. The reading PDF
+includes the complete pass and both saved-game figures. Its temporary Courier
+substitution remains a reading convenience; final publication-font layout awaits
+Overleaf. Page-limit compression is deferred.
