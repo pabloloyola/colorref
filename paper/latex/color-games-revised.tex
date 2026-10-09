@@ -82,14 +82,15 @@ approach the recorded target.
 \begin{figure*}[t]
 \centering
 \includegraphics[width=\textwidth]{latex/figures/reference_game.pdf}
-\caption{The ColorRef reference game, illustrated with \textit{dark green}.
+\caption{The ColorRef reference game, illustrated with the first exchange
+for \textit{southern lime green} from the saved Qwen3-14B grounding run.
 Blue robots denote the guesser; the green robot denotes the teacher.
 The guesser sees the description and predicts a color; the teacher knows
 the hidden target and gives a correction. The revised guess becomes the
-state for the next exchange. A message such as \textit{a little darker and
-more green} raises two questions: does the receiver move in the requested
-directions, and does it take an appropriate step? Swatches and wording here
-are schematic examples, not measured model responses.}
+state for the next exchange. The swatches and oracle message are actual
+saved values; the robots illustrate the roles. This direction-only message
+still leaves the guesser to choose how far to move. Figure~\ref{fig:game_trajectory}
+shows the complete three-revision trajectory for the same example.}
 \label{fig:intro_game}
 \end{figure*}
 
@@ -231,6 +232,38 @@ state $\hat c_t=P(z_t)$, obtained by conversion to clipped, rounded uint8
 sRGB and back to LAB. Feedback and subsequent prompts use the displayed state
 in the matched controls. Native and displayed behavior can differ:
 rectangular LAB encoding bounds are not the sRGB gamut.
+
+Figure~\ref{fig:game_trajectory} makes these states concrete. For
+\textit{southern lime green}, the first verbal correction requests greater
+saturation, lower lightness, and a shift toward green. The guesser revises
+its prediction and the teacher compares that new state with the target
+before issuing the next message. Across three fixed revisions, full LAB
+error falls from 32.8 to 8.8, although the endpoint remains outside the
+convergence threshold. The example is selected for explanation, not as an
+estimate of typical behavior: other saved trajectories regress or overshoot.
+Keeping the lightness strip and full three-dimensional error alongside the
+chromaticity path prevents apparent proximity in the plane from being
+mistaken for agreement with the target.
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.84\textwidth]{latex/figures/southern_lime_green.pdf}
+\caption{A saved ColorRef game for \textit{southern lime green}
+(example 427046), continuing the exchange in Figure~\ref{fig:intro_game}.
+Qwen3-14B generates HEX guesses, and a deterministic axis oracle gives
+at most three corrections per turn. Point 0 is the description-only
+prediction; points 1--3 are revisions under the fixed-round grounding
+protocol. The star marks the recorded target. The $a^*b^*$ plane shows
+chromatic movement; the adjacent strip shows $L^*$ and its target value
+(dashed line). The lower rows give full displayed-state $\Delta E_{76}$
+and the exact feedback for each transition. Saturation corrections use
+HSV and are not a separate axis in this plane. Background colors are a
+clipped sRGB rendering at the target's fixed $L^*$, not the actual colors
+of every point or a gamut boundary; point fills and lightness bars use
+the saved displayed colors. This illustrative case is not an aggregate
+performance result.}
+\label{fig:game_trajectory}
+\end{figure*}
 
 \subsection{Metrics}
 \label{sec:metrics}

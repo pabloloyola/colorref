@@ -1,0 +1,42 @@
+{
+  "run_id": "20261008_022100_355058_grounding_1000_a100_40gb",
+  "received_cases": 16,
+  "received_states": 64,
+  "regime_counts": {
+    "explicit_grounded": 4,
+    "compound_associative": 4,
+    "abstract_idiosyncratic": 4,
+    "prototype_mediated": 4
+  },
+  "transport_sha256": "8f7390103e8bb37db588a6f4343461e949e05401faf72c5178beaff135f1686b",
+  "verification": "Recomputed every target/state LAB and HSV from HEX, every full LAB error, and every canonical axis-oracle feedback message; all agree.",
+  "limits": [
+    "Recreated from compact user-supplied export; original full checkpoint files and their hashes cannot be independently reconciled here.",
+    "Reported source SHA-256 identifiers are retained as supplied.",
+    "Original prompts, raw responses, native LAB diagnostics, and full-run completion manifest were not included.",
+    "Individual trajectories illustrate behavior and are not representative performance estimates."
+  ],
+  "condition_ids": [
+    "hex:383330",
+    "hex:109372",
+    "hex:115227",
+    "hex:493969",
+    "hex:483669",
+    "hex:136167",
+    "hex:138115",
+    "hex:427046",
+    "hex:93852",
+    "hex:74269",
+    "hex:251466",
+    "hex:214078",
+    "hex:398947",
+    "hex:507623",
+    "hex:309479",
+    "hex:325109"
+  ],
+  "manuscript_example": {
+    "condition_id": "hex:427046",
+    "selection": "Illustrative progressive trajectory; chosen for explanatory clarity, not a population or average-behavior estimate."
+  },
+  "compact_export_sha256": "64826726bddff63dc2965e9361fd26f0045e3408edc7e01a360b51683fc7b58e"
+}

@@ -1,8 +1,11 @@
-"""Compact vector robot schematic; all colors and text are constructed examples.
+"""Compact vector robot diagram, optionally using a saved compact HEX example.
 
-No model outputs, experimental metrics, or recovered historical values are used.
+The default is constructed; --compact-export supplies measured states/messages.
 """
 
+import argparse
+import sys
+import textwrap
 from pathlib import Path
 
 import matplotlib
@@ -37,6 +40,24 @@ def robot(ax, x, y, color):
 
 
 def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--compact-export", type=Path)
+    parser.add_argument("--example-id")
+    args = parser.parse_args()
+    description, target, initial, revised = "dark green", "#35734c", "#5b8ec7", "#4c866e"
+    message = "A little darker and more green."
+    if args.compact_export:
+        sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+        from colorref.saved_trajectory_figures import load_compact_trajectories
+        cases = load_compact_trajectories(args.compact_export)
+        selected = [c for c in cases if c["task"]["example"]["example_id"] == args.example_id]
+        if len(selected) != 1:
+            parser.error("Select one exported --example-id")
+        case = selected[0]
+        description = case["task"]["example"]["raw_name"]
+        target = case["target"]["hex"]
+        initial, revised = [r["displayed_state"]["hex"] for r in case["records"][:2]]
+        message = case["records"][1]["feedback"]["text"]
     directory = Path(__file__).resolve().parents[1] / "paper/latex/figures"
     directory.mkdir(parents=True, exist_ok=True)
     plt.rcParams.update({"font.size": 9, "pdf.fonttype": 42, "ps.fonttype": 42})
@@ -63,9 +84,9 @@ def main():
     # Inputs are above their receiving role; target has no guesser arrow.
     box(0.12, 1.96, 2.03, 0.47)
     ax.text(1.14, 2.29, "Color description", ha="center", va="center", weight="bold")
-    ax.text(1.14, 2.09, '"dark green"', ha="center", va="center")
+    ax.text(1.14, 2.09, f'"{description}"', ha="center", va="center", fontsize=8.5)
     box(2.68, 1.96, 2.04, 0.47, "#eef6ee")
-    swatch(2.82, 2.05, "#35734c")
+    swatch(2.82, 2.05, target)
     ax.text(3.36, 2.29, "Recorded target", va="center", weight="bold")
     ax.text(3.36, 2.08, "Visible to teacher only", va="center", fontsize=8)
 
@@ -78,13 +99,13 @@ def main():
         robot(ax, x + 0.38, 1.20, icon_color)
         ax.text(x + 0.76, 1.44, role, weight="bold", va="center")
 
-    swatch(0.38, 0.80, "#5b8ec7")
+    swatch(0.38, 0.80, initial)
     ax.text(0.94, 1.00, "1. Initial guess", va="center", weight="bold", fontsize=8.5)
     ax.text(0.94, 0.79, "From description", va="center", fontsize=8)
-    ax.text(3.70, 1.02, "2. Verbal correction", ha="center", weight="bold", fontsize=8.5)
-    ax.text(3.70, 0.78, '"A little darker and more green."',
-            ha="center", fontsize=7.8, style="italic")
-    swatch(5.51, 0.80, "#4c866e")
+    ax.text(3.70, 1.00, "2. Verbal correction", ha="center", weight="bold", fontsize=8.5)
+    ax.text(3.70, 0.85, textwrap.fill(f'"{message}"', width=29),
+            ha="center", va="top", fontsize=7.8, style="italic")
+    swatch(5.51, 0.80, revised)
     ax.text(6.07, 1.00, "3. Revised guess", va="center", weight="bold", fontsize=8.5)
     ax.text(6.07, 0.79, "Direction + step size", va="center", fontsize=8)
 

@@ -9,7 +9,9 @@ import yaml
 
 from colorref.interface_study import REGIMES, build_tasks, next_prompt, score_record
 from colorref.quantifier_study import plan_digest
-from colorref.saved_trajectory_figures import load_saved_trajectories, select_illustrations
+from colorref.saved_trajectory_figures import (
+    load_compact_trajectories, load_saved_trajectories, select_illustrations,
+)
 
 
 def fixture(root):
@@ -58,6 +60,39 @@ class SavedTrajectoryTests(unittest.TestCase):
 
     def tearDown(self):
         self.temp.cleanup()
+
+    def compact_export(self):
+        cases, _ = load_saved_trajectories(self.root)
+        path = self.root / "compact.jsonl"
+        path.write_text("\n".join(json.dumps(c) for c in cases) + "\n")
+        return cases, path
+
+    def test_compact_export_read_only_roundtrip(self):
+        cases, path = self.compact_export()
+        before = path.read_bytes()
+        self.assertEqual(load_compact_trajectories(path), cases)
+        self.assertEqual(before, path.read_bytes())
+
+    def test_compact_rejects_changed_color_error_or_message(self):
+        for field in ("color", "error", "message"):
+            cases, path = self.compact_export()
+            row = cases[0]["records"][1]
+            if field == "color":
+                row["displayed_state"]["lab"][1] += 1
+            elif field == "error":
+                row["projected_error_delta_e"] += 1
+            else:
+                row["feedback"]["text"] = "Invented correction"
+            path.write_text("\n".join(json.dumps(c) for c in cases))
+            with self.assertRaises(ValueError):
+                load_compact_trajectories(path)
+
+    def test_compact_rejects_duplicate_slots(self):
+        cases, path = self.compact_export()
+        cases[1]["task"]["slot"] = cases[0]["task"]["slot"]
+        path.write_text("\n".join(json.dumps(c) for c in cases))
+        with self.assertRaisesRegex(ValueError, "Duplicate"):
+            load_compact_trajectories(path)
 
     def test_preserves_real_feedback_response_and_sources_without_writing_run(self):
         before = {str(p): p.read_bytes() for p in self.root.rglob("*") if p.is_file()}

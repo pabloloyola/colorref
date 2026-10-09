@@ -5,8 +5,8 @@ its results. Page-limit trimming is deferred. The two visuals have distinct role
 
 - The compact vector robot diagram in the introduction defines the guesser,
   teacher, description, hidden recorded target, verbal correction and revision loop.
-  Blue icons represent the same guesser at two points in the interaction. All
-  swatches and wording remain explicitly schematic, with no historical metrics.
+  Blue icons represent the same guesser at two points in the interaction. Its current swatches and exact oracle message come from the first exchange
+  of example 427046; the role icons and layout are schematic.
 - A saved-game trajectory near the Framework explanation will show the actual
   movement caused by successive feedback messages. The a*b* panel is accompanied
   by L* per turn and full three-dimensional displayed-state Delta E76. Target
@@ -15,9 +15,8 @@ its results. Page-limit trimming is deferred. The two visuals have distinct role
 The uploaded `025703_backyard_american_dream.png` provides the design reference:
 numbered swatches, arrows, an attached lightness panel and exact transition text.
 Its underlying historical raw trajectory is not recovered, so it is not presented
-as a fresh experimental result. The current reading PDF includes the new robot
-diagram; the empirical figure awaits a checkpoint export from the GPU machine.
-No synthetic test trajectory is inserted into the paper.
+as a fresh experimental result. The current reading PDF includes both the robot diagram and the transported
+empirical trajectory. No synthetic test trajectory is inserted into the paper.
 
 ## Generate current candidates without inference
 
@@ -81,3 +80,36 @@ exercises the CLI, PNG/PDF rendering and ZIP packaging; it is not evidence.
 The updated paper is compiled and visually inspected with the same temporary
 Courier substitution as the preceding reading copy. Publication sources keep
 the original Inconsolata package.
+
+## Received gallery and manuscript integration
+
+The author supplied a compact JSONL export of 16 HEX trajectories, four from
+each regime, from `20261008_022100_355058_grounding_1000_a100_40gb`.
+All 64 displayed colors, 16 targets, full Delta E76 values and 48 exact canonical
+oracle messages agree with recomputation. The compact source and a provenance
+manifest are committed under `paper/evidence/trajectory-gallery-20261009/`.
+Full checkpoints, original prompts/raw responses and full-run completion data
+are absent; supplied original SHA identifiers are retained, not independently
+verified. No recovered historical output or new generation enters the figures.
+
+The introductory diagram and Framework trajectory use example 427046,
+"southern lime green". Its errors are 32.82, 18.53, 14.05, 8.79. It is chosen
+for a readable progressive example and explicitly remains nonconverged at the
+threshold of 5. Other gallery candidates exhibit regression and overshoot.
+Selection is illustrative; no cohort statistic is estimated from this gallery.
+The diagram now shows this case's actual ungraded first oracle correction;
+its text does not imply that the grounding run used calibrated modifiers.
+
+The ZIP and combined 16-page gallery PDF are committed at
+`paper/trajectory-gallery-20261009.zip` and `.pdf` for browser access.
+Rebuild the transported gallery with
+`uv run python scripts/rebuild_compact_trajectory_gallery.py`.
+Rebuild its matching diagram with
+`uv run python scripts/plot_reference_game.py --compact-export
+paper/evidence/trajectory-gallery-20261009/compact_cases.jsonl --example-id 427046`.
+The default diagram without arguments remains a constructed example.
+
+Eight CPU acceptance checks now include compact read-only roundtrip,
+tampered colors/errors/messages and duplicate slots. All sixteen plots were
+rendered and visually reviewed; the paper was compiled and inspected with
+the same temporary Courier substitution. Page-limit compression is deferred.

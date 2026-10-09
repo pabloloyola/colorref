@@ -4,7 +4,7 @@ The author supplied this Overleaf source export and compiled PDF on 2026-10-08
 (Asia/Tokyo). The imported LaTeX files are unchanged. This establishes the
 manuscript baseline before incorporating the completed revision experiments.
 
-- [Compiled reading PDF](colorref-reading-draft-20261009.pdf) (includes the restored game framing and introductory schematic)
+- [Compiled reading PDF](colorref-reading-draft-20261009.pdf) (includes the game diagram and a saved empirical trajectory)
 - Revised working draft: `latex/color-games-revised.tex`
 - Original unchanged source: `latex/color-games.tex`
 - Bibliography: `latex/custom.bib`
@@ -110,19 +110,39 @@ and step size; the single-axis adjustment studies are explicitly distinguished
 from full description-based games. All experimental numbers and results sections
 remain unchanged.
 
-Figure 1 (`latex/figures/reference_game.pdf`) is a constructed schematic for
-"dark green", not a recovered model trajectory or an experimental observation.
-The current diagram uses compact vector robot icons for the guesser and teacher.
-It restores the introductory example's explanatory role without reusing the
-unrecoverable historical accuracy values in the archival `example.png`. Rebuild
-the vector figure with `uv run python scripts/plot_reference_game.py`.
+Figures 1 and 2 now use the same actual example, "southern lime green"
+(example 427046) from the fresh 1,000-description Qwen3-14B grounding run.
+Figure 1 uses vector robot icons to explain the first exchange; its swatches
+and canonical oracle message are saved values. Figure 2 follows all three
+fixed revisions, with an a*b* path, L* strip, full LAB error and exact feedback.
+The case was chosen for explanatory clarity, not to estimate average performance.
+No graded wording was added to the direction-only oracle messages.
 
-The next empirical trajectory will come from retained current checkpoints.
-The CPU-only gallery/export command and figure-design notes are in
-`../specs/game_figures_20261009.md`. It writes actual swatches, an a*b* path,
-L* by turn, full LAB error and exact feedback, together with source hashes.
-No test data or unverified reconstruction of the lost historical runs is
-inserted into the manuscript. Page-limit compression is deferred.
+- [All 16 trajectory candidates (PDF)](trajectory-gallery-20261009.pdf)
+- [Downloadable gallery ZIP](trajectory-gallery-20261009.zip): individual PDF/PNG
+  figures, compact data, manifest, combined PDF and an HTML index.
+- Compact source: `evidence/trajectory-gallery-20261009/compact_cases.jsonl`.
+- Transport provenance and limits: `evidence/trajectory-gallery-20261009/manifest.json`.
+- Selected figure data: `latex/figures/southern_lime_green.json`.
+
+The compact export was supplied by the author. Its 64 displayed states, target
+errors and 48 canonical oracle messages were recomputed and checked. Original
+checkpoint hashes are retained as supplied; full raw prompts/responses and the
+full-run completion manifest were not transported, so their original-file
+integrity cannot be independently verified from this compact gallery.
+
+Rebuild without inference, from the repository root:
+
+```bash
+uv run python scripts/rebuild_compact_trajectory_gallery.py
+uv run python scripts/plot_reference_game.py \
+  --compact-export paper/evidence/trajectory-gallery-20261009/compact_cases.jsonl \
+  --example-id 427046
+```
+
+The first command writes `reports/figures/transported_trajectories/`. The original
+full-checkpoint gallery command remains documented in
+`../specs/game_figures_20261009.md`. Page-limit compression is deferred.
 
 ## Introduction developed paragraph by paragraph
 
@@ -135,7 +155,7 @@ One-shot prediction means prediction without revision; it is not a claim
 about zero-shot prompting or the absence of demonstrations.
 
 The compiled reading PDF includes this complete introduction pass and the
-introductory schematic. Its 16-page temporary-font build has no unresolved
-references/citations or overfull boxes; all pages were rendered and inspected.
+introductory schematic. The current temporary-font build has no unresolved references/citations or
+overfull boxes; all pages were rendered and inspected.
 The abstract, results, and later sections were not changed during this
 paragraph-by-paragraph introduction pass.

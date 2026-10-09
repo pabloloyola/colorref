@@ -30,6 +30,68 @@ def _read(path):
     return json.loads(raw), hashlib.sha256(raw).hexdigest()
 
 
+def load_compact_trajectories(path: Path) -> list[dict]:
+    """Check transported HEX trajectories without claiming full checkpoint recovery.
+
+    Original prompts/raw responses and full source files are absent. Supplied
+    source hashes are identifiers, not independently verified here. Recompute
+    displayed colors, target errors and canonical feedback before rendering.
+    """
+    import math
+
+    from colorref.teachers import AxisOracle
+
+    cases = [json.loads(line) for line in path.read_text().splitlines() if line.strip()]
+    if not cases:
+        raise ValueError("Empty compact export")
+    seen = set()
+    slots = set()
+
+    def check_color(color):
+        expected = color_from_hex(color["hex"])
+        for field in ("rgb", "lab", "hsv"):
+            values = color[field]
+            if len(values) != 3 or any(
+                not math.isfinite(x) or not math.isclose(x, y, abs_tol=1e-8, rel_tol=0)
+                for x, y in zip(values, expected[field])
+            ):
+                raise ValueError("Compact color disagrees with HEX")
+
+    for case in cases:
+        task = case["task"]
+        identity = (case["run_id"], task["condition_id"])
+        slot = (case["run_id"], task["slot"])
+        if identity in seen or slot in slots:
+            raise ValueError("Duplicate compact condition or slot")
+        seen.add(identity)
+        slots.add(slot)
+        if (task["variant"] != "hex" or task["output_space"] != "hex"
+                or task["condition_id"] != f"hex:{task['example']['example_id']}"
+                or case["teacher"]["type"] != "axis_oracle"):
+            raise ValueError("Unsupported compact export condition")
+        check_color(case["target"])
+        if case["target"] != color_from_hex(task["example"]["hex"]):
+            raise ValueError("Compact assigned target mismatch")
+        records = case["records"]
+        if len(records) < 2 or [r["turn"] for r in records] != list(range(len(records))):
+            raise ValueError("Compact turns must be contiguous from zero")
+        teacher = AxisOracle(**case["teacher"])
+        for index, record in enumerate(records):
+            check_color(record["displayed_state"])
+            error = math.dist(case["target"]["lab"], record["displayed_state"]["lab"])
+            if not math.isclose(error, record["projected_error_delta_e"], abs_tol=1e-8, rel_tol=0):
+                raise ValueError("Compact error disagrees with displayed colors")
+            if index == 0:
+                if record["feedback"] is not None:
+                    raise ValueError("Initial guess cannot contain revision feedback")
+            else:
+                expected = teacher.give_feedback(case["target"],
+                    records[index - 1]["displayed_state"], task["example"], index - 1)
+                if record["feedback"]["text"] != expected.text:
+                    raise ValueError("Compact feedback disagrees with the axis oracle")
+    return cases
+
+
 def load_saved_trajectories(run_dir: Path) -> tuple[list[dict], dict]:
     """Validate frozen inputs and saved responses; return full parsed games only.
 
@@ -141,7 +203,7 @@ def select_illustrations(cases, *, variant="hex", n=16, seed=113, example_id=Non
     return chosen
 
 
-def draw_trajectory(case, output_stem: Path):
+def draw_trajectory(case, output_stem: Path, *, pdf_pages=None):
     """a*b* path, actual swatches, L* strip, full error and exact feedback rows."""
     import textwrap
 
@@ -228,4 +290,6 @@ def draw_trajectory(case, output_stem: Path):
              ha="center", fontsize=7.5)
     for suffix in (".png", ".pdf"):
         fig.savefig(output_stem.with_suffix(suffix), dpi=200)
+    if pdf_pages is not None:
+        pdf_pages.savefig(fig)
     plt.close(fig)
