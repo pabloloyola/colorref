@@ -841,47 +841,105 @@ than a substitute for that outcome.
 
 \section{Discussion}
 \label{sec:discussion}
-\paragraph{Language as a graded control interface.}
-Direction, magnitude, and stopping are separate requirements. Given
+\paragraph{From interpreting a description to revising a guess.}
+A one-shot prediction reveals how a model initially interprets a color
+description. The reference game adds a complementary view: whether that
+interpretation can be revised when a teacher supplies corrections toward
+a particular target. The grounding trajectories show substantial target
+localization, including for descriptions whose initial predictions have
+greater disagreement. This does not resolve the ambiguity of the names.
+Rather, it makes the intended referent explicit to the teacher and asks
+whether communication helps the guesser approach it. Feedback adds
+information, so the observed gains should not be attributed to sequential
+adaptation alone. The game's value is that it makes initial prediction,
+feedback following and feedback production separately observable.
+
+\paragraph{Feedback has a receiver.}
+A correction such as \textit{more blue} leaves the receiver to choose a
+step size. Adding \textit{a little} or \textit{much} makes magnitude more
+explicit, but an ordered response to these words does not ensure that
+the resulting step fits the remaining correction. Receiver calibration
+addresses this mismatch by selecting from the same phrase inventory using
+measured displayed steps. The two-model comparison supports this concrete
+policy against the tested fixed rule, chiefly by avoiding excessive large
+corrections. It does not establish a universal meaning for the modifiers
+or superiority over every unfitted selection rule. Nor does lower mean
+error necessarily imply greater threshold success: Gemma's common-cohort
+convergence counts remain nearly unchanged despite fewer harmful updates.
+The policy is calibrated to a model and prompt, rather than to human
+perceptual judgments; each model's mapping was fitted independently.
+
+\paragraph{The representation is part of the interaction.}
+The shared-start control shows that the same displayed color and first
+correction can elicit different updates under different output interfaces.
+An axis legend helps LAB correction, but this is an instructed coordinate
+interface, not evidence of unaided perceptual understanding. Moreover, a
+native LAB answer can change when converted to displayable sRGB, and the
+next oracle message responds to that displayed state. Keeping both states
+in the trajectory prevents display projection from being mistaken for the
+model's requested movement. The fixed-axis sequential pilot exposes a
+practical consequence: correcting the original axis may leave off-axis
+disagreement. More complete control would need to address this drift and
+the limited resolution of a three-phrase ladder. Its benefit would have
+to be evaluated, rather than inferred from the present single-axis tasks.
+
+\paragraph{Preserving a correction and helping a guesser.}
+The teacher controls connect feedback production back to the receiver's
+update. Comparative framing, restricted instructions and demonstrations
+affect restatement, while literal keywords can misrepresent the intended
+direction. A word-level audit is therefore not a semantic judgment.
+Even a preserved direction set leaves the guesser to interpret wording
+and magnitude; faithful restatement need not yield the lowest target
+error. Conversely, the restricted zero-shot arm's lower mean than the
+oracle is concentrated in a small set of changed messages and includes
+added directions. It is not an information-matched demonstration of
+better phrasing. Evaluating messages alongside their receiving updates
+keeps these distinctions visible. The conclusions concern oracle-assisted
+prompt pipelines, not a universal following-versus-generating capability
+gap or unaided teacher geometry.
+
+\paragraph{Ending the exchange is part of control.}
+Direction, magnitude and stopping are separate requirements. Once
 $\Delta E_{76}\leq5$, further valid-axis corrections can still overshoot.
 A saved-prefix stopping replay retains nine otherwise lost convergence
 outcomes and saves 23/576 revisions in the shared-start study
-(Appendix~\ref{app:stopping}); this is target-known stopping, not an
-available model-only policy. The two-model magnitude studies show that calibration lowers average error
-under the tested fixed rule, chiefly for large requested corrections.
-This need not increase threshold success: Gemma's common-cohort convergence
-counts remain nearly unchanged despite fewer harmful updates.
-Display projection and gaps in a three-phrase ladder still limit accuracy.
-
-\paragraph{Grounding versus coordinate execution.}
-Shared-start results isolate correction from initial name prediction;
-isolated numeric probes further separate execution from linguistic magnitude.
-LAB with a legend is an instructed coordinate interface, not proof of unaided
-perceptual understanding. The observed color control is relevant to creative
-tools, but its utility in image editing, where descriptions and transformations
-are richer, requires separate evaluation.
-
-\paragraph{Teacher claims require matched evidence.}
-Comparative framing, restricted instructions, and demonstrations affect
-restatement. A word-level audit is not a semantic judgment, and preserving
-directions is not equivalent to maximizing target-error reduction.
-Our conclusions concern tested prompt pipelines and receiving behavior,
-not a universal following-versus-generating capability gap.
+(Appendix~\ref{app:stopping}). This is target-known stopping, not an
+available model-only policy. The distinction matters when connecting
+the benchmark to human interaction or creative tools: someone must decide
+whether the current guess is satisfactory. The present experiments
+provide measurements of revision behavior, not an evaluated solution to
+that decision without access to the target.
 
 \section{Conclusion and Future Work}
 \label{sec:conclusion}
-\textsc{ColorRef} evaluates feedback-driven color prediction beyond a
-one-shot endpoint. Controlled feedback improves target localization;
-matched controls expose encoding sensitivity, direction-dependent
-graded steps, and the distinction between teacher restatement and usefulness.
-Independently calibrated wording policies lower held-out one-step error
-for two model families relative to the same fixed quantifier rule, primarily
-by avoiding excessive large corrections. A smaller Qwen sequential pilot
-also reduces endpoint error and evaluation calls; this cost benefit has not
-been replicated with Gemma. Projection drift, coarse phrase resolution and
-numeric output failures remain. Future work should test alternative target
-distributions, human and multilingual interaction, cross-model policy transfer,
-multi-axis control, and downstream creative editing.
+\textsc{ColorRef} begins with a familiar communicative problem: a color
+description can suggest several plausible interpretations, and an initial
+guess may differ from what a speaker intends. Its reference game turns
+that disagreement into an observable exchange between a teacher who
+knows the target and a guesser who revises through language. Oracle
+feedback improves recorded-target localization, while controlled studies
+show that following the right direction is only part of a useful correction.
+The output interface, chosen step size and receiving model also matter.
+
+Our central contribution is receiver-calibrated phrase selection.
+Independently fitted policies lower held-out one-step error for two
+model families relative to the same fixed quantifier rule, primarily by
+avoiding excessive large corrections. A smaller Qwen sequential pilot
+also reduces endpoint error and evaluation calls; this cost benefit has
+not been replicated with Gemma and excludes calibration cost. Teacher
+controls further distinguish preserving supplied corrections from
+producing useful revisions. Together, these results connect the reference
+game to a measurable account of feedback: a message must be assessed both
+for what it says and for the update it elicits from its receiver.
+
+The next extensions should test alternative selection rules and prompt
+wordings, human and multilingual interaction with acceptable target
+variation, cross-model policy transfer, and multi-axis correction with
+stopping that does not require the hidden target. Creative image editing
+offers a further application, but requires its own evaluation. The current
+evidence establishes prompt-conditioned control against recorded targets;
+it does not settle uniquely correct color meanings or human perceptual
+magnitude calibration.
 
 \section{Limitations}
 \label{sec:limitations}

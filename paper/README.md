@@ -14,6 +14,7 @@ manuscript baseline before incorporating the completed revision experiments.
 - First-revision changes and remaining checks: `../specs/manuscript_revision_20261008.md`
 - Current content audit and expert-feedback checklist: `../specs/manuscript_content_audit_20261009.md`
 - Current experiment status: `../specs/revision_evidence_map.md`
+- Completed narrative pass and full-read handoff: `../specs/discussion_closure_20261009.md`
 - Experimental evidence: `../specs/results/`
 
 ## Compile locally
@@ -199,3 +200,19 @@ introduction and methods, Discussion and later sections are unchanged in this
 pass. The reading PDF includes the revised narrative; validation and scope are
 recorded in `../specs/results_narrative_revision_20261009.md`. Discussion and
 conclusion alignment is the next content step, before the author's full read.
+
+## Discussion, conclusion and full-read handoff
+
+The planned narrative pass is complete. Discussion returns to the human
+description/interpretation problem, then connects the reference game to
+receiver-specific magnitude, output representation, teacher reception and
+stopping. Conclusion returns to the motivating exchange and states the
+scoped contribution before outlining extensions. All experimental results,
+figures, methods, the approved introduction and Limitations are preserved.
+
+The current reading PDF contains the complete pass. The next step is the
+author's full read, focusing on the story, terminology, explanation of the game
+and match between claims and evidence. Further content or experiments can be
+decided after that read. Page-limit trimming and final publication-font layout
+remain deferred; machine-side raw-output reconciliation remains documented
+separately and is not claimed complete by this prose revision.
