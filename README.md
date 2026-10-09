@@ -15,10 +15,14 @@ experiments are developed through reviewed branches.
 - `configs/experiments/`: reproducible experiment configurations
 - `configs/prompts/`: model and teacher prompts
 - `tests/`: CPU unit tests
+- `paper/overleaf/`: minimal current manuscript source, ready for Overleaf
+- `paper/colorref-overleaf.zip`: import bundle (see [paper instructions](paper/README.md))
+- `artifacts/paper/`: saved figure provenance and the trajectory gallery
 - `HANDOFF.md`: historical May 2026 experiment handoff
 
 Generated datasets, model caches, runs, and reports are intentionally not stored
-in GitHub.
+in GitHub. Selected manuscript PDFs, import bundles and supporting illustration
+artifacts are retained deliberately for reading and provenance.
 
 ## Setup
 
@@ -116,7 +120,9 @@ continue to use hexadecimal output.
 
 ## Current scientific roadmap
 
-The next experimental phase will address expert feedback by adding direct
-perceptual-coordinate controls, ambiguity-aware evaluation, stricter teacher
-relay conditions, few-shot teacher baselines, and a calibrated study of
-magnitude expressions such as “a little” and “much.”
+The completed revision experiments and scoped claims are documented in
+[`specs/revision_evidence_map.md`](specs/revision_evidence_map.md). The current
+manuscript and Overleaf import bundle are in [`paper/`](paper/README.md). The
+next step is an author full read; further experiments and submission formatting
+will be decided separately.
+

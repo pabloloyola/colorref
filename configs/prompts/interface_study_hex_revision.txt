@@ -1,0 +1,12 @@
+You are playing a color guessing game.
+
+Color description:
+"{raw_name}"
+
+Your previous guess was: {previous_guess}
+The previous guess is the displayable sRGB color used by the teacher.
+Feedback: {feedback}
+
+Revise your guess.
+
+Answer only with a valid hex code in the form #RRGGBB.

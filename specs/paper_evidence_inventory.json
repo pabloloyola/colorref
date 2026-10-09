@@ -1,0 +1,82 @@
+{
+  "schema_version": 1,
+  "status": "author-reported completed production studies; local checkpoint availability not independently verified",
+  "source_branch_head": "ab7b1ac9e8b2b1943b9ccf52e24872b7dee35b97",
+  "studies": [
+    {
+      "study": "isolated_quantifiers",
+      "run_id": "20261006_130637_580285_quantifier_study_a100_40gb",
+      "primary_report": "reports/study_summary.md",
+      "sampling_units": 12,
+      "unit": "fixed anchors"
+    },
+    {
+      "study": "parent_interface",
+      "run_id": "20261006_143711_709402_interface_study_a100_40gb",
+      "primary_report": "reports/interface_summary.md",
+      "sampling_units": 64,
+      "unit": "descriptions"
+    },
+    {
+      "study": "shared_start_interface",
+      "run_id": "20261007_043619_593902_shared_start_interface_study_a100_40gb",
+      "primary_report": "reports/shared_start_summary.md",
+      "sampling_units": 64,
+      "unit": "descriptions"
+    },
+    {
+      "study": "magnitude_pilot",
+      "run_id": "20261007_054337_204395_magnitude_control_a100_40gb_pilot",
+      "primary_report": "reports/magnitude_summary.md",
+      "sampling_units": 12,
+      "unit": "held-out starting colors"
+    },
+    {
+      "study": "sequential_transfer_pilot",
+      "run_id": "20261007_072214_768541_magnitude_transfer_a100_40gb",
+      "primary_report": "reports/transfer_summary.md",
+      "sampling_units": 12,
+      "unit": "held-out starting colors"
+    },
+    {
+      "study": "teacher_fidelity",
+      "run_id": "20261007_134620_125917_teacher_fidelity_a100_40gb",
+      "primary_report": "reports/teacher_summary.md",
+      "sampling_units": 60,
+      "unit": "evaluation descriptions"
+    },
+    {
+      "study": "teacher_reception",
+      "run_id": "20261007_152230_242355_teacher_receiver_a100_40gb",
+      "primary_report": "reports/receiver_summary.md",
+      "sampling_units": 60,
+      "unit": "evaluation descriptions"
+    },
+    {
+      "study": "fresh_grounding",
+      "run_id": "20261008_022100_355058_grounding_1000_a100_40gb",
+      "primary_report": "reports/grounding_summary.md",
+      "sampling_units": 1000,
+      "unit": "descriptions"
+    },
+    {
+      "study": "qwen_magnitude_confirmation",
+      "run_id": "20261008_030403_354222_magnitude_confirmation_128_a100_40gb",
+      "primary_report": "reports/magnitude_summary.md",
+      "sampling_units": 128,
+      "unit": "held-out starting colors"
+    },
+    {
+      "study": "gemma_magnitude_replication",
+      "run_id": "20261008_082307_472301_magnitude_replication_128_gemma4_12b_a100_40gb",
+      "primary_report": "reports/magnitude_summary.md",
+      "sampling_units": 128,
+      "unit": "held-out starting colors"
+    }
+  ],
+  "supplemental_files": [
+    "reports/content_audit/taxonomy_inventory.json",
+    "reports/content_audit/raw_source_inventory.json"
+  ],
+  "excluded_evidence": "Unrecoverable historical runs and archived numerical tables are not manuscript evidence."
+}

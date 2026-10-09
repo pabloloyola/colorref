@@ -1,0 +1,161 @@
+{
+  "run_id": "20261008_022100_355058_grounding_1000_a100_40gb",
+  "task": {
+    "slot": 538,
+    "condition_id": "hex:427046",
+    "variant": "hex",
+    "output_space": "hex",
+    "example": {
+      "example_id": "427046",
+      "raw_name": "southern lime green",
+      "hex": "#1cb73b",
+      "regime_label": "prototype_mediated"
+    }
+  },
+  "target": {
+    "hex": "#1cb73b",
+    "rgb": [
+      28,
+      183,
+      59
+    ],
+    "lab": [
+      65.30035219437458,
+      -62.238775570856944,
+      50.47408254062542
+    ],
+    "hsv": [
+      132.0,
+      0.8469945355191257,
+      0.7176470588235294
+    ]
+  },
+  "model": {
+    "alias": "qwen3_14b_grounding_1000",
+    "provider": "hf_transformers",
+    "model_name": "Qwen/Qwen3-14B",
+    "revision": "40c069824f4251a91eefaf281ebe4c544efd3e18",
+    "hf_home": null,
+    "device_map": "auto",
+    "torch_dtype": "bfloat16",
+    "enable_thinking": false,
+    "temperature": 0.0,
+    "max_tokens": 64
+  },
+  "teacher": {
+    "type": "axis_oracle",
+    "max_feedback_constraints": 3,
+    "min_delta": {
+      "lab_l": 2.0,
+      "lab_a": 3.0,
+      "lab_b": 3.0,
+      "hsv_s": 0.05
+    }
+  },
+  "source_sha256": {
+    "inputs/plan.json": "450dcc41f50ef2b99b311a8301365aefa5d98ff1750bf0f0d605b634297a385f",
+    "metadata.json": "fbc7971695a2e61b209f5503efcde4fef393ebadea8d5fa8eeb2bbe11ea3bea5",
+    "config.yaml": "008134581003f0e94ff67f3f8865b0dce7dd5800e7ae40f57b664ca874a6eac3",
+    "raw_outputs/games/0538.json": "a5c342c0a961cf4f3740eddfe9d7a1c5f6600dfcd578b2c84c91e17055abd7b5"
+  },
+  "records": [
+    {
+      "turn": 0,
+      "displayed_state": {
+        "hex": "#a2e485",
+        "rgb": [
+          162,
+          228,
+          133
+        ],
+        "lab": [
+          84.41153265457939,
+          -37.76851594154973,
+          39.826467031298776
+        ],
+        "hsv": [
+          101.6842105263158,
+          0.41666666666666663,
+          0.8941176470588236
+        ]
+      },
+      "projected_error_delta_e": 32.82381057925283,
+      "feedback": null
+    },
+    {
+      "turn": 1,
+      "displayed_state": {
+        "hex": "#78c64a",
+        "rgb": [
+          120,
+          198,
+          74
+        ],
+        "lab": [
+          72.80894819825875,
+          -45.51394086138366,
+          53.14049738258435
+        ],
+        "hsv": [
+          97.74193548387098,
+          0.6262626262626262,
+          0.7764705882352941
+        ]
+      },
+      "projected_error_delta_e": 18.525897498317498,
+      "feedback": {
+        "text": "Make it more saturated, darker, and more green."
+      }
+    },
+    {
+      "turn": 2,
+      "displayed_state": {
+        "hex": "#55cc33",
+        "rgb": [
+          85,
+          204,
+          51
+        ],
+        "lab": [
+          73.12420673249643,
+          -59.849408335852004,
+          61.893055465799804
+        ],
+        "hsv": [
+          106.66666666666667,
+          0.7500000000000001,
+          0.8
+        ]
+      },
+      "projected_error_delta_e": 14.0468757481253,
+      "feedback": {
+        "text": "Make it more saturated, more green, and darker."
+      }
+    },
+    {
+      "turn": 3,
+      "displayed_state": {
+        "hex": "#44cc44",
+        "rgb": [
+          68,
+          204,
+          68
+        ],
+        "lab": [
+          72.77943243228027,
+          -62.231032453450965,
+          55.08788959003781
+        ],
+        "hsv": [
+          120.0,
+          0.6666666666666667,
+          0.8
+        ]
+      },
+      "projected_error_delta_e": 8.787713960416902,
+      "feedback": {
+        "text": "Make it more saturated, darker, and more blue."
+      }
+    }
+  ]
+}

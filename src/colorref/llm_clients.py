@@ -12,7 +12,7 @@ from __future__ import annotations
 import logging
 import os
 import time
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any
 
 logger = logging.getLogger(__name__)
@@ -30,6 +30,23 @@ class LLMResponse:
     provider: str
     latency_s: float | None
     error: str | None = None
+
+
+def _hf_generation_diagnostics(new_ids, eos_token_id, max_tokens):
+    """Describe observed tokens without claiming a backend-reported finish reason."""
+    count = len(new_ids)
+    eos_ids = [] if eos_token_id is None else (
+        list(eos_token_id) if isinstance(eos_token_id, (list, tuple)) else [eos_token_id]
+    )
+    eos_reached = bool(count and int(new_ids[-1]) in eos_ids)
+    limit_reached = count >= max_tokens
+    return {
+        "generated_tokens": count,
+        "eos_reached": eos_reached,
+        "token_limit_reached": limit_reached,
+        "finish_reason": "eos" if eos_reached else "length" if limit_reached else None,
+        "finish_reason_source": "observed_output_tokens",
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -75,6 +92,8 @@ class HFTransformersClient(LLMClient):
         torch_dtype: str = "bfloat16",
         enable_thinking: bool = False,
         alias: str | None = None,
+        revision: str | None = None,
+        model_loader: str = "causal",
     ) -> None:
         if hf_home:
             os.environ["HF_HOME"] = hf_home
@@ -82,11 +101,23 @@ class HFTransformersClient(LLMClient):
         self.model_name = model_name_or_path
         self.alias = alias or model_name_or_path
         self.enable_thinking = enable_thinking
+        self.revision = revision
+        if model_loader not in {"causal", "multimodal"}:
+            raise ValueError(f"Unknown HF model loader: {model_loader!r}")
+        self.model_loader = model_loader
         self._model_and_tokenizer = self._load_model(device_map, torch_dtype)
 
     def _load_model(self, device_map: str, torch_dtype_str: str):
         import torch
         from transformers import AutoModelForCausalLM, AutoTokenizer
+
+        model_class, tokenizer_class = AutoModelForCausalLM, AutoTokenizer
+        if getattr(self, "model_loader", "causal") == "multimodal":
+            try:
+                from transformers import AutoModelForMultimodalLM, AutoProcessor
+            except ImportError as exc:
+                raise RuntimeError("This model requires Transformers with AutoModelForMultimodalLM support") from exc
+            model_class, tokenizer_class = AutoModelForMultimodalLM, AutoProcessor
 
         dtype_map = {
             "bfloat16": torch.bfloat16,
@@ -97,11 +128,13 @@ class HFTransformersClient(LLMClient):
 
         logger.info("Loading model %s (device_map=%s, dtype=%s)…", self.model_name, device_map, torch_dtype_str)
         t0 = time.time()
-        tokenizer = AutoTokenizer.from_pretrained(self.model_name)
-        model = AutoModelForCausalLM.from_pretrained(
+        revision_kwargs = {"revision": self.revision} if self.revision is not None else {}
+        tokenizer = tokenizer_class.from_pretrained(self.model_name, **revision_kwargs)
+        model = model_class.from_pretrained(
             self.model_name,
             dtype=dtype,
             device_map=device_map,
+            **revision_kwargs,
         )
         logger.info("Model loaded in %.1fs", time.time() - t0)
         return model, tokenizer
@@ -112,10 +145,22 @@ class HFTransformersClient(LLMClient):
         Uses model + tokenizer directly (not pipeline) so that
         apply_chat_template kwargs (e.g. enable_thinking) work correctly.
         """
-        import torch
-
         model, tokenizer = self._model_and_tokenizer
         messages = [{"role": "user", "content": prompt}]
+
+        if getattr(self, "model_loader", "causal") == "multimodal":
+            # Text-only inputs through the official multimodal processor; no
+            # extra tokenization or silently ignored thinking configuration.
+            inputs = tokenizer.apply_chat_template(
+                messages, tokenize=True, return_dict=True, return_tensors="pt",
+                add_generation_prompt=True, enable_thinking=self.enable_thinking,
+            ).to(model.device)
+        else:
+            inputs = self._causal_inputs(model, tokenizer, messages)
+
+        return self._generate_inputs(model, tokenizer, inputs, max_tokens, temperature)
+
+    def _causal_inputs(self, model, tokenizer, messages):
 
         # apply_chat_template: Qwen3 respects enable_thinking here
         template_kwargs: dict[str, Any] = {
@@ -132,7 +177,10 @@ class HFTransformersClient(LLMClient):
         except TypeError:
             text = tokenizer.apply_chat_template(messages, **template_kwargs)
 
-        inputs = tokenizer([text], return_tensors="pt").to(model.device)
+        return tokenizer([text], return_tensors="pt").to(model.device)
+
+    def _generate_inputs(self, model, tokenizer, inputs, max_tokens, temperature):
+        import torch
 
         gen_kwargs: dict[str, Any] = {"max_new_tokens": max_tokens}
         if temperature > 0.0:
@@ -150,10 +198,16 @@ class HFTransformersClient(LLMClient):
             # Strip the input tokens; decode only the new tokens
             new_ids = output_ids[0][inputs.input_ids.shape[1]:]
             response_text = tokenizer.decode(new_ids, skip_special_tokens=True)
+            # Includes any generated special/EOS token, unlike decoded text length.
+            diagnostics = _hf_generation_diagnostics(
+                new_ids, model.generation_config.eos_token_id, max_tokens
+            )
+
+            diagnostics["prompt_tokens"] = int(inputs.input_ids.shape[1])
 
             return LLMResponse(
                 text=response_text.strip(),
-                raw=None,
+                raw=diagnostics,
                 model_name=self.model_name,
                 provider="hf_transformers",
                 latency_s=latency,
@@ -284,6 +338,8 @@ def build_client(cfg: dict) -> LLMClient:
             torch_dtype=cfg.get("torch_dtype", "bfloat16"),
             enable_thinking=cfg.get("enable_thinking", False),
             alias=cfg.get("alias"),
+            revision=cfg.get("revision"),
+            model_loader=cfg.get("model_loader", "causal"),
         )
 
     if provider == "openai_compatible":

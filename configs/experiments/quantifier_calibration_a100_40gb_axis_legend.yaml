@@ -1,0 +1,43 @@
+experiment_name: quantifier_calibration_a100_40gb_axis_legend
+seed: 13
+
+output:
+  run_root: runs
+
+model:
+  alias: qwen3_14b_a100_quantifier_pilot
+  provider: hf_transformers
+  model_name: Qwen/Qwen3-14B
+  hf_home: null
+  device_map: auto
+  torch_dtype: bfloat16
+  enable_thinking: false
+  temperature: 0.0
+  max_tokens: 64
+
+interface:
+  output_space: lab
+
+prompt:
+  template_path: configs/prompts/quantifier_calibration_lab_axis_legend.txt
+
+calibration:
+  # Two anchors × six LAB directions × four wording conditions = 48 calls.
+  base_colors:
+    - id: neutral_mid
+      lab: [50.0, 0.0, 0.0]
+    - id: warm_mid
+      lab: [50.0, 40.0, 20.0]
+  directions:
+    - lighter
+    - darker
+    - more_red
+    - more_green
+    - more_yellow
+    - more_blue
+  quantifiers:
+    - baseline
+    - a_little
+    - somewhat
+    - much
+  limit: 48
