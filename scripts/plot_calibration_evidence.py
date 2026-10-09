@@ -11,8 +11,11 @@ import matplotlib.pyplot as plt  # noqa: E402
 
 def main():
     root = Path(__file__).resolve().parents[1]
-    directory = root / "paper/latex/figures"
-    data = json.loads((directory / "calibration_effects.json").read_text())
+    directory = root / "paper/overleaf/figures"
+    directory.mkdir(parents=True, exist_ok=True)
+    previews = root / "reports/figures/paper"
+    previews.mkdir(parents=True, exist_ok=True)
+    data = json.loads((root / "artifacts/paper/figure-data/calibration_effects.json").read_text())
     plt.rcParams.update({"font.size": 9, "pdf.fonttype": 42, "ps.fonttype": 42})
     fig, axes = plt.subplots(1, 2, figsize=(7.0, 2.75), gridspec_kw={"width_ratios": [1, 1.25]})
     colors = ["#20639b", "#b34d12"]
@@ -48,7 +51,7 @@ def main():
              ha="center", fontsize=8)
     fig.tight_layout(rect=(0, 0.05, 1, 1), w_pad=2)
     fig.savefig(directory / "calibration_effects.pdf", bbox_inches="tight")
-    fig.savefig(directory / "calibration_effects.png", dpi=180, bbox_inches="tight")
+    fig.savefig(previews / "calibration_effects.png", dpi=180, bbox_inches="tight")
     plt.close(fig)
 
 

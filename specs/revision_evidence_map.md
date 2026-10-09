@@ -5,7 +5,8 @@ and first manuscript rewrite. Earlier pending-work guidance is superseded here;
 the Git history and individual result notes preserve the chronological record.
 The original review is paraphrased, not reproduced publicly.
 
-Working manuscript: `paper/latex/color-games-revised.tex`.
+Working manuscript: `paper/overleaf/main.tex` (formerly
+`paper/latex/color-games-revised.tex`; see `specs/paper_cleanup_20261009.md`).
 Completed source/availability audit and machine-side commands:
 `specs/results/content_source_audit_20261008.md`.
 Content decisions and remaining tasks: `specs/manuscript_content_audit_20261009.md`.
@@ -30,7 +31,7 @@ Import/rewrite provenance: `specs/manuscript_baseline_20261008.md` and
 |---|---|---|---|
 | Fresh grounding | 1,000 descriptions; 4,000 parsed responses | Qwen initial/final error 42.332/22.147; paired gain 20.185 [18.611, 21.785]. | `specs/results/grounding_replication_20261008.md` |
 | Qwen magnitude confirmation | 32 calibration colors; 128 held-out starts; 2,098 common quartets | Calibrated minus fixed-rule error −5.497 [−5.786, −5.203]. | `specs/results/magnitude_confirmation_20261008.md` |
-| Gemma magnitude replication | Same frozen input plan; own-model calibration; 128 held-out starts; 2,081 common quartets | Calibrated minus fixed-rule error −5.161 [−5.484, −4.842]; all 2,108 language pairs retain the benefit. | `paper/latex/revision-appendix.tex`; `specs/gemma_magnitude_replication.md` |
+| Gemma magnitude replication | Same frozen input plan; own-model calibration; 128 held-out starts; 2,081 common quartets | Calibrated minus fixed-rule error −5.161 [−5.484, −4.842]; all 2,108 language pairs retain the benefit. | `paper/overleaf/appendix.tex`; `specs/gemma_magnitude_replication.md` |
 | Shared-start interfaces | 64 descriptions; 192 games; 576 parsed revisions | First-revision plain LAB minus HEX: +6.187 [0.845, 11.889]. Final legend minus plain LAB: −12.114 [−18.035, −5.489]. Close HEX/legend means do not establish equivalence. | `specs/results/shared_start_20261007.md` |
 | Isolated quantifiers | 12 fixed anchors; 888 parsed responses | Positive qualitative updates: 228/288 plain, 288/288 legend. Strict ordinal pairs: 172/216 plain, 210/216 legend. Pairs overlap within anchors. | `specs/quantifier_calibration.md`; Appendix C.2 |
 | One-step magnitude policy | 12 calibration colors, 288 calls/287 parsed; 12 held-out starts, 196 targets/588 parsed responses | Bare/calibrated/numeric target errors: 11.770/6.362/0.533. Calibrated minus bare: −5.408 [−10.220, −2.173]; median paired difference zero. | `specs/results/magnitude_control_20261007.md` |

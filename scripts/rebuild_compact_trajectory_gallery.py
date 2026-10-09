@@ -20,8 +20,8 @@ from colorref.saved_trajectory_figures import draw_trajectory, load_compact_traj
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--input", type=Path, default=ROOT / "paper/evidence/trajectory-gallery-20261009/compact_cases.jsonl")
-    parser.add_argument("--manifest", type=Path, default=ROOT / "paper/evidence/trajectory-gallery-20261009/manifest.json")
+    parser.add_argument("--input", type=Path, default=ROOT / "artifacts/paper/evidence/trajectory-gallery-20261009/compact_cases.jsonl")
+    parser.add_argument("--manifest", type=Path, default=ROOT / "artifacts/paper/evidence/trajectory-gallery-20261009/manifest.json")
     parser.add_argument("--out", type=Path, default=ROOT / "reports/figures/transported_trajectories")
     args = parser.parse_args()
     if args.out.resolve().is_relative_to(args.input.parent.resolve()):

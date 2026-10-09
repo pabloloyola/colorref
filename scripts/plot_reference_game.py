@@ -58,8 +58,11 @@ def main():
         target = case["target"]["hex"]
         initial, revised = [r["displayed_state"]["hex"] for r in case["records"][:2]]
         message = case["records"][1]["feedback"]["text"]
-    directory = Path(__file__).resolve().parents[1] / "paper/latex/figures"
+    root = Path(__file__).resolve().parents[1]
+    directory = root / "paper/overleaf/figures"
     directory.mkdir(parents=True, exist_ok=True)
+    previews = root / "reports/figures/paper"
+    previews.mkdir(parents=True, exist_ok=True)
     plt.rcParams.update({"font.size": 9, "pdf.fonttype": 42, "ps.fonttype": 42})
     fig, ax = plt.subplots(figsize=(7.4, 2.55))
     fig.subplots_adjust(left=0.01, right=0.99, bottom=0.02, top=0.98)
@@ -121,7 +124,7 @@ def main():
     ax.text(4.99, 0.09, "New guess returns to the teacher; repeat until stopping or the cap",
             ha="center", fontsize=7.8)
     fig.savefig(directory / "reference_game.pdf")
-    fig.savefig(directory / "reference_game.png", dpi=200)
+    fig.savefig(previews / "reference_game.png", dpi=200)
     plt.close(fig)
 
 
