@@ -92,24 +92,37 @@ are schematic examples, not measured model responses.}
 \label{fig:intro_game}
 \end{figure*}
 
-The game exposes a difficulty that direction following alone cannot resolve.
-Moving toward the target can still increase error if the step is too large.
-Conversely, a small, correctly directed step may leave most of the correction
-undone. Modifiers such as \textit{a little}, \textit{somewhat}, and
-\textit{much} promise graded control, but their operational meaning depends
-on how the receiver interprets them. Feedback production adds another
-distinction: preserving the intended directions is useful, yet it does not
-guarantee that the resulting message induces a better revision.
+Within this game, a verbal correction must be translated into a change
+in the current color guess. Two aspects of that change matter.
+\emph{Direction} specifies which color property should increase or decrease,
+as in \textit{lighter} or \textit{more blue}. \emph{Magnitude} specifies
+how large the change should be: \textit{a little darker} and
+\textit{much darker} request the same direction but different degrees of
+adjustment. Even when feedback leaves magnitude implicit, the guesser must
+choose a step size. Following the requested direction is therefore only
+part of a successful revision. A step can be too small to resolve the
+disagreement or so large that it overshoots the target. Graded modifiers
+make this problem especially informative: understanding their ordering
+need not mean that a receiver's changes match the correction needed.
+
+These distinctions motivate our research questions. Can a model revise
+its color guess in the directions requested by feedback? How does it
+interpret graded magnitude expressions, and can measuring those responses
+help a teacher choose more effective wording? On the production side,
+can a model faithfully express supplied corrections, and does preserving
+those corrections lead to useful revisions by the receiver? The first two
+questions concern \emph{feedback following}; the third concerns
+\emph{feedback generation} and its downstream effect. ColorRef lets us
+examine these behaviors separately while evaluating their consequences
+against the same recorded targets.
 
 Language-to-color research studies prediction and reference among alternatives
 \citep{mcmahan2015bayesian,monroe2017colors}, while representation studies
 compare model embeddings with perceptual geometry
 \citep{abdou-etal-2021-language,loyola-etal-2023-perceptual}.
 Comparative color terms have also been modeled as directions in color space
-\citep{winn-muresan-2018-lighter}. We ask how verbal corrections operate on
-model outputs: which directions they induce, what step sizes their modifiers
-produce, and whether those movements help reach the target. We measure
-agreement using $\Delta E_{76}$, the Euclidean distance in CIELAB
+\citep{winn-muresan-2018-lighter}. Our behavioral focus complements these approaches by examining how
+corrections change the receiver's current output. We measure agreement using $\Delta E_{76}$, the Euclidean distance in CIELAB
 \citep{cie2018colorimetry}, without treating it as a strict perceptual
 threshold or a judgment that alternative color meanings are invalid.
 
