@@ -1,3 +1,10 @@
+# Historical review: superseded by `manuscript_content_audit_20261009.md`
+
+This chronological note predates completed confirmation and Gemma replication.
+Its pending-task recommendations are not the current experiment checklist.
+Consult the 2026-10-09 audit and `revision_evidence_map.md` for current status.
+
+
 # Content review and argument decisions — 2026-10-08
 
 Scope: expert feedback, completed evidence, and the first revised manuscript.

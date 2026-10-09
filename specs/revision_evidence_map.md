@@ -1,4 +1,4 @@
-# Revision evidence map — current as of 2026-10-08
+# Revision evidence map — current as of 2026-10-09
 
 This is the current status of the expert concerns after the completed experiments
 and first manuscript rewrite. Earlier pending-work guidance is superseded here;
@@ -8,7 +8,7 @@ The original review is paraphrased, not reproduced publicly.
 Working manuscript: `paper/latex/color-games-revised.tex`.
 Completed source/availability audit and machine-side commands:
 `specs/results/content_source_audit_20261008.md`.
-Content decisions and remaining tasks: `specs/manuscript_content_review_20261008.md`.
+Content decisions and remaining tasks: `specs/manuscript_content_audit_20261009.md`.
 Import/rewrite provenance: `specs/manuscript_baseline_20261008.md` and
 `specs/manuscript_revision_20261008.md`.
 
@@ -28,6 +28,9 @@ Import/rewrite provenance: `specs/manuscript_baseline_20261008.md` and
 
 | Study | Independent units and completion | Main observation | Result note |
 |---|---|---|---|
+| Fresh grounding | 1,000 descriptions; 4,000 parsed responses | Qwen initial/final error 42.332/22.147; paired gain 20.185 [18.611, 21.785]. | `specs/results/grounding_replication_20261008.md` |
+| Qwen magnitude confirmation | 32 calibration colors; 128 held-out starts; 2,098 common quartets | Calibrated minus fixed-rule error −5.497 [−5.786, −5.203]. | `specs/results/magnitude_confirmation_20261008.md` |
+| Gemma magnitude replication | Same frozen input plan; own-model calibration; 128 held-out starts; 2,081 common quartets | Calibrated minus fixed-rule error −5.161 [−5.484, −4.842]; all 2,108 language pairs retain the benefit. | `paper/latex/revision-appendix.tex`; `specs/gemma_magnitude_replication.md` |
 | Shared-start interfaces | 64 descriptions; 192 games; 576 parsed revisions | First-revision plain LAB minus HEX: +6.187 [0.845, 11.889]. Final legend minus plain LAB: −12.114 [−18.035, −5.489]. Close HEX/legend means do not establish equivalence. | `specs/results/shared_start_20261007.md` |
 | Isolated quantifiers | 12 fixed anchors; 888 parsed responses | Positive qualitative updates: 228/288 plain, 288/288 legend. Strict ordinal pairs: 172/216 plain, 210/216 legend. Pairs overlap within anchors. | `specs/quantifier_calibration.md`; Appendix C.2 |
 | One-step magnitude policy | 12 calibration colors, 288 calls/287 parsed; 12 held-out starts, 196 targets/588 parsed responses | Bare/calibrated/numeric target errors: 11.770/6.362/0.533. Calibrated minus bare: −5.408 [−10.220, −2.173]; median paired difference zero. | `specs/results/magnitude_control_20261007.md` |
@@ -54,9 +57,13 @@ remains unmeasured. The author confirms that historical outputs were lost when
 the original machine was wiped. The completed fresh 1,000-description replication
 now supplies the main grounding evidence; unresolved historical numerical tables
 are excluded from the working manuscript. See
-`specs/results/grounding_replication_20261008.md`. Next, the four-arm magnitude
-confirmation needs GPU execution on 128 held-out starting colors. Human target
-judgments, unaided teacher geometry,
+`specs/results/grounding_replication_20261008.md`. The four-arm magnitude
+confirmation and same-plan Gemma replication are also complete, each on 128
+held-out starting colors. Their primary comparisons support calibration
+against the tested fixed rule, chiefly on large corrections; they do not
+establish superiority over every unfitted policy or increased threshold success.
+No additional GPU run is required for these scoped claims. Human target
+judgments, alternative-rule/prompt robustness, unaided teacher geometry,
 cross-model transfer, and downstream creative editing remain extensions unless
 the paper is broadened to claim them.
 
@@ -67,8 +74,10 @@ the paper is broadened to claim them.
 2. Use the fresh 1,000-description oracle gains as baseline evidence;
    do not describe them as proof that ambiguous names have a unique true color.
 3. Present the new magnitude policy as a held-out policy comparison. Its benefit
-   does not isolate the necessity of empirical calibration from the addition of
-   magnitude information; numeric controls additionally supply precision/holds.
+   compares fitted selection with the fixed [9, 18] graded-selection rule,
+   while bare and numeric arms differ in semantic information. It does not
+   establish calibration necessity against every possible unfitted rule;
+   numeric controls additionally supply precision/holds.
 4. Replace the universal following-versus-generating claim with demonstrated
    distinctions among supplied-set fidelity, output-format compliance, and
    usefulness to the receiving guesser.

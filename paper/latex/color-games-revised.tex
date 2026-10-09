@@ -234,7 +234,7 @@ An isolated probe uses 12 fixed colors, six directions, four wordings
 Exact 5-/10-unit and no-change controls separate coordinate execution from
 qualitative instructions: 888 responses in total, all in fresh contexts.
 
-For policy calibration, 12 separately drawn sRGB colors produce 288
+In the exploratory pilot, 12 separately drawn sRGB calibration colors produce 288
 direction/wording responses. Fit direction-specific medians of displayed
 signed movement, including nonpositive parsed movements; only positive
 graded medians are selection candidates. For a hidden target, choose the
@@ -254,8 +254,8 @@ Gemma 4 12B repeats the identical frozen input plan, task order and prompts,
 fitting its own medians on the same 32 calibration colors. No Qwen responses
 fit the Gemma policy, and no held-out responses fit either policy.
 
-One-step evaluation uses 12 disjoint starts and 196 feasible targets.
-Sequential transfer freezes the fitted policy and uses 12 further fresh
+The pilot's one-step evaluation uses 12 disjoint starts and 196 feasible targets.
+Its sequential transfer freezes the pilot policy and uses 12 further fresh
 starts, 200 targets, target-known stopping at $\Delta E_{76}\leq5$, and a
 five-revision cap. Targets are constructed at native distances 6, 12, or 24
 along one of six LAB directions. Input-only feasibility checks exclude
@@ -300,9 +300,9 @@ Gemma calibration parses 768/768; its 27 held-out failures all occur in the
 numeric arm. All three Gemma language arms parse fully.
 Failures remain visible in completion counts and matched-cohort denominators.
 
-Original main intervals use 1{,}000 percentile bootstrap draws.
-New paired intervals use 2{,}000 draws: whole examples within regimes for
-interface/teacher reception, and whole starting colors for magnitude control,
+Paired percentile bootstrap intervals resample whole descriptions within
+regimes for grounding, whole examples within regimes for interface/teacher
+reception, and whole starting colors for magnitude control,
 retaining all associated cases and pooled weights. They condition on observed
 cohorts, not generation randomness or unrestricted population generalization.
 Subgroup analyses are exploratory and not multiplicity-adjusted.
@@ -385,7 +385,7 @@ These overlapping within-color comparisons concern 12 fixed anchors, not
 216 independent colors. Numeric and no-change controls are exact except
 one legend-condition 10-unit instruction executed as a 20-unit update.
 
-The separate calibration split gives displayed median steps for
+The exploratory pilot calibration split gives displayed median steps for
 \emph{a little} ranging from 1.14 to 4.92 across directions,
 \emph{somewhat} from 5.07 to 10.09, and \emph{much} from 28.72 to 75.84.
 These are model/prompt-specific operational measurements, not universal
@@ -493,7 +493,7 @@ Numeric feedback supplies additional precision.}
 \label{tab:magnitude}
 \end{table}
 
-Transfer to 12 further starts completes all 600 games with 1{,}059 parsed
+The Qwen exploratory pilot's transfer to 12 further starts completes all 600 games with 1{,}059 parsed
 revisions. Calibrated minus bare endpoint error is $-3.48$
 [$-4.20$, $-2.74$]; convergence rises from 148/200 to 192/200.
 Evaluation calls fall from 516 to 338 (34.5\%), excluding calibration.
@@ -625,6 +625,8 @@ nonuniformity alone.
 The magnitude confirmation covers two model families with the same prompt
 and 128 held-out starting-color clusters. Other diagnostic controls use Qwen
 alone and smaller fixed samples, including twelve-color pilot clusters.
+The primary comparator is one fixed quantifier rule with cutpoints 9 and 18;
+alternative unfitted rules and prompt paraphrases are not tested.
 The studies use English descriptions and supplied numeric or HEX-derived
 starting states. Bootstrap intervals do not establish broad population
 generalization, generation-randomness uncertainty, or multiplicity-adjusted

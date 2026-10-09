@@ -11,7 +11,8 @@ manuscript baseline before incorporating the completed revision experiments.
 - File checksums and archive provenance: `baseline/import_manifest.json`
 - Revision entry points: `../specs/manuscript_baseline_20261008.md`
 - First-revision changes and remaining checks: `../specs/manuscript_revision_20261008.md`
-- Content hierarchy and expert-feedback checklist: `../specs/manuscript_content_review_20261008.md`
+- Current content audit and expert-feedback checklist: `../specs/manuscript_content_audit_20261009.md`
+- Current experiment status: `../specs/revision_evidence_map.md`
 - Experimental evidence: `../specs/results/`
 
 ## Compile locally
@@ -77,3 +78,10 @@ Reported rounded estimates and run IDs are recorded in
 `latex/figures/calibration_effects.json`; they were not recomputed from raw
 responses in this workspace. The PDF figure was rendered and visually inspected.
 The full manuscript layout has not been revalidated after these content additions.
+
+The 2026-10-09 content audit confirms the scoped two-model calibration claim,
+distinguishes exploratory pilot results from confirmation, and records the
+remaining scientific limits and submission checks. Completed experiments are
+not pending reruns. Historical content-review notes are retained as chronology.
+The 2026-10-09 reading PDF compiled and was visually inspected using a temporary
+Courier substitution; final publication-font layout still requires Overleaf.
