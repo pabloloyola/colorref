@@ -517,8 +517,21 @@ Subgroup analyses are exploratory and not multiplicity-adjusted.
 \section{Results}
 \label{sec:results}
 
-\subsection{Interaction localizes recorded targets}
+We first ask whether verbal correction helps the guesser move from a
+description-based prediction toward the teacher's recorded target.
+Shared-start and isolated-adjustment controls then examine what that
+improvement depends on: the output interface, the requested direction,
+and the magnitude conveyed by graded wording. The main held-out comparison
+tests whether measuring a receiver's steps improves phrase selection.
+We finish with a smaller sequential transfer pilot and the distinction
+between preserving a teacher's directions and helping the receiver.
+
+\subsection{Verbal correction narrows target disagreement}
 \label{sec:results_main}
+The reference game gives the model a way to revise its interpretation of a
+color description. On the fresh grounding benchmark, those revisions
+substantially reduce disagreement with the assigned target, although
+most final guesses remain outside the convergence threshold.
 Across all 1{,}000 fresh descriptions, mean initial error is 42.33
 [40.70, 44.01] and final error is 22.15 [21.28, 22.99]. The paired
 initial-minus-final gain is 20.19 [18.61, 21.79] $\Delta E_{76}$, reducing
@@ -545,15 +558,23 @@ the paired one-shot baseline. Gain is initial minus final error.}
 \label{tab:main_results}
 \end{table}
 
-All regimes improve descriptively (Table~\ref{tab:main_results}). Abstract
+The benefit is not confined to names with explicit color terms: all
+regimes improve descriptively (Table~\ref{tab:main_results}). Abstract
 descriptions have both greater initial disagreement and larger absolute
 gain; these means do not establish a separate between-regime effect or
 semantic implausibility of alternative colors. This evaluation measures
 localization after additional corrections; it does not isolate sequential
 adaptation from feedback information at a matched constraint budget.
+It establishes that the game can narrow target disagreement, leaving open
+how reliably the guesser interprets the corrections themselves.
 
 \subsection{Output encoding affects correction from shared starts}
 \label{sec:results_interface}
+Does the correction advantage depend on how the guesser represents its
+answer? Supplying the same starting color and first feedback removes
+initial description prediction as an explanation for first-revision
+differences. Plain LAB is less effective than HEX in this comparison;
+explicit axis instructions improve its later trajectory.
 All 576 shared-start revisions parse; every interface is evaluated on all
 64 examples (Table~\ref{tab:shared_interface}). Plain LAB exceeds HEX
 first-revision error by 6.19 [0.85, 11.89] $\Delta E_{76}$.
@@ -564,6 +585,9 @@ affects feedback following beyond differences in initial prediction.
 Legend and HEX endpoints are close, but their difference 0.38
 [$-4.85$, 6.29] does not establish equivalence. Later feedback is adaptive,
 and the result is conditional on HEX-derived starts.
+Thus, replacing HEX with a coordinate interface does not by itself make
+language-based correction easier. The instructions accompanying that
+interface matter as well.
 
 \begin{table}[t]
 \centering\small
@@ -582,8 +606,12 @@ are forced rather than stopped at convergence.}
 \label{tab:shared_interface}
 \end{table}
 
-\subsection{Graded instructions specify unequal step sizes}
+\subsection{Direction and graded magnitude are separate requirements}
 \label{sec:results_quantifiers}
+The isolated probes ask a more specific question: does following a
+requested direction also give the model a consistent sense of how far to
+move? The axis legend improves direction following and the ordering of
+graded updates, but the resulting step sizes vary across directions.
 All 888 isolated-probe responses parse. Explicit axis instructions increase
 positive-direction qualitative updates from 228/288 to 288/288.
 Strictly increasing ordinal comparisons rise from 172/216 to 210/216;
@@ -595,17 +623,27 @@ one legend-condition 10-unit instruction executed as a 20-unit update.
 The exploratory pilot calibration split gives displayed median steps for
 \emph{a little} ranging from 1.14 to 4.92 across directions,
 \emph{somewhat} from 5.07 to 10.09, and \emph{much} from 28.72 to 75.84.
+For phrase selection, this means that the same modifier cannot be assumed
+to request the same coordinate step in every direction.
 These are model/prompt-specific operational measurements, not universal
 perceptual units. Large updates often leave the displayable gamut:
 54/72 calibration responses for \emph{much} have projection error above one.
 Native step variation and display projection must be distinguished; neither
 the model's internal interpretation nor human perceptual nonuniformity is
 identified by these outputs alone.
+This motivates measuring the receiver's displayed steps before using
+those phrases to communicate a desired correction.
 
-\subsection{Calibrated magnitude improves held-out localization}
+\subsection{Receiver calibration improves held-out phrase selection}
 \label{sec:results_magnitude}
+Can a teacher choose more useful wording by measuring how the receiver
+responds to it? The confirmation compares fitted selection with a fixed
+unfitted rule using the same graded vocabulary. Calibration lowers mean
+held-out target error for both model families
+(Figure~\ref{fig:calibration_effects}); simply introducing a quantifier
+ladder is not enough to produce that benefit.
 Each model completes all 8{,}432 held-out responses
-(Figure~\ref{fig:calibration_effects}).
+before parsing is assessed (Table~\ref{tab:magnitude}).
 For Qwen, there are 2{,}098 fully parsed quartets spanning all 128 starting colors;
 parse failures number 3, 5, 0, and 2 for bare, unfitted, calibrated, and
 numeric feedback. Calibrated wording reduces mean target error from 12.36
@@ -618,6 +656,18 @@ of parsed responses. Direction compliance therefore does not ensure
 accurate magnitude control. This tests the fitted policy against one fixed
 rule; it does not establish that every unfitted rule is inferior.
 
+\paragraph{Replication with Gemma.}
+Gemma uses its own calibration responses with the same held-out input
+plan. It replicates the primary contrast: on 2{,}081 common parsed quartets,
+calibrated minus unfitted error is $-5.16$ [$-5.48$, $-4.84$].
+The language-only available-pair contrast includes all 2{,}108 cases and
+is $-5.10$ [$-5.42$, $-4.77$], so the benefit persists without excluding
+numeric parse failures. Bare wording is also better than the unfitted rule
+by 2.69 units; a quantifier ladder alone is not sufficient.
+The two models' main means use different parsed cohorts and are not a
+direct ranking of model ability.
+
+\paragraph{Where Qwen's benefit occurs.}
 Exploratory saved-output breakdowns localize the aggregate benefit. At
 requested distances 6, 12, and 24, calibrated-minus-unfitted error is
 $-0.71$, $0.00$, and $-18.35$, respectively. The largest reductions occur
@@ -635,15 +685,7 @@ remaining 713 cases: calibration selects \textit{somewhat} instead of
 and darker comparisons reuse identical prompts. These observations localize
 the policy differences; they are not an independent controller experiment.
 
-Gemma replicates the primary contrast: on 2{,}081 common parsed quartets,
-calibrated minus unfitted error is $-5.16$ [$-5.48$, $-4.84$].
-The language-only available-pair contrast includes all 2{,}108 cases and
-is $-5.10$ [$-5.42$, $-4.77$], so the benefit persists without excluding
-numeric parse failures. Bare wording is also better than the unfitted rule
-by 2.69 units; a quantifier ladder alone is not sufficient.
-The two models' main means use different parsed cohorts and are not a
-direct ranking of model ability.
-
+\paragraph{Where Gemma's benefit occurs.}
 Gemma's exploratory distance effects are $-0.06$, $0.00$, and $-18.18$
 at 6, 12, and 24 units. Of its 2{,}081 common cases, 1{,}524 share identical
 prompts and colors. The other 557 contain 443 wins, four ties and 110 losses.
@@ -655,6 +697,10 @@ from 333 to 75, but convergence counts do not increase (1{,}400 versus
 leave-one-start-out effects range from $-5.19$ to $-5.12$.
 These descriptive audits support lower average error and fewer harmful
 updates, rather than universal improvement or greater threshold success.
+Together, the two studies show that receiver-specific phrase selection
+can reduce large correction errors under the tested rule. They do not
+show that a modifier has a stable meaning across models or that the
+calibrated policy improves every target.
 
 \begin{figure*}[t]
 \centering
@@ -700,6 +746,14 @@ Numeric feedback supplies additional precision.}
 \label{tab:magnitude}
 \end{table}
 
+\subsection{A smaller pilot transfers calibration across revisions}
+\label{sec:results_transfer}
+The held-out confirmation concerns a single adjustment. Sequential use
+adds another demand: the teacher must select a new correction from each
+revised displayed state, including after overshoot. The smaller Qwen
+pilot tests this transfer with a frozen mapping and target-known stopping.
+It finds lower endpoint error and fewer evaluation calls than bare
+feedback, while exposing a limit of the fixed-axis policy.
 The Qwen exploratory pilot's transfer to 12 further starts completes all 600 games with 1{,}059 parsed
 revisions. Calibrated minus bare endpoint error is $-3.48$
 [$-4.20$, $-2.74$]; convergence rises from 148/200 to 192/200.
@@ -713,13 +767,19 @@ Eight calibrated trajectories exhaust the cap: all concern 24-unit lighter
 or greener targets and end with off-axis disagreement exceeding the
 threshold. The fixed-axis policy does not explicitly restore display-induced
 drift. Numeric feedback has the lowest endpoint error, but retains execution
-tails: four one-step responses have native error above one (maximum 39),
+tails: four responses in the pilot's one-step evaluation have native error above one (maximum 39),
 and five sequential responses exceed one (maximum 44). The latter reach
 convergence after subsequent oracle corrections, not autonomous self-repair.
 Appendix~\ref{app:magnitude_diagnostics} preserves these limitations.
 
 \subsection{Restatement fidelity and usefulness are distinct}
 \label{sec:results_llm_teacher}
+Finally, the teacher experiments ask whether a model's restatement of
+supplied oracle directions remains useful to a receiving guesser.
+There are two separate questions: whether the message preserves the
+intended correction, and whether that message reduces target error.
+The matched audits show why neither literal keyword agreement nor
+faithful restatement alone answers both.
 All 480 teacher messages and 600 receiver revisions complete.
 A supplementary scope-aware audit resolves all supplied-direction sets in
 both four-shot conditions as preserved; restricted zero-shot preserves
@@ -728,7 +788,9 @@ both four-shot conditions as preserved; restricted zero-shot preserves
 These are finite-grammar diagnostics, not independent human judgments.
 Literal keywords can invert the intended correction: \textit{your guess is
 darker than the target} implies a lighter update. Harmless \textit{Feedback:}
-prefixes can also lower strict format certification.
+prefixes can also lower strict format certification. These examples
+motivate retaining scope-aware preservation and receiver accuracy as
+separate outcomes.
 
 \begin{table}[t]
 \centering\small
@@ -751,12 +813,15 @@ directions, not inferred teacher intent.}
 \label{tab:teacher_receiver}
 \end{table}
 
-Restricted zero-shot reduces receiver error relative to natural zero-shot
+\paragraph{Reception of the unchanged messages.}
+Passing the teacher's original text to the guesser, restricted zero-shot
+reduces receiver error relative to natural zero-shot
 by 4.95 [$1.32$, $8.39$]. The natural four-shot mean improvement is 2.49,
 but its interval includes zero. Faithful restatement therefore does not
 guarantee the best receiving accuracy. Restricted four-shot is close to the
 oracle (difference $-0.10$ [$-0.40$, 0.09]), without establishing equivalence.
 
+\paragraph{Why the lowest mean is not a fidelity ranking.}
 Restricted zero-shot's advantage over the oracle is concentrated:
 11 wins, 104 ties, 5 losses, and median difference zero.
 Its 98 literally identical messages tie; six changed same-set messages and
@@ -770,6 +835,9 @@ benefit. The sixteen additions also prevent an
 information-matched claim of better restatement.
 These controls establish prompt sensitivity in oracle-assisted feedback,
 not a general inability to generate geometrically correct guidance unaided.
+For the reference game, the relevant outcome is the resulting color
+update; a teacher's fidelity score is a complementary diagnostic rather
+than a substitute for that outcome.
 
 \section{Discussion}
 \label{sec:discussion}

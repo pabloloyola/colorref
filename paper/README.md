@@ -183,3 +183,19 @@ experimental outputs, Results and Discussion remain unchanged. See
 includes the complete pass and both saved-game figures. Its temporary Courier
 substitution remains a reading convenience; final publication-font layout awaits
 Overleaf. Page-limit compression is deferred.
+
+## Results narrative
+
+The Results now connect each comparison to its motivating question and finding:
+description-based correction, shared-start interface control, direction versus
+magnitude, receiver-specific phrase selection, sequential transfer and teacher
+reception. Both models' primary calibration comparisons precede the exploratory
+policy-identity and overshoot breakdowns. The smaller sequential pilot has its
+own subsection, separating its evidence from the two-model one-step confirmation.
+Teacher preservation and usefulness remain separate outcomes.
+
+All numerical values, tables and figure blocks are preserved. The approved
+introduction and methods, Discussion and later sections are unchanged in this
+pass. The reading PDF includes the revised narrative; validation and scope are
+recorded in `../specs/results_narrative_revision_20261009.md`. Discussion and
+conclusion alignment is the next content step, before the author's full read.
