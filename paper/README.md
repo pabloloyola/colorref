@@ -112,9 +112,17 @@ remain unchanged.
 
 Figure 1 (`latex/figures/reference_game.pdf`) is a constructed schematic for
 "dark green", not a recovered model trajectory or an experimental observation.
+The current diagram uses compact vector robot icons for the guesser and teacher.
 It restores the introductory example's explanatory role without reusing the
 unrecoverable historical accuracy values in the archival `example.png`. Rebuild
 the vector figure with `uv run python scripts/plot_reference_game.py`.
+
+The next empirical trajectory will come from retained current checkpoints.
+The CPU-only gallery/export command and figure-design notes are in
+`../specs/game_figures_20261009.md`. It writes actual swatches, an a*b* path,
+L* by turn, full LAB error and exact feedback, together with source hashes.
+No test data or unverified reconstruction of the lost historical runs is
+inserted into the manuscript. Page-limit compression is deferred.
 
 ## Introduction developed paragraph by paragraph
 
