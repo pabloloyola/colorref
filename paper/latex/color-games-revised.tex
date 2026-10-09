@@ -126,26 +126,40 @@ corrections change the receiver's current output. We measure agreement using $\D
 \citep{cie2018colorimetry}, without treating it as a strict perceptual
 threshold or a judgment that alternative color meanings are invalid.
 
-Our central contribution is \emph{receiver-calibrated feedback}: measure
-the displayed step induced by each graded phrase on separate colors, then
-choose the phrase whose measured step best matches the target residual.
-To isolate this mechanism from description prediction and adaptive dialogue,
-we test single-axis adjustments from supplied starting colors.
-Independently calibrated policies improve held-out target accuracy for
-Qwen3-14B and Gemma 4 12B against a fixed graded-wording rule on the same
-128 starting colors. The main benefit is avoiding excessive large
-corrections; calibration does not improve every update or guarantee convergence.
+To answer these questions, we combine description-based reference games
+with controlled color-adjustment tasks. The games establish how initial
+interpretations change under teacher feedback; supplied-start comparisons
+and isolated adjustments help distinguish direction interpretation and
+step size from the difficulty of predicting a color from its description.
+We also compare model-produced feedback with deterministic oracle messages,
+examining both preservation of supplied corrections and their effect on a
+receiving guesser. Across these studies, agreement with the recorded target
+provides a common outcome, while movement and message diagnostics reveal
+why a correction may succeed or fail.
 
-Supporting experiments connect these adjustment tasks back to the game.
-A fresh, regime-balanced evaluation on 1{,}000 descriptions tests initial
-prediction followed by oracle correction. Matched-start comparisons and
-isolated probes distinguish output encoding from correction execution, and
-a smaller sequential pilot tests the frozen wording policy over repeated
-revisions. Oracle-assisted teacher restatement and unchanged-message
-reception further distinguish supplied-direction preservation from usefulness.
-Together, these studies use the game to ask when natural-language feedback
-becomes effective control. Human interaction and creative image editing
-remain motivations for this question, rather than applications evaluated here.
+Our central contribution is \emph{receiver-calibrated feedback}. We
+measure the changes induced by graded expressions such as \textit{a little}
+and \textit{much} for each correction direction on separate calibration
+colors. A teacher then selects the phrase
+whose typical displayed step best matches the remaining correction.
+This policy uses the same graded vocabulary as a fixed, unfitted wording
+rule, but bases its choice on the receiving model's measured behavior.
+We evaluate independently calibrated policies for Qwen3-14B and Gemma 4 12B
+on the same 128 held-out starting colors.
+
+The results connect initial interpretation, feedback following, and feedback
+generation. Oracle correction improves target agreement on 1{,}000 new color
+descriptions, showing that an initial guess does not capture the full
+behavior available through interaction. Controlled adjustments show why
+correct direction and ordered magnitude responses can still be insufficient:
+large corrections can overshoot. Receiver calibration reduces held-out error
+for both models, with gains concentrated on avoiding excessive large steps.
+Teacher controls further show that faithfully restating supplied directions
+does not guarantee the best receiver accuracy. Together, these findings
+make ColorRef a setting for studying how language guides revision and how
+feedback can be adapted to its receiver. The evaluations concern model
+behavior against assigned targets; human interaction and creative image
+editing remain directions for future work.
 
 \section{Related Work}
 \label{sec:related_work}

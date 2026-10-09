@@ -118,3 +118,15 @@ limits are unchanged. The compiled reading PDF is committed at
 The narrative-revised temporary-font build has 16 pages; its log has no
 overfull boxes or unresolved references/citations, and all pages were rendered
 and visually inspected. The introductory schematic appears as Figure 1.
+
+### Completed introduction pass
+
+Incorporated the approved progression from descriptions/ambiguity to one-shot
+interpretation, the reference game, feedback direction/magnitude, and the
+research questions. The introduction closes by explaining the approach, the
+receiver-calibrated policy, and what the findings mean for feedback following
+and generation. No experimental claims or numbers were added to the results;
+the abstract and all text from Related Work onward are unchanged by this pass.
+The refreshed 16-page reading copy includes all of these source changes and
+has been compiled with no overfull or unresolved-reference warnings and
+visually inspected across all pages. Publication-font checks remain separate.

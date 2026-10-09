@@ -115,3 +115,19 @@ Figure 1 (`latex/figures/reference_game.pdf`) is a constructed schematic for
 It restores the introductory example's explanatory role without reusing the
 unrecoverable historical accuracy values in the archival `example.png`. Rebuild
 the vector figure with `uv run python scripts/plot_reference_game.py`.
+
+## Introduction developed paragraph by paragraph
+
+The current opening starts from human color descriptions and their ambiguity,
+then introduces one-shot model interpretation, interactive correction, the
+reference-game roles, direction/magnitude, and the research questions. The
+closing connects those questions to the controlled comparisons and the
+receiver-calibrated policy, then explains the main findings in context.
+One-shot prediction means prediction without revision; it is not a claim
+about zero-shot prompting or the absence of demonstrations.
+
+The compiled reading PDF includes this complete introduction pass and the
+introductory schematic. Its 16-page temporary-font build has no unresolved
+references/citations or overfull boxes; all pages were rendered and inspected.
+The abstract, results, and later sections were not changed during this
+paragraph-by-paragraph introduction pass.
