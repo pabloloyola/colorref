@@ -1,5 +1,11 @@
 # ColorRef continuation handoff — 2026-10-07
 
+Current status (2026-10-09): the scoped manuscript content pass, two-model
+magnitude evidence and teacher controls are complete. Use
+`paper_reading_handoff_20261009.md`, `revision_evidence_map.md` and
+`paper_evidence_inventory.json` for current tasks. The entries below retain
+chronology; their old pending-experiment guidance is superseded.
+
 ## Repository and current work
 
 - Repository: `pabloloyola/colorref`.

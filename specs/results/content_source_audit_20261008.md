@@ -1,5 +1,11 @@
 # Content source audit — 2026-10-08
 
+Historical source audit: the production inventory and same-set receiver
+checks requested below have since completed. See
+`target_inventory_verified_20261008.md`, `receiver_same_set_review_20261008.md`
+and `../paper_reading_handoff_20261009.md` for current status. Lost historical
+numerical results are now excluded from the working manuscript.
+
 Inspected repository snapshot: `714d65f623f676ee3982ade52a4ba590d3386652`,
 original/revised manuscript sources, uploaded teacher diagnostic JSON, and
 author-supplied completed reports. This is a source/availability audit, not a

@@ -77,7 +77,8 @@ Rebuild the figure with `uv run python scripts/plot_calibration_evidence.py`.
 Reported rounded estimates and run IDs are recorded in
 `latex/figures/calibration_effects.json`; they were not recomputed from raw
 responses in this workspace. The PDF figure was rendered and visually inspected.
-The full manuscript layout has not been revalidated after these content additions.
+The 2026-10-09 reading copy includes these additions; its temporary-font layout
+has been compiled and visually checked across all pages.
 
 The 2026-10-09 content audit confirms the scoped two-model calibration claim,
 distinguishes exploratory pilot results from confirmation, and records the
@@ -85,3 +86,14 @@ remaining scientific limits and submission checks. Completed experiments are
 not pending reruns. Historical content-review notes are retained as chronology.
 The 2026-10-09 reading PDF compiled and was visually inspected using a temporary
 Courier substitution; final publication-font layout still requires Overleaf.
+
+## Full-read handoff
+
+The reference check, current run inventory and CPU evidence-export command are
+recorded in `../specs/paper_reading_handoff_20261009.md`. The frozen run list is
+`../specs/paper_evidence_inventory.json`. The revised bibliography now cites
+the CIE 2018 colorimetry report and the Gemma 4 technical report; the Bayesian
+color-semantics entry has verified publisher/DOI metadata.
+The exporter packages saved evidence from the GPU machine without inference.
+The full raw-checkpoint reconciliation awaits that export; pasted summaries
+alone cannot verify every production setting or figure input.

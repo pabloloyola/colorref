@@ -54,7 +54,7 @@ but grounded communication also involves revision. A user may request
 \textit{more blue}, then \textit{a little lighter}: the system must identify
 both a direction and an appropriate magnitude relative to its current state.
 
-Most language-to-color evaluations test one-shot prediction or reference
+Language-to-color evaluations include one-shot prediction and reference
 among alternatives \citep{mcmahan2015bayesian,monroe2017colors}.
 Representation studies ask whether model embeddings align with perceptual
 color geometry \citep{abdou-etal-2021-language,loyola-etal-2023-perceptual}.
@@ -68,12 +68,13 @@ update.
 \textsc{ColorRef} makes these distinctions measurable. A guesser predicts a
 color from a description; a teacher sees the hidden target and provides
 corrections. We compare deterministic oracle policies and model-produced
-feedback, varying constraints per message, wording, and interaction length.
+feedback under controlled wording and constraint budgets, with one-step
+comparisons and bounded iterative correction.
 Four semantic regimes distinguish direct color terms from prototype-mediated,
 compound-associative, and abstract-idiosyncratic descriptions.
 
 We report $\Delta E_{76}$, the Euclidean distance between predicted and
-target colors in CIELAB space \citep{colorimetry1986official}.
+target colors in CIELAB space \citep{cie2018colorimetry}.
 Lower values indicate closer agreement with the recorded target, not that
 alternative colors are semantically invalid. This distinction matters for
 creative or ambiguous names. We use the metric as a reproducible distance,
@@ -285,7 +286,8 @@ and receiving target error separate.
 \subsection{Models, uncertainty, and failures}
 Grounding and diagnostic controls use \texttt{Qwen/Qwen3-14B}
 \citep{yang2025qwen3}; the four-arm magnitude study additionally uses
-\texttt{google/gemma-4-12B-it}, pinned to revision \texttt{707f0a3b}.
+\texttt{google/gemma-4-12B-it} \citep{gemmateam2026gemma4},
+pinned to revision \texttt{707f0a3b}.
 Both run through Hugging Face Transformers \citep{wolf2020transformers},
 bfloat16 on an A100 40\,GB, temperature zero, and thinking disabled.
 Gemma uses its multimodal processor/model loader with text-only inputs.
