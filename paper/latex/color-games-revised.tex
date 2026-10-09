@@ -22,82 +22,110 @@
 \maketitle
 
 \begin{abstract}
-We introduce \textsc{ColorRef}, an interactive reference-game framework for
-studying natural-language control of color predictions. Using 518{,}830
-English color descriptions, we separate initial prediction, output encoding,
-direction following, correction magnitude, and teacher feedback.
-Controlled feedback reduces Qwen3-14B's mean target error from 42.33 to
-22.15 $\Delta E_{76}$ on 1{,}000 new regime-balanced descriptions.
-Matched-start controls show sensitivity to output representation and explicit
-axis instructions. Graded corrections exhibit ordered but direction-dependent
-step sizes; correct directions alone do not prevent overshoot.
-A frozen wording policy calibrated on 32 separate colors reduces one-step
-held-out target error from 12.36 to 6.86 for Qwen3-14B and from 11.06
-to 5.89 for Gemma 4 12B relative to a fixed graded-wording rule on the same
-128 starting colors. Gains concentrate on avoiding excessive large corrections.
-A smaller Qwen sequential pilot also tests transfer and generation cost.
-Oracle-assisted teacher controls further distinguish preserving supplied
-directions from producing useful corrections: few-shot restatement can be
-faithful without yielding the best receiver accuracy.
-These results characterize prompt-conditioned control of recorded color
-targets, not uniquely correct color meanings or human perceptual calibration.
+How can language help a model revise a color that is almost, but not quite,
+what is intended? We introduce \textsc{ColorRef}, a reference game in which
+a guesser predicts a color from a description, a teacher knows the hidden
+target and gives verbal feedback, and the guesser revises over successive
+rounds. The resulting trajectories let us study feedback as a control
+interface: a useful correction must communicate both which way to move and
+how far. Oracle feedback improves recorded-target agreement on 1{,}000 new
+descriptions, but controlled probes show that following the right direction
+can still produce excessive steps. We therefore calibrate graded phrases
+on separate colors and select wording according to the receiving model's
+measured response. On the same 128 held-out starting colors, independently
+calibrated policies reduce one-step mean target error from 12.36 to 6.86
+$\Delta E_{76}$ for Qwen3-14B and from 11.06 to 5.89 for Gemma 4 12B,
+relative to a fixed graded-wording rule. Supporting controls distinguish
+output representation, direction preservation, and downstream usefulness.
+ColorRef connects interactive reference to measurable correction behavior;
+its results concern recorded targets and prompt-conditioned control, rather
+than uniquely correct color meanings or human perceptual calibration.
 \end{abstract}
 
 \section{Introduction}
 \label{sec:introduction}
 
-Color descriptions connect language to a continuous perceptual domain.
-Some expressions directly name a region, such as \textit{dark green};
-others invoke objects, materials, or associations, such as \textit{ocean blue}
-or \textit{abandoned hope}. A model's initial color prediction is informative,
-but grounded communication also involves revision. A user may request
-\textit{more blue}, then \textit{a little lighter}: the system must identify
-both a direction and an appropriate magnitude relative to its current state.
+An initial color can be close to what we intend and still need a correction:
+\textit{a little darker}, \textit{more blue}, or \textit{much less saturated}.
+Such instructions express a change relative to the current output without
+specifying an exact endpoint. They motivate an interactive view of language
+grounding: can a model use a correction to approach an intended referent,
+and can it produce feedback that helps another model do so? A plausible
+first guess and a fluent correction answer different parts of this question.
 
-Language-to-color evaluations include one-shot prediction and reference
-among alternatives \citep{mcmahan2015bayesian,monroe2017colors}.
-Representation studies ask whether model embeddings align with perceptual
-color geometry \citep{abdou-etal-2021-language,loyola-etal-2023-perceptual}.
-We ask a complementary behavioral question: how reliably can language steer
-model outputs through color space? This requires separating initial prediction
-from output encoding, direction interpretation, step size, and feedback
-production. A geometrically valid direction need not reduce error if the
-receiver moves too far; a faithful teacher utterance need not induce a useful
-update.
+Color offers a compact setting in which to examine that interaction.
+Expressions range from direct terms such as \textit{dark green}, through
+object associations such as \textit{ocean blue}, to evocative names such as
+\textit{abandoned hope}. Their recorded referents occupy a continuous space,
+so we can observe both where a guess lands and how it moves after feedback.
+This combines the ambiguity of natural-language reference with a measurable
+output domain. It does not make a recorded color the only legitimate
+interpretation of its description.
 
-\textsc{ColorRef} makes these distinctions measurable. A guesser predicts a
-color from a description; a teacher sees the hidden target and provides
-corrections. We compare deterministic oracle policies and model-produced
-feedback under controlled wording and constraint budgets, with one-step
-comparisons and bounded iterative correction.
-Four semantic regimes distinguish direct color terms from prototype-mediated,
-compound-associative, and abstract-idiosyncratic descriptions.
+We introduce \textsc{ColorRef}, an interactive reference game with two roles
+(Figure~\ref{fig:intro_game}). The \emph{guesser} receives a description and
+proposes a color. The \emph{teacher} knows the target, compares it with the
+current guess, and sends a verbal correction. The guesser receives its
+previous guess and the latest feedback, along with the description, and
+revises; the exchange repeats until a stopping rule or revision budget ends
+the game. The target is hidden from the guesser. Keeping the roles separate
+lets us vary feedback production while examining how the receiving model
+responds to the message it actually sees.
 
-We report $\Delta E_{76}$, the Euclidean distance between predicted and
-target colors in CIELAB space \citep{cie2018colorimetry}.
-Lower values indicate closer agreement with the recorded target, not that
-alternative colors are semantically invalid. This distinction matters for
-creative or ambiguous names. We use the metric as a reproducible distance,
-not a strict just-noticeable-difference threshold.
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{latex/figures/reference_game.pdf}
+\caption{The ColorRef reference game, illustrated with \textit{dark green}.
+The guesser sees the description and predicts a color; the teacher knows
+the hidden target and gives a correction. The revised guess becomes the
+state for the next exchange. A message such as \textit{a little darker and
+more green} raises two questions: does the receiver move in the requested
+directions, and does it take an appropriate step? Swatches and wording here
+are schematic examples, not measured model responses.}
+\label{fig:intro_game}
+\end{figure*}
 
-Our central contribution is a receiver-calibrated feedback policy:
-measure the displayed step induced by each graded phrase on separate colors,
-then select the phrase whose measured step best matches the target residual.
-With the same frozen task plan and prompts, independently calibrated policies
-reduce held-out error for Qwen3-14B and Gemma 4 12B relative to a fixed
-graded-wording rule. Both evaluations cover 128 starting colors; directions
-and distances within a color are repeated observations. The main benefit
-is avoiding excessive large corrections, rather than improving every update
-or guaranteeing convergence.
+The game exposes a difficulty that direction following alone cannot resolve.
+Moving toward the target can still increase error if the step is too large.
+Conversely, a small, correctly directed step may leave most of the correction
+undone. Modifiers such as \textit{a little}, \textit{somewhat}, and
+\textit{much} promise graded control, but their operational meaning depends
+on how the receiver interprets them. Feedback production adds another
+distinction: preserving the intended directions is useful, yet it does not
+guarantee that the resulting message induces a better revision.
 
-Three supporting controls place this result in context. A fresh evaluation
-on 1{,}000 descriptions shows that oracle corrections reduce mean recorded-target
-disagreement by approximately 48\%. Matched starts and isolated coordinate
-probes separate initial prediction, output encoding and correction execution.
-Finally, oracle-assisted teacher restatement and unchanged-message reception
-separate preservation of supplied directions from downstream usefulness.
-Together these experiments test language as an operational control interface;
-human interaction and creative image editing remain untested.
+Language-to-color research studies prediction and reference among alternatives
+\citep{mcmahan2015bayesian,monroe2017colors}, while representation studies
+compare model embeddings with perceptual geometry
+\citep{abdou-etal-2021-language,loyola-etal-2023-perceptual}.
+Comparative color terms have also been modeled as directions in color space
+\citep{winn-muresan-2018-lighter}. We ask how verbal corrections operate on
+model outputs: which directions they induce, what step sizes their modifiers
+produce, and whether those movements help reach the target. We measure
+agreement using $\Delta E_{76}$, the Euclidean distance in CIELAB
+\citep{cie2018colorimetry}, without treating it as a strict perceptual
+threshold or a judgment that alternative color meanings are invalid.
+
+Our central contribution is \emph{receiver-calibrated feedback}: measure
+the displayed step induced by each graded phrase on separate colors, then
+choose the phrase whose measured step best matches the target residual.
+To isolate this mechanism from description prediction and adaptive dialogue,
+we test single-axis adjustments from supplied starting colors.
+Independently calibrated policies improve held-out target accuracy for
+Qwen3-14B and Gemma 4 12B against a fixed graded-wording rule on the same
+128 starting colors. The main benefit is avoiding excessive large
+corrections; calibration does not improve every update or guarantee convergence.
+
+Supporting experiments connect these adjustment tasks back to the game.
+A fresh, regime-balanced evaluation on 1{,}000 descriptions tests initial
+prediction followed by oracle correction. Matched-start comparisons and
+isolated probes distinguish output encoding from correction execution, and
+a smaller sequential pilot tests the frozen wording policy over repeated
+revisions. Oracle-assisted teacher restatement and unchanged-message
+reception further distinguish supplied-direction preservation from usefulness.
+Together, these studies use the game to ask when natural-language feedback
+becomes effective control. Human interaction and creative image editing
+remain motivations for this question, rather than applications evaluated here.
 
 \section{Related Work}
 \label{sec:related_work}

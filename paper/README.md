@@ -4,6 +4,7 @@ The author supplied this Overleaf source export and compiled PDF on 2026-10-08
 (Asia/Tokyo). The imported LaTeX files are unchanged. This establishes the
 manuscript baseline before incorporating the completed revision experiments.
 
+- [Compiled reading PDF](colorref-reading-draft-20261009.pdf) (includes the restored game framing and introductory schematic)
 - Revised working draft: `latex/color-games-revised.tex`
 - Original unchanged source: `latex/color-games.tex`
 - Bibliography: `latex/custom.bib`
@@ -54,8 +55,10 @@ Before a submission, inspect the complete build log for overfull boxes,
 unresolved citations/references and missing assets, then visually review the
 rendered PDF. A successful TeX exit alone does not validate formatting.
 
-The source is in ACL review mode. Build products should stay out of version
-control. The supplied baseline PDF is retained deliberately as provenance.
+The source is in ACL review mode. Routine build products should stay out of
+version control. The supplied baseline PDF is retained as provenance, and
+`colorref-reading-draft-20261009.pdf` is a deliberate exception for reading on
+GitHub. It uses the temporary Courier substitution described above.
 
 The 2026-10-08 intermediate review copy incorporates fresh 1,000-description
 grounding evidence, the completed four-arm 128-color magnitude confirmation,
@@ -97,3 +100,18 @@ color-semantics entry has verified publisher/DOI metadata.
 The exporter packages saved evidence from the GPU machine without inference.
 The full raw-checkpoint reconciliation awaits that export; pasted summaries
 alone cannot verify every production setting or figure input.
+
+## Game-first narrative revision
+
+The abstract and introduction now explain the guesser, teacher, hidden target,
+verbal correction and repeated revision before introducing the calibration
+results. The motivation connects interactive reference to measurable direction
+and step size; the single-axis adjustment studies are explicitly distinguished
+from full description-based games. All experimental numbers and results sections
+remain unchanged.
+
+Figure 1 (`latex/figures/reference_game.pdf`) is a constructed schematic for
+"dark green", not a recovered model trajectory or an experimental observation.
+It restores the introductory example's explanatory role without reusing the
+unrecoverable historical accuracy values in the archival `example.png`. Rebuild
+the vector figure with `uv run python scripts/plot_reference_game.py`.

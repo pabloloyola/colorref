@@ -88,8 +88,8 @@ Courier substitution permits local compilation; the committed source keeps
 the original Inconsolata package. Publication-font layout and the eventual
 conference page limit are separate checks for Overleaf after author review.
 The reading copy is not a submission-ready declaration.
-The final temporary-font build has 15 pages, no overfull boxes or unresolved
-citations/references, and all rendered pages were visually inspected.
+The temporary-font reading builds are checked for overfull boxes and unresolved
+citations/references, and all rendered pages are visually inspected.
 All 22 cited keys resolve and the bibliography has no duplicate keys.
 
 Before submission, reconcile the exported production configs and analysis JSON
@@ -99,3 +99,22 @@ from pasted summaries alone. For the full read, focus on whether the calibration
 contribution is clear, whether the supporting controls earn their space, and
 whether the limits match the claims. New experiments remain a subsequent
 decision rather than an automatic next step.
+
+## Narrative revision after author feedback
+
+The author found that the calibration-centered revision lost the original
+game explanation and introductory motivation. The abstract and introduction
+now follow motivation, color as a measurable reference domain, the hidden-target
+guesser/teacher game, direction versus magnitude, and receiver calibration.
+Supporting controls are connected back to the game without presenting isolated
+single-axis studies as full interactive-game evaluations.
+
+A new vector schematic uses constructed colors/messages and explicitly says
+it is illustrative. No archived empirical trajectory or lost-run number is
+reintroduced. Experimental results, confidence intervals, denominators, and
+limits are unchanged. The compiled reading PDF is committed at
+`paper/colorref-reading-draft-20261009.pdf` so it can be opened on GitHub.
+
+The narrative-revised temporary-font build has 16 pages; its log has no
+overfull boxes or unresolved references/citations, and all pages were rendered
+and visually inspected. The introductory schematic appears as Figure 1.
