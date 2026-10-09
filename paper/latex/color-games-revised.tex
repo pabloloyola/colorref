@@ -45,32 +45,39 @@ than uniquely correct color meanings or human perceptual calibration.
 \section{Introduction}
 \label{sec:introduction}
 
-An initial color can be close to what we intend and still need a correction:
-\textit{a little darker}, \textit{more blue}, or \textit{much less saturated}.
-Such instructions express a change relative to the current output without
-specifying an exact endpoint. They motivate an interactive view of language
-grounding: can a model use a correction to approach an intended referent,
-and can it produce feedback that helps another model do so? A plausible
-first guess and a fluent correction answer different parts of this question.
+Color is a continuous perceptual domain that people describe through
+language. Some descriptions refer directly to color properties, such as
+\textit{dark green} or \textit{pale blue}; others draw on familiar objects,
+such as \textit{mustard yellow}, or evoke associations, such as
+\textit{abandoned hope}. These expressions offer different ways of
+communicating color, but their interpretation is not uniquely determined.
+A description can admit several plausible colors, and its intended referent
+can depend on context, experience, and subjective associations.
 
-Color offers a compact setting in which to examine that interaction.
-Expressions range from direct terms such as \textit{dark green}, through
-object associations such as \textit{ocean blue}, to evocative names such as
-\textit{abandoned hope}. Their recorded referents occupy a continuous space,
-so we can observe both where a guess lands and how it moves after feedback.
-This combines the ambiguity of natural-language reference with a measurable
-output domain. It does not make a recorded color the only legitimate
-interpretation of its description.
+This relationship makes color a useful setting for studying how large
+language models interpret and use grounded language. Given a color
+description, a model can propose a color in a \emph{one-shot prediction},
+allowing us to examine its initial interpretation. Yet a single prediction
+captures only part of the communicative process. When a proposed color
+differs from what a speaker intends, the speaker can offer a correction---
+\textit{a little darker} or \textit{more blue}---and the listener can revise.
+This raises a complementary question: how effectively can a model use
+natural-language feedback to move from its initial interpretation toward
+an intended color?
 
-We introduce \textsc{ColorRef}, an interactive reference game with two roles
-(Figure~\ref{fig:intro_game}). The \emph{guesser} receives a description and
-proposes a color. The \emph{teacher} knows the target, compares it with the
-current guess, and sends a verbal correction. The guesser receives its
-previous guess and the latest feedback, along with the description, and
-revises; the exchange repeats until a stopping rule or revision budget ends
-the game. The target is hidden from the guesser. Keeping the roles separate
-lets us vary feedback production while examining how the receiving model
-responds to the message it actually sees.
+We study this process through \textsc{ColorRef}, an interactive reference
+game with two roles (Figure~\ref{fig:intro_game}). Each color description
+is paired with a recorded \emph{target color}. The \emph{guesser} receives
+only the description and proposes a \emph{color guess}. The \emph{teacher}
+knows the target, compares it with the guess, and provides natural-language
+\emph{feedback}. The guesser then receives the description, its previous
+guess, and the latest feedback, and produces a revised guess. This exchange
+repeats until a stopping rule or revision budget ends the game; the target
+remains hidden from the guesser. The resulting trajectory makes it possible
+to examine initial interpretation, response to correction, and feedback
+production separately. We can therefore ask both whether a model follows
+a teacher's feedback and whether model-produced feedback helps a receiver
+approach the recorded target.
 
 \begin{figure*}[t]
 \centering
